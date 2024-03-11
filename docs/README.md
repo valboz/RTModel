@@ -31,7 +31,7 @@ plm.plotmodel(eventname = event, modelfile = modelfile, model = model)
 
 ## Summary
 
-In the following pages, we will describe all functionalities of VBBinaryLensing in detail.
+In the following pages, we will describe all functionalities of `RTModel` in detail.
 
 - [Data preparation](DataPreparation.md)
 
