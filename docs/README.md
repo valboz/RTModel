@@ -5,7 +5,7 @@ In this document we will describe all use cases of the `RTModel` library and pro
 
 ## Quick start
 
-Provided you have prepared a folder for your microlensing event (e.g. `/event001`) with all datasets in the subfolder `/event001/Data` as detailed in the section about [sata preparation](DataPreparation.md), in order to analyze the microlensing event with the default settings, just type
+Provided you have prepared a folder for your microlensing event (e.g. `/event001`) with all datasets in the subfolder `/event001/Data` as detailed in the section about [data preparation](DataPreparation.md), in order to analyze the microlensing event with the default settings, just type
 
 ```
 import RTModel
