@@ -23,7 +23,7 @@ The easiest way to install `RTModel` is through `pip`
 pip install RTModel
 ```
 
-Currently, `RTModel` works on Linux, Windows, MacOS and python >= 2.7. 
+Currently, `RTModel` works on Linux, Windows, MacOS and python >= 3.6. 
 A C++ compiler compatible with C++17 standard is needed for installation.
 `RTModel` also incorporates version 3.7 of [`VBBinaryLensing`](https://github.com/valboz/VBBinaryLensing).
 
