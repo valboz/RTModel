@@ -4,18 +4,18 @@
 
 ## Directory structure
 
-Each microlensing event should have its own dedicated directory (e.g. `/event001`). 
+Each microlensing event should have its own dedicated directory (e.g. `/event001/`). 
 
-This directory should contain a subdirectory named `Data`.
+This directory should contain a subdirectory named `/Data`.
 
-The `Data` directory should contain all photometric time series available for the analysis. Each series (data collected by a single telescope in one filter) corresponds to one file with extension  `.dat`.
+The `/Data` directory should contain all photometric time series available for the analysis. Each series (data collected by a single telescope in one filter) corresponds to one file with extension  `.dat`.
 
 ## Photometry files
 
 The content of each `.dat` file should be as in the following example:
 
 ```
-# Mag err HJD
+# Mag err HJD-2450000
 19.0232 0.012 8370.1223
 19.0150 0.011 8370.2421
 19.0034 0.011 8370.3697
@@ -39,6 +39,6 @@ All other files ending by anything that is not a number is considered as taken f
 
 ## Event coordinates
 
-Event coordinates are contained in a file with extension `.coordinates` (e.g. `event001.coordinates`) placed in the same `Data` directory along with the photometry files.
+Event coordinates are contained in a file with extension `.coordinates` (e.g. `event001.coordinates`) placed in the same `/Data` directory along with the photometry files.
 
 The content of the file should be in the form `HH:MM:SS.S +DD:PP:SS.S` for right ascension and declination respectively, e.g. `18:00:23.32 -32:11:09.7`.
