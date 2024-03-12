@@ -31,14 +31,13 @@ The first line is just a header and is ignored by `RTModel`.
 
 Each data point contains magnitude, error and Heliocentric Julian Date - 2450000.
 
-## Satellite observations
-
-Observations from satellites, if available, are identified through the filename ending with a number, e.g. `Spitzer1.dat`. Each satellite is identified by a different number that is used to select the correct ephemerides table.
-
-All other files ending by anything that is not a number is considered as taken from a ground telescope.
-
 ## Event coordinates
 
 Event coordinates are contained in a file with extension `.coordinates` (e.g. `event001.coordinates`) placed in the same `/Data` directory along with the photometry files.
 
 The content of the file should be in the form `HH:MM:SS.S +DD:PP:SS.S` for right ascension and declination respectively, e.g. `18:00:23.32 -32:11:09.7`.
+
+## Optional input files
+
+Other optional input files are observations from [satellite](Satellite.md) and [limb darkening coefficients](LimbDarkening.md), described in the corresponding pages.
+
