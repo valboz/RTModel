@@ -28,7 +28,7 @@ Currently, `RTModel` works on Linux and Windows, requiring Python >= 3.6.
 A C++ compiler compatible with C++17 standard is needed for installation.
 `RTModel` also incorporates version 3.7 of [`VBBinaryLensing`](https://github.com/valboz/VBBinaryLensing).
 
-Example Jupyter notebooks are included in `examples/`.
+Example Jupyter notebooks will be included in `examples/`.
 
 ## Documentation
 Provisional [documentation for the use of RTModel](/docs/readme.md) is available and under development.
