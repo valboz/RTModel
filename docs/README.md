@@ -13,7 +13,7 @@ rtm=RTModel.RTModel()
 rtm.run('/event001')
 ```
 
-Then the modeling starts and you may sit back and watch the progress bars tracking the status of modeling. You will notice that all fits are nearly instantaneous whereas the Single-source-binary-lens fit take 1-2 hours. At the end of all fits, you will see the final assessment of `RTModel` for the event, along with a summary of the best chi squares found for each category of models.
+Then the modeling starts and you may sit back and watch the progress bars tracking the status of modeling. You will notice that all fits are nearly instantaneous except for the Binary-lens-single-source fit that takes 1-2 hours. At the end of all fits, you will see the final assessment of `RTModel` for the event, along with a summary of the best chi squares found for each category of models.
 
 The final model(s) proposed by `RTModel` are collected as separate files in the directory `/event001/SelectedModels`. You may plot them using the `RTModel.plotmodel` package:
 
