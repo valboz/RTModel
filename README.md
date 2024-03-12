@@ -10,7 +10,7 @@ The modeling strategy is based on a grid search in the parameter space for singl
 
 The library is in the form of a standard Python package that launches specific subprocesses for different tasks. Model fitting is executed in **parallel** exploiting available processors in the machine. The full modeling may take from one to three hours depending on the event and on the machine speed. The results of modeling are given in the formn of a text **assessment file**; in addition, **final models** are made available with their parameters and covariance matrices.
 
-`RTModel` also includes a subpackage **`RTModel.plotmodel`** that allows an immediate visualization of models and the possibility to view each individual fitting process as an animated gif.
+`RTModel` also includes a subpackage **`RTModel.plotmodel`** that allows an immediate visualization of models and the possibility to review each individual fitting process as an animated gif.
 
 ## Attribution
 
