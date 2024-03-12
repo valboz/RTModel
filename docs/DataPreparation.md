@@ -41,3 +41,4 @@ The content of the file should be in the form `HH:MM:SS.S +DD:PP:SS.S` for right
 
 Other optional input files are observations from [satellite](Satellite.md) and [limb darkening coefficients](LimbDarkening.md), described in the corresponding pages.
 
+[Go to **Modeling Run**](ModelingRun.md)
