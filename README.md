@@ -31,7 +31,7 @@ A C++ compiler compatible with C++17 standard is needed for installation.
 Example Jupyter notebooks will be included in `examples/`.
 
 ## Documentation
-Provisional [documentation for the use of RTModel](/docs/readme.md) is available and under development.
+Provisional [documentation for the use of RTModel](docs/README.md) is available and under development.
 
 ## License
 `RTModel` is freely available to the community under the 
