@@ -2,7 +2,7 @@
 
 # Modeling run
 
-## Constructor and number of processors
+## Start-up RTModel
 
 Once data have been prepared according to the format specified in [Data preparation](DataPreparation.md), we can go to Python and write a simple code to perform the full modeling run.
 
