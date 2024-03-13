@@ -70,7 +70,7 @@ for event in eventlist:
   rtm.run(event)
 ```
 
-If you just want to change the name of the event without launching a modeling run, you may use the `set_event()` functionù
+If you just want to change the name of the event without launching a modeling run, you may use the `set_event()` function
 
 ```
 rtm.set_event('/event002')
