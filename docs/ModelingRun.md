@@ -88,12 +88,31 @@ At the end of the modeling run, a summary is displayed with the best chi square 
 
 The best models listed in this summary are available as text files in the subdirectory `event001/SelectedModels`.
 
-Each file contains the list of parameters
+Each file contains the list of parameters in the first line, including the background and source fluxes for each telescope and the total chi square. This means that the first line contains `nps + 2 * ntel + 1` values, where `nps` is the number of parameters in the model category (e.g. 7 for binary-lens-single-source) and `ntel` is the number of datasets.
+
+The second line contains the uncertainty on each of the above listed parameters (except for the chi square). Therefore, this line contains `nps + 2 * ntel` values.
+
+The remaining lines contain the covariance matrix between the model parameters. Therefore, there are `nps` additional lines containing `nps` values each.
+
+A detailed explanation of parameters for each model category is available in [ParameterTables](ParameterTables.md)
+
+### Additional products
+
+Additional partial products of modeling are stored in the event directory. At the end of the modeling run we will find the following files and directories
+```
+Data                     # Directory containing the original input data files as desribed in [Data preparation](DataPreparation.md)
+ini                      # Directory containing text files specifying the options for individual modules
+InitCond                 # Directory containing the text files with the initial conditions for fitting
+PreModels                # Directory containing subdirectories with all models calculated by all fits
+Models                   # Directory containing selected models for each category
+SelectedModels           # Directory containing the best models as proposed in the final assessment (see above)
+LCToFit.txt              # Text file containing the formatted and pre-processed data points
+```
 
 
 ## Structure of a modeling run
 
-The `run()` function performs a sequence of operations on the selected event and generate some output files containing the final assessment and the proposed best models for the event. The individual operations are performed by external pre-compiled models 
+The `run()` function performs a sequence of operations on the selected event and generates some output files containing the final assessment and the proposed best models for the event. The individual operations are performed by external pre-compiled modules. Here we summarize the  
 
 
 [Go to **Data pre-processing**](DataPreprocessing.md)
