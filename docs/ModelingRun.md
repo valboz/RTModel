@@ -100,15 +100,15 @@ A detailed explanation of parameters for each model category is available in [Pa
 
 Additional partial products of modeling are stored in the event directory. At the end of the modeling run we will find the following files and directories
 ```
-Data                     # Directory containing the original input data files as desribed in [Data preparation](DataPreparation.md)
-ini                      # Directory containing text files specifying the options for individual modules
-InitCond                 # Directory containing the text files with the initial conditions for fitting
-PreModels                # Directory containing subdirectories with all models calculated by all fits
-Models                   # Directory containing selected models for each category
-SelectedModels           # Directory containing the best models as proposed in the final assessment (see above)
+Data/                    # Directory containing the original input data files as described in data preparation
+ini/                     # Directory containing text files specifying the options for individual modules
+InitCond/                # Directory containing the text files with the initial conditions for fitting
+PreModels/               # Directory containing subdirectories with all models calculated by all fits
+Models/                  # Directory containing selected models for each category
+SelectedModels/          # Directory containing the best models as proposed in the final assessment (see above)
 LCToFit.txt              # Text file containing the formatted and pre-processed data points
 FilterToData.txt         # Table of datasets names
-spline.dat               # List of points in the spline approximation used for [initial conditions](InitialConditions.md)
+spline.dat               # List of points in the spline approximation used for initial conditions
 nature.txt               # Text file containing the final assessment on the event and the list of best models
 ```
 
