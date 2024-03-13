@@ -107,8 +107,12 @@ PreModels                # Directory containing subdirectories with all models c
 Models                   # Directory containing selected models for each category
 SelectedModels           # Directory containing the best models as proposed in the final assessment (see above)
 LCToFit.txt              # Text file containing the formatted and pre-processed data points
+FilterToData.txt         # Table of datasets names
+spline.dat               # List of points in the spline approximation used for [initial conditions](InitialConditions.md)
+nature.txt               # Text file containing the final assessment on the event and the list of best models
 ```
 
+These files will be explained in the following chapters in due time. They can be useful for careful diagnostics of the modeling process.
 
 ## Structure of a modeling run
 
