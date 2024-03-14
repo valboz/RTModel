@@ -31,9 +31,7 @@ The parameters of this model are the following. We also indicate if the paramete
 | 3 | t0 | Closest approach time in HJD |  |
 | 4 | rho | Source radius normalized to Einstein angle | X |
 
-
-
-
+We note that only positive values of `u0` are considered in this model since a distinction only comes when parallax is included.
 
 [Go to **Data pre-processing**](DataPreprocessing.md)
 
