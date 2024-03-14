@@ -43,8 +43,8 @@ This is the same as before with parallax vector included.
 | 2 | tE | Einstein time in days | X |
 | 3 | t0 | Closest approach time in HJD |  |
 | 4 | rho | Source radius normalized to Einstein angle | X |
-| 5 | $$\pi_{E,N}$$ | Parallax component along North |  |
-| 6 | $$\pi_{E,E}$$ | Parallax component along East |  |
+| 5 | pi_N| Parallax component along North |  |
+| 6 | pi_E | Parallax component along East |  |
 
 Note that the positive and negative impact parameters correspond to different models when we include parallax.
 
