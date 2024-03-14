@@ -37,6 +37,8 @@ In the following pages, we will describe all functionalities of `RTModel` in det
 
 - [Full modeling run](ModelingRun.md)
 
+- [Model Categories](ModelCategories.md)
+
 - [Data pre-processing](DataPreprocessing.md)
 
 - [Initial conditions](InitialConditions.md)
@@ -52,3 +54,5 @@ In the following pages, we will describe all functionalities of `RTModel` in det
 - [Satellite datasets](Satellites.md)
 
 - [Limb darkening](LimbDarkening.md)
+
+- [Archiving and updating models](ArchivingUpdating.md)
