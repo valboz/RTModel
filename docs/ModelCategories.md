@@ -18,7 +18,7 @@ The following sections provide details about parameters and conventions.
 
 Note that some parameters are fit in log scale by `RTModel` for better performance. The only consequence for users is that the covariance matrix contained in model files is written for the log parameters.
 
-## Single-lens-single-source
+## Single-lens-single-source (PS)
 
 This is the basic microlensing model with a single-lens and a single-source. Note that `RTModel` only considers finite-source models. In most cases, there will be no constraints on the source radius anyway.
 
