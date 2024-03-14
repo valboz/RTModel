@@ -22,7 +22,7 @@ Note that some parameters are fit in logarithmic scale by `RTModel` for better p
 
 This is the basic microlensing model with a single-lens and a single-source. Note that `RTModel` only considers finite-source models. In most cases, there will be no constraints on the source radius anyway.
 
-The parameters of this model are the following. We also indicate if the parameter is internally fit in logarithmic scale (see above).
+The parameters of this model are the following. We also indicate if the parameter is internally fit in logarithmic (ln) scale (see above).
 
 | Number | Parameter | Meaning | ln |
 | --- | --- | --- | --- |
@@ -32,6 +32,22 @@ The parameters of this model are the following. We also indicate if the paramete
 | 4 | rho | Source radius normalized to Einstein angle | X |
 
 We note that only positive values of `u0` are considered in this model since a distinction only comes when parallax is included.
+
+## Single-lens-single-source with parallax (PX)
+
+This is the same as before with parallax vector included. 
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | u0 | Impact parameter normalized to Einstein angle |  |
+| 2 | tE | Einstein time in days | X |
+| 3 | t0 | Closest approach time in HJD |  |
+| 4 | rho | Source radius normalized to Einstein angle | X |
+| 5 | $$\pi_{E,N}$$ | Parallax component along North |  |
+| 6 | $$\pi_{E,E}$$ | Parallax component along East |  |
+
+Note that the positive and negative impact parameters correspond to different models when we include parallax.
+
 
 [Go to **Data pre-processing**](DataPreprocessing.md)
 
