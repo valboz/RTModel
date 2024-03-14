@@ -26,10 +26,10 @@ The parameters of this model are the following. We also indicate if the paramete
 
 | Number | Parameter | Meaning | Log |
 | --- | --- | --- | --- |
-| 1 | u0 | Impact parameter normalized to Einstein angle in log scale | X |
-| 2 | tE | Einstein time in days in log scale | X |
+| 1 | u0 | Impact parameter normalized to Einstein angle | X |
+| 2 | tE | Einstein time in days | X |
 | 3 | t0 | Closest approach time in HJD |  |
-| 4 | rho | Source radius normalized to Einstein angle in log scale | X |
+| 4 | rho | Source radius normalized to Einstein angle | X |
 
 
 
