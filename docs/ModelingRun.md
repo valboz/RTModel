@@ -116,7 +116,18 @@ These files will be explained in the following chapters in due time. They can be
 
 ## Structure of a modeling run
 
-The `run()` function performs a sequence of operations on the selected event and generates some output files containing the final assessment and the proposed best models for the event. The individual operations are performed by external pre-compiled modules. Here we summarize the  
+The `run()` function performs a precise sequence of operations on the selected event. The individual operations are performed by external pre-compiled modules called by the function. Here we summarize the individual steps:
 
+1. Data pre-processing
+2. Initial conditions setting
+3. Fits for a specific category of models
+4. Model selection within the category
+5. Final assessment on the event
 
-[Go to **Data pre-processing**](DataPreprocessing.md)
+Steps 3 and 4 are repeated for each model category. Details on the model categories and their parameters are given in the [following page](ModelCategories.md)
+
+Each step is described in a dedicated documentation page (see [Summary](README.md)). Each step can be executed separately through a dedicated function. Numerous options are available to change the behavior of each step.
+
+In case the modeling run is interrupted, it can be resumed by executing the `run()` function again on the same event. The function checks whether the expected output of each step is present and in case skips to the next step.
+
+[Go to **Model categories**](ModelCategories.md)
