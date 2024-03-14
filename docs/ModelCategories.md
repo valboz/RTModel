@@ -47,6 +47,29 @@ This is the same as before with parallax vector included.
 | 6 | pi_E | Parallax component along East |  |
 
 Note that the positive and negative impact parameters correspond to different models when we include parallax.
+The parallax components are calculated with respect to the reference time t0.
+
+## Single-lens-binary-source (BS)
+
+Here we consider two sources and one lens. The two sources have different fluxes and different finite radii. Here are the parameters:
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | tE | Einstein time in days | X |
+| 2 | FR | Flux ratio of the secondary over primary source | X |
+| 3 | u01 | Impact parameter of the primary source |  |
+| 4 | u02 | Impact parameter of the secondary source |  |
+| 5 | t01 | Closest approach time of the primary source |  |
+| 6 | t02 | Closest approach time of the secondary source |  |
+| 7 | rho1 | Source radius of the primary source | X |
+
+Note that both sources may have positive or negative impact parameters.
+
+The source radius is only given for the primary star, while the secondary star has a source radius calculated by the relation rho2 = rho1 * FR^(3.6), coming from approximate stellar mass-luminosity-radius relations in the solar range. In general, we do not expect that both sources have a detectable finite-size effect, so this relation is enforced with the only purpose to avoid the exploration of grossly unphysical models.
+
+
+
+
 
 
 [Go to **Data pre-processing**](DataPreprocessing.md)
