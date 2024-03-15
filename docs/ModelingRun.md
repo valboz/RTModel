@@ -128,6 +128,6 @@ Steps 3 and 4 are repeated for each model category. Details on the model categor
 
 Each step is described in a dedicated documentation page (see [Summary](README.md)). Each step can be executed separately through a dedicated function. Numerous options are available to change the behavior of each step.
 
-In case the modeling run is interrupted, it can be resumed by executing the `run()` function again on the same event. The function checks whether the expected output of each step is present and in case skips to the next step.
+In case the modeling run is interrupted, it can be resumed by executing the `run()` function again on the same event. The function checks whether the expected output of each step is present and in such case it moves to the next step.
 
 [Go to **Model categories**](ModelCategories.md)
