@@ -43,8 +43,8 @@ This is the same as before with parallax vector included.
 | 2 | tE | Einstein time in days | X |
 | 3 | t0 | Closest approach time in HJD |  |
 | 4 | rho | Source radius normalized to Einstein angle | X |
-| 5 | pi_N| Parallax component along North |  |
-| 6 | pi_E | Parallax component along East |  |
+| 5 | piN| Parallax component along North |  |
+| 6 | piE | Parallax component along East |  |
 
 Note that the positive and negative impact parameters correspond to different models when we include parallax.
 The parallax components are calculated with respect to the reference time t0.
@@ -56,7 +56,7 @@ Here we consider two sources and one lens. The two sources have different fluxes
 | Number | Parameter | Meaning | ln |
 | --- | --- | --- | --- |
 | 1 | tE | Einstein time in days | X |
-| 2 | FR | Flux ratio of the secondary over primary source | X |
+| 2 | FR | Flux ratio of the secondary to the primary source | X |
 | 3 | u01 | Impact parameter of the primary source |  |
 | 4 | u02 | Impact parameter of the secondary source |  |
 | 5 | t01 | Closest approach time of the primary source |  |
@@ -66,7 +66,6 @@ Here we consider two sources and one lens. The two sources have different fluxes
 Note that both sources may have positive or negative impact parameters.
 
 The source radius is only given for the primary star, while the secondary star has a source radius calculated by the relation rho2 = rho1 * FR^(3.6), coming from approximate stellar mass-luminosity-radius relations in the solar range. In general, we do not expect that both sources have a detectable finite-size effect, so this relation is enforced with the only purpose to avoid the exploration of grossly unphysical models.
-
 
 ## Single-lens-binary-source with xallarap (BO)
 
@@ -83,15 +82,71 @@ Here we also include circular orbital motion of the two sources around a common 
 | 7 | omega | Orbital angular velocity in days^-1 |  |
 | 8 | i | Inclination of the orbital plane in radians |  |
 | 9 | phi | Phase of the orbit from the passage on the line of nodes | |
-| 10 | qs | Mass ratio of the secondary over the primary | X |
+| 10 | qs | Mass ratio of the secondary to the primary | X |
 
 The position of the secondary source is calculated from the position of the primary at any time. See [VBBinaryLensing Binary Sources](https://github.com/valboz/VBBinaryLensing/blob/master/docs/BinarySources.md) for a detailed explanation.
 
+Annual parallax is not considered in this model because it can be mimicked by xallarap, as well known and would only induce bad degeneracies in a higher dimensional parameter space. However, satellite observations may distinguish between parallax and xallarap.
+
 Note that the flux ratio is calculated as FR = qS^4 and the radius of the secondary is rho2 = rho1 * qs^0.9. As before, we do not expect that these mass-radius-luminosity relations are strictly needed except for avoiding the exploration of unphysical models.
 
+## Binary-lens-single-source (LS)
+
+This is the "static" binary-lens model:
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | s | Separation between the lenses in Einstein radii | X |
+| 2 | q | Mass ratio of the secondary to the primary lens | X |
+| 3 | u0 | Impact parameter normalized to Einstein angle |  |
+| 4 | alpha | Angle between the source velocity and the vector pointing from the secondary to the primary lens |  |
+| 5 | rho | Source radius normalized to Einstein angle | X |
+| 6 | tE | Einstein time in days | X |
+| 7 | t0 | Closest approach time in HJD to the barycenter |  |
+
+For details about the source trajectory parameterization, please check [VBBinaryLensing Light Curves](https://github.com/valboz/VBBinaryLensing/blob/master/docs/LightCurves.md).
+
+## Binary-lens-single-source with parallax (LX)
+
+Here we also include parallax as we did before for the single-lens case:
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | s | Separation between the lenses in Einstein radii | X |
+| 2 | q | Mass ratio of the secondary to the primary lens | X |
+| 3 | u0 | Impact parameter normalized to Einstein angle |  |
+| 4 | alpha | Angle between the source velocity and the vector pointing from the secondary to the primary lens |  |
+| 5 | rho | Source radius normalized to Einstein angle | X |
+| 6 | tE | Einstein time in days | X |
+| 7 | t0 | Closest approach time in HJD to the barycenter |  |
+| 8 | piN| Parallax component along North |  |
+| 9 | piE | Parallax component along East |  |
 
 
+## Binary-lens-single-source with orbital motion (LO)
 
+Finally, we also explore circular orbital motion for our binary lens:
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | s | Separation between the lenses in Einstein radii | X |
+| 2 | q | Mass ratio of the secondary to the primary lens | X |
+| 3 | u0 | Impact parameter normalized to Einstein angle |  |
+| 4 | alpha | Angle between the source velocity and the vector pointing from the secondary to the primary lens |  |
+| 5 | rho | Source radius normalized to Einstein angle | X |
+| 6 | tE | Einstein time in days | X |
+| 7 | t0 | Closest approach time in HJD to the barycenter |  |
+| 8 | piN| Parallax component along North |  |
+| 9 | piE | Parallax component along East |  |
+| 10 | gamma1 | Angular velocity parallel to the lens axis |  |
+| 11 | gamma2 | Angulr velocity perpendicular to the lens axis |  |
+| 12 | gammaz | Angular velocity along the line of sight |  |
+
+The three components of the orbital motion are expressed at time t0 in units of days^-1.
+
+The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt. The thid component gammaz is generally poorly constrained, but is required to move along a physical circular orbit.
+
+More details are available at [VBBinaryLensing Orbital Motion](https://github.com/valboz/VBBinaryLensing/blob/master/docs/OrbitalMotion.md).
 
 [Go to **Data pre-processing**](DataPreprocessing.md)
 
