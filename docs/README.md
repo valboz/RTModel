@@ -20,13 +20,12 @@ The final model(s) proposed by `RTModel` are collected as separate files in the 
 ```
 import plotmodel as plm
 import glob
-import os
 
-models = glob.glob('/event001/SelectedModels/*')
-modelfile = models[0]
-model = os.path.basename(modelfile)
+event = '/event001'
+models = glob.glob(event +'/SelectedModels/*')
+model = models[0]
 
-plm.plotmodel(eventname = event, modelfile = modelfile, model = model)
+plm.plotmodel(eventname = event, modelfile = model)
 ```
 
 ## Summary
