@@ -4,7 +4,7 @@
 
 ## Directory structure
 
-Each microlensing event should have its own dedicated directory (e.g. `/event001/`). 
+Each microlensing event should have its own dedicated directory somewhere on your PC (e.g. `/event001/`). 
 
 This directory should contain a subdirectory named `/Data`.
 
