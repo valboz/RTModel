@@ -31,13 +31,25 @@ plm.plotmodel(eventname = event, modelfile = modelfile, model = model)
 
 ## Summary
 
-In the following pages, we will describe all functionalities of `RTModel` in detail.
+In this documentation, we describe all functionalities of `RTModel` in detail. A novel user should read the following pages at least.
 
 - [Data preparation](DataPreparation.md)
 
 - [Full modeling run](ModelingRun.md)
 
 - [Model Categories](ModelCategories.md)
+
+- [Plotting models and results](Plotmodel.md)
+
+Additional useful functionalities are discussed in the following pages.
+
+- [Archiving and updating models](ArchivingUpdating.md)
+
+- [Satellite datasets](Satellites.md)
+
+- [Limb darkening](LimbDarkening.md)
+
+Advanced users may attempt a deeper understanding of the modeling steps and optimize `RTModel` by numerous options.
 
 - [Data pre-processing](DataPreprocessing.md)
 
@@ -49,10 +61,4 @@ In the following pages, we will describe all functionalities of `RTModel` in det
 
 - [Final assessment and results](FinalAssessment.md)
 
-- [Plotting models and results](Plotmodel.md)
-
-- [Satellite datasets](Satellites.md)
-
-- [Limb darkening](LimbDarkening.md)
-
-- [Archiving and updating models](ArchivingUpdating.md)
+- [Animating fits](Animation.md)
