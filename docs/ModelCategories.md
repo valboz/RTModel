@@ -144,7 +144,7 @@ Finally, we also explore circular orbital motion for our binary lens:
 
 The three components of the orbital motion are expressed at time t0 in units of days^-1.
 
-The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt. The thid component gammaz is generally poorly constrained, but is required to move along a physical circular orbit.
+The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt. The third component gammaz is generally poorly constrained, but is required to move along a physical circular orbit.
 
 More details are available at [VBBinaryLensing Orbital Motion](https://github.com/valboz/VBBinaryLensing/blob/master/docs/OrbitalMotion.md).
 
