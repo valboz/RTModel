@@ -90,11 +90,11 @@ The best models listed in this summary are available as text files in the subdir
 
 Each file contains the list of parameters in the first line, including the background and source fluxes for each telescope and the total chi square. This means that the first line contains `nps + 2 * ntel + 1` values, where `nps` is the number of parameters in the model category (e.g. 7 for binary-lens-single-source) and `ntel` is the number of datasets.
 
+A detailed explanation of parameters for each model category is available in [Model categories](ModelCategories.md)
+
 The second line contains the uncertainty on each of the above listed parameters (except for the chi square). Therefore, this line contains `nps + 2 * ntel` values.
 
-The remaining lines contain the covariance matrix between the model parameters. Therefore, there are `nps` additional lines containing `nps` values each.
-
-A detailed explanation of parameters for each model category is available in [ParameterTables](ParameterTables.md)
+The remaining lines contain the covariance matrix between the model parameters. Therefore, there are `nps` additional lines containing `nps` values each. Note that some parameters are internally fit in logarithmic scale (see [Model categories](ModelCategories.md) for which parameters are fit as ln). The reported covariance matrix is thus calculated on these internal parameters.
 
 ### Additional products
 
@@ -108,7 +108,7 @@ Models/                  # Directory containing selected models for each categor
 SelectedModels/          # Directory containing the best models as proposed in the final assessment (see above)
 LCToFit.txt              # Text file containing the formatted and pre-processed data points
 FilterToData.txt         # Table of datasets names
-spline.dat               # List of points in the spline approximation used for initial conditions
+spline.txt               # List of points in the spline approximation used for initial conditions
 nature.txt               # Text file containing the final assessment on the event and the list of best models
 ```
 
