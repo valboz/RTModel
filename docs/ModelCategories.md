@@ -148,5 +148,5 @@ The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt
 
 More details are available at [VBBinaryLensing Orbital Motion](https://github.com/valboz/VBBinaryLensing/blob/master/docs/OrbitalMotion.md).
 
-[Go to **Data pre-processing**](DataPreprocessing.md)
+[Go to **Plotting models**](PlotModel.md)
 
