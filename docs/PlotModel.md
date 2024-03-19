@@ -14,10 +14,13 @@ event = '/event001'
 models = glob.glob(event +'/SelectedModels/*')
 model = models[0] # let's plot the first of the best models
 
-pm = plm.plotmodel(eventname = event, modelfile = model)
+myplot = plm.plotmodel(eventname = event, modelfile = model)
 ```
 
+The output will look like this
+
 <img src="plotmodel_fig1.png" width = 900>
+
 
 
 
