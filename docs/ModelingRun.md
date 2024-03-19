@@ -10,7 +10,7 @@ Once data have been prepared according to the format specified in [Data preparat
 import RTModel
 rtm = RTModel.RTModel('/event001')
 ```
-First we import the `RTModel` package, then we define an instance to an `RTModel` object. We may optionally specify the name of the event to analyze already in the constructor or leave it blank and indicate it later. The event is identified through the path to the directory prepared before.
+Here we have first imported the `RTModel` package, then we have defined an instance to an `RTModel` object. We may optionally specify the name of the event to analyze already in the constructor or leave it blank and indicate it later. The event is identified through the path to the directory prepared before.
 
 The output of the constructor looks like this:
 ```
