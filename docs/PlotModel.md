@@ -30,7 +30,7 @@ Here is a list of options available for the `plotmodel` function:
 - `parameters = []`: parameters of a user-defined model. The order and meaning of the parameters depends on the model chosen through the argument `model` (see [Model categories](ModelCategories.md)).
 - `tmin = None`, `tmax = None`: Minimum and maximum time for the plot in units of HJD-2450000. If not specified, the plot is made between t0-2tE and t0+2tE.
 - `timesteps = 300`: Number of steps in time axis.
-- `referencephot = 0`: Dataset to be used as photometric reference for the magnitude axis. All other datasets are rescaled to the magnitude in the system of the chosen dataset using the model. By default the first dataset is chosen.
+- `referencephot = 0`: Dataset to be used as photometric reference for the magnitude axis. All other datasets are rescaled to magnitudes in the system of the chosen dataset. By default the first dataset is chosen.
 - `printpars = True`: If left True, the parameters are printed below the figure, otherwise only the figure is shown.
 
 Further customization of the plots is possible by manipulation of the object returned by the `plotmodel` function as shown in the following example:
