@@ -24,7 +24,7 @@ The output will look like this
 On the left, we have the model light curve with the data points. Residuals are also shown below. the source trajectory and the caustics are shown on the right. The plots are followed by the list of parameters with their errors. For each telescope we also have the blending fraction $F_B/F_*$ and the baseline magnitude. Finally, the chi square for the model is displayed.
 
 Here is a list of options available for the `plotmodel` function:
-- `eventname`: Directory of the event prepared along the indications in [Data preparation](DataPreparation.md)
+- `eventname`: Directory of the event prepared according to the indications in [Data preparation](DataPreparation.md)
 - `modelfile = None`: The file name containing the model we want to plot. The type of model is identified by the first two characters in the filename. For example, 'LX0000-0.txt' is a file containing a binary lens with parallax (see [Model categories](ModelCategories.md)). The parameters are read from the file. If `modelfile` is not specified, you may plot any kind of models specifying your parameters in input by providing the arguments `model` and `parameters`.
 - `model = None`: If modelfile is left blank, you may specify here the model you want to plot following the labels given in [Model categories](ModelCategories.md). Example: `model = 'LS'`. The parameters of the model should be given through the argument `parameters`
 - `parameters = []`: parameters of a user-defined model. The order and meaning of the parameters depends on the model chosen through the argument `model` (see [Model categories](ModelCategories.md)).
