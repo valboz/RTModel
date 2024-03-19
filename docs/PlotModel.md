@@ -25,17 +25,39 @@ On the left, we have the model light curve with the data points. Residuals are a
 
 Here is a list of options available for the `plotmodel` function:
 - `eventname`: Directory of the event prepared along the indications in [Data preparation](DataPreparation.md)
-- `modelfile = None`: The file name containing the model we want to plot. The type of model is identified by the first two characters in the filename. E.g. 'LX0000-0.txt' is a file containing a binary lens with parallax (see [Model categories](ModelCategories.md)). The parameters are read from the file. If `modelfile` is not specified, you may plot any kind of models specifying your parameters in input by providing the arguments `model` and `parameters`.
-- `model = None`: If modelfile is left blank, you may specify here the model you want to plot following the labels given in [Model categories](ModelCategories.md). E.g. `model = 'LS'`. The parameters of the model should be given through the argument `parameters`
+- `modelfile = None`: The file name containing the model we want to plot. The type of model is identified by the first two characters in the filename. For example, 'LX0000-0.txt' is a file containing a binary lens with parallax (see [Model categories](ModelCategories.md)). The parameters are read from the file. If `modelfile` is not specified, you may plot any kind of models specifying your parameters in input by providing the arguments `model` and `parameters`.
+- `model = None`: If modelfile is left blank, you may specify here the model you want to plot following the labels given in [Model categories](ModelCategories.md). Example: `model = 'LS'`. The parameters of the model should be given through the argument `parameters`
 - `parameters = []`: parameters of a user-defined model. The order and meaning of the parameters depends on the model chosen through the argument `model` (see [Model categories](ModelCategories.md)).
-- 
+- `tmin = None`, `tmax = None`: Minimum and maximum time for the plot in units of HJD-2450000. If not specified, the plot is made between t0-2tE and t0+2tE.
+- `timesteps = 300`: Number of steps in time axis.
+- `referencephot = 0`: Dataset to be used as photometric reference for the magnitude axis. All other datasets are rescaled to the magnitude in the system of the chosen dataset using the model. By default the first dataset is chosen.
+- `printpars = True`: If left True, the parameters are printed below the figure, otherwise only the figure is shown.
 
-The `plotmodel` function returns a `plotmodel` object that can be manipulated to customize the plot further. 
+Further customization of the plots is possible by manipulation of the object returned by the `plotmodel` function as shown in the following example:
 
+```
+myplot.causticcolor = 'g'
+myplot.telescopes = ['Everest', 'Aconcagua']
+myplot.showall()
+```
 
+Here we have changed the color of the caustic to green and changed the displayed names of the two telescopes in the legend. To see the plot with these changes, you may call the `showall()` function. Some changes require to recalculate the model and you should precede the `showall()` with a call to `calculate()`:
 
+```
+myplot.tmin = 9300
+myplot.calculate()
+myplot.showall()
+```
 
+Here is a list of properties of a `plotmodel` object that are available for customization:
+- `telescopes`: List of telescope names to be shown in the legend. By default, the names of the data files are used.
+- `legendlocation`: Location of the legend according to the options available in matplotlib.
+- 'colors': List of colors of the datasets.
+- 'satellitecolors`: List of colors of the light curve model as seen by ground telescopes (the first entry) and the light curves as seen by the satellites. The corresponding source tracks in the right plot take the same colors.
+- `sourcecolor`: Color of the source disk in the plot showing the source trajectory and the caustic.
+- `causticcolor`: Color of the caustic.
 
+Finally, all optional parameters in the call of the `plotmodel` can be also manipulated as in the case of `tmin` shown above.
 
 
 [Go to **Archiving and updating models**](Archive.md)
