@@ -2,7 +2,7 @@
 
 # Data preparation
 
-In this page we explain how the data should be prepared for the analysis by `RTModel`. You can find some events already prepared in the directory [events](/events)
+In this page we explain how the data should be prepared for the analysis by `RTModel`. You can find some sample events already prepared in the directory [events](/events). These can be useful to see how an event directory should look like at the beginning or at the end of the modeling run.
 
 ## Directory structure
 
