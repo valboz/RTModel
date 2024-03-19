@@ -2,6 +2,8 @@
 
 # Data preparation
 
+In this page we explain how the data should be prepared for the analysis by `RTModel`. You can find some events already prepared in the directory [events](/events)
+
 ## Directory structure
 
 Each microlensing event should have its own dedicated directory somewhere on your PC (e.g. `/event001/`). 
