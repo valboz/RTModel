@@ -112,7 +112,7 @@ spline.txt               # List of points in the spline approximation used for i
 nature.txt               # Text file containing the final assessment on the event and the list of best models
 ```
 
-These files will be explained in the following chapters in due time. They can be useful for careful diagnostics of the modeling process.
+These files will be explained in the following chapters in due time. They can be useful for careful diagnostics of the modeling process. You may vision an event with a completed run among the provided examples: [event001done.zip](event001done.zip).
 
 ## Structure of a modeling run
 
