@@ -52,8 +52,8 @@ myplot.showall()
 Here is a list of properties of a `plotmodel` object that are available for customization:
 - `telescopes`: List of telescope names to be shown in the legend. By default, the names of the data files are used.
 - `legendlocation`: Location of the legend according to the options available in matplotlib.
-- 'colors': List of colors of the datasets.
-- 'satellitecolors`: List of colors of the light curve model as seen by ground telescopes (the first entry) and the light curves as seen by the satellites. The corresponding source tracks in the right plot take the same colors.
+- `colors`: List of colors of the datasets.
+- `satellitecolors`: List of colors of the light curve model as seen by ground telescopes (the first entry) and the light curves as seen by the satellites. The corresponding source tracks in the right plot take the same colors.
 - `sourcecolor`: Color of the source disk in the plot showing the source trajectory and the caustic.
 - `causticcolor`: Color of the caustic.
 
