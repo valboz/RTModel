@@ -7,7 +7,7 @@
 Assuming you have a completed run on some event in its directory `/event001`, we may plot the best models with the following code
 
 ```
-import plotmodel as plm
+import RTModel.plotmodel as plm
 import glob
 
 event = '/event001'
