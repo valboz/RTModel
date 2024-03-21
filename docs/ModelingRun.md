@@ -86,7 +86,7 @@ At the end of the modeling run, a summary is displayed with the best chi square 
 
 ### Best models
 
-The best models listed in this summary are available as text files in the subdirectory `event001/SelectedModels`.
+The best models listed in `nature.txt` are available as text files in the subdirectory `event001/SelectedModels`.
 
 Each file contains the list of parameters in the first line, including the background and source fluxes for each telescope and the total chi square. This means that the first line contains `nps + 2 * ntel + 1` values, where `nps` is the number of parameters in the model category (e.g. 7 for binary-lens-single-source) and `ntel` is the number of datasets.
 
