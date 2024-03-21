@@ -88,7 +88,7 @@ The position of the secondary source is calculated from the position of the prim
 
 Annual parallax is not considered in this model because it can be mimicked by xallarap, as well known and would only induce bad degeneracies in a higher dimensional parameter space. However, satellite observations may distinguish between parallax and xallarap.
 
-Note that the flux ratio is calculated as FR = qS^4 and the radius of the secondary is rho2 = rho1 * qs^0.9. As before, we do not expect that these mass-radius-luminosity relations are strictly needed except for avoiding the exploration of unphysical models.
+Note that the flux ratio is calculated as FR = qs^4 and the radius of the secondary is rho2 = rho1 * qs^0.9. As before, we do not expect that these mass-radius-luminosity relations are strictly needed except for avoiding the exploration of unphysical models.
 
 ## Binary-lens-single-source (LS)
 
