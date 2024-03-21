@@ -6,9 +6,9 @@
 
 All models include the finite-size of the source(s).
 
-The modeling strategy is based on a grid search in the parameter space for single-lens models whereas a **template library** for binary-lens models is used including all possible geometries of the source trajectory with respect to the caustics. In addition to this global search, planets are searched where maximal deviations from a Paczynski model occurs. 
+The modeling strategy is based on a grid search in the parameter space for single-lens models, whereas a **template library** for binary-lens models is used including all possible geometries of the source trajectory with respect to the caustics. In addition to this global search, planets are searched where maximal deviations from a Paczynski model occurs. 
 
-The library is in the form of a standard Python package that launches specific subprocesses for different tasks. Model fitting is executed in **parallel** exploiting available processors in the machine. The full modeling may take from one to three hours depending on the event and on the machine speed. The results of modeling are given in the formn of a text **assessment file**; in addition, **final models** are made available with their parameters and covariance matrices.
+The library is in the form of a standard Python package that launches specific subprocesses for different tasks. Model fitting is executed in **parallel** exploiting available processors in the machine. The full modeling may take from one to three hours depending on the event and on the machine speed. The results of modeling are given in the form of a text **assessment file**; in addition, **final models** are made available with their parameters and covariance matrices.
 
 `RTModel` also includes a subpackage **`RTModel.plotmodel`** that allows an immediate visualization of models and the possibility to review each individual fitting process as an animated gif.
 
