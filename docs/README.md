@@ -38,7 +38,7 @@ In this documentation, we describe all functionalities of `RTModel` in detail. A
 
 - [Model Categories](ModelCategories.md)
 
-- [Plotting models and results](Plotmodel.md)
+- [Plotting models and results](PlotModel.md)
 
 Additional useful functionalities are discussed in the following pages.
 
