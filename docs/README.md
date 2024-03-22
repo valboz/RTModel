@@ -44,7 +44,7 @@ Additional useful functionalities are discussed in the following pages.
 
 - [Archiving and updating models](ArchivingUpdating.md)
 
-- [Satellite datasets](Satellites.md)
+- [Satellite datasets](Satellite.md)
 
 - [Limb darkening](LimbDarkening.md)
 
