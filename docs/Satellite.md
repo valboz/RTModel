@@ -50,6 +50,14 @@ This is thus the recommended sequence of instructions for modeling an event incl
 
 ## Plotting satellite observations
 
+For events including satellite observations, the `plotmodel` call should include the indication of the directory containing the ephemerides tables:
+
+```
+plm.plotmodel(eventname = event, modelfile = model, satellitedir = '/satellitedir')
+```
+
+The plots will include the light curves for ground datasets and for satellite datasets with different colors. The same colors are used to represent the source trajectories as seen from ground and satellite in the plot on the right:
+
 <img src="plotmodel_fig2.png" width = 900>
 
 
