@@ -9,7 +9,7 @@ Provided you have prepared a folder for your microlensing event (e.g. `/event001
 
 ```
 import RTModel
-rtm=RTModel.RTModel()
+rtm = RTModel.RTModel()
 rtm.run('/event001')
 ```
 
