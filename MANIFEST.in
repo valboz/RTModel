@@ -1,0 +1,6 @@
+include RTModel/bin/Reader.exe
+graft RTModel/data
+graft RTModel/lib
+graft RTModel/include
+graft RTModel/bin
+global-exclude RTModel/lib/*.o*
