@@ -33,10 +33,10 @@ Currently, `RTModel` works on Linux and Windows, requiring Python >= 3.6.
 A C++ compiler compatible with C++17 standard is needed for installation.
 `RTModel` also incorporates version 3.7 of [`VBBinaryLensing`](https://github.com/valboz/VBBinaryLensing).
 
-Example Jupyter notebooks will be included in `examples/`.
-
 ## Documentation
 Provisional [documentation for the use of RTModel](docs/README.md) is available and under development.
+
+In the directory [events](events) we provide some microlensing data on which you may practise with `RTModel`.
 
 ## License
 `RTModel` is freely available to the community under the 
