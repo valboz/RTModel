@@ -55,6 +55,6 @@ Here we describe the options in detail with their default values:
 
 Notice that only the options that are not explicitly specified in the call to `config_Reader()` are always reset to their default values.
 
-In each modeling run, the options for `Reader` are stored in the file `Reader.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is archived, also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
+In each modeling run, the options for `Reader` are stored in the file `Reader.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
 
 [Go to **Initial conditions**](InitCond.md)
