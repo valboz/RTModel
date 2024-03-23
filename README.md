@@ -19,9 +19,14 @@ At the moment, any use of this code for scientific publications should be acknow
 
 ## Installation
 
-The easiest way to install `RTModel` is through `pip`
+The easiest way to install `RTModel` is through `pip`. 
+
+First clone this repository.
+
+Then go to the repository directory and type
+
 ```
-pip install RTModel
+pip install .
 ```
 
 Currently, `RTModel` works on Linux and Windows, requiring Python >= 3.6. 
