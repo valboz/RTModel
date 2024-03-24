@@ -64,4 +64,8 @@ Here we describe the options for `InitCond` in detail indicating their default v
 
 Notice that the options that are not explicitly specified in the call to `config_InitCond()` are always reset to their default values.
 
+### Recording the options
+
+In each modeling run, the options for `InitCond` are stored in the file `InitCond.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
+
 [Go to **Fitting**](Fitting.md)
