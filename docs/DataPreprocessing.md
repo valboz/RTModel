@@ -34,6 +34,8 @@ For details about the algorithms used in this pre-processing, please refer to th
 
 ## Options for pre-processing
 
+### The `config_Reader()` function
+
 The user may specify his/her own options to drive the pre-processing to the desired result by calling the `config_Reader()` function with the proper options:
 
 ```
@@ -45,6 +47,8 @@ rtm.run()
 
 The call to `config_Reader()` will affect all following executions of the `Reader` module, whether called through `run()` or `Reader()`. If you want to change your options, you may call `config_Reader()` again.
 
+### Description of the options
+
 Here we describe the options in detail with their default values:
 
 - `binning = 4000`: the maximum number of data points you want to model. If the original datasets total to less than `binning` they are left untouched.
@@ -55,12 +59,16 @@ Here we describe the options in detail with their default values:
 
 Notice that only the options that are not explicitly specified in the call to `config_Reader()` are always reset to their default values.
 
+### How to switch off pre-processing
+
 If you want to avoid any modifications to the original data, you may switch off all pre-processing by the following call
 ```
 rtm.config_Reader(binning = 1000000, renormalize = 0, thresholdoutliers = 1000000)
 ```
 
 Re-binning and outliers removal do not intervene if set to very high numbers and renormalization is switched off.
+
+### Recording the options
 
 In each modeling run, the options for `Reader` are stored in the file `Reader.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
 
