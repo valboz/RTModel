@@ -15,14 +15,14 @@ rtm.run('/event001')
 
 Then the modeling starts and you may sit back and watch the progress bars tracking the status of modeling. You will notice that all fits are nearly instantaneous except for the Binary-lens-single-source fit that takes 1-2 hours. At the end of all fits, you will see the final assessment of `RTModel` for the event, along with a summary of the best chi squares found for each category of models.
 
-The final model(s) proposed by `RTModel` are collected as separate files in the directory `/event001/SelectedModels`. You may plot them using the `RTModel.plotmodel` package:
+The final model(s) proposed by `RTModel` are collected as separate files in the directory `/event001/FinalModels`. You may plot them using the `RTModel.plotmodel` package:
 
 ```
 import plotmodel as plm
 import glob
 
 event = '/event001'
-models = glob.glob(event +'/SelectedModels/*')
+models = glob.glob(event +'/FinalModels/*')
 model = models[0]
 
 plm.plotmodel(eventname = event, modelfile = model)
