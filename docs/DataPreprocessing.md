@@ -55,6 +55,13 @@ Here we describe the options in detail with their default values:
 
 Notice that only the options that are not explicitly specified in the call to `config_Reader()` are always reset to their default values.
 
+If you want to avoid any modifications to the original data, you may switch off all pre-processing by the following call
+```
+rtm.config_Reader(binning = 1000000, renormalize = 0, thresholdoutliers = 1000000)
+```
+
+Re-binning and outliers removal do not intervene if set to very high numbers and renormalization is switched off.
+
 In each modeling run, the options for `Reader` are stored in the file `Reader.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
 
 [Go to **Initial conditions**](InitCond.md)
