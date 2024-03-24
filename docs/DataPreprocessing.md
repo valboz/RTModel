@@ -15,7 +15,7 @@ rtm.Reader()
 ```
 
 With this code, we just perform the data pre-processing performed by `Reader` without proceeding to the following steps. In the `/event001` directory you will see the following products appear:
-- a new subfolder called `ini`. This contains the file `Reader.ini` file, which contains the current options with which `Reader` has been launched;
+- a new subfolder called `ini/`. This contains the file `Reader.ini` file, which contains the current options with which `Reader` has been launched;
 - a file named `LCToFit.txt` containing all data points that will be used for modeling after combining all photometry files found in `/Data`;
 - a file named `FilterToData.txt` containing the ordered list of names of the datasets used to build `LCToFit.txt`.
 
