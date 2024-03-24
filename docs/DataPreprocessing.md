@@ -21,7 +21,7 @@ With this code, we just perform the data pre-processing performed by `Reader` wi
 
 After the execution of `Reader`, you may call the `run()` function to complete the modeling run or the `InitCond()` function if you just want to check the results of the next step, which is [Initial conditions](InitCond.md) settings.
 
-## Details of data pre-processing
+## Pre-processing operations
 
 The `Reader` module performs several operations on the original data to improve the chances of a successful modeling run and limit the computational time. All these operations can be fully controlled by the user through specific options. In particular:
 
