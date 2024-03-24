@@ -153,7 +153,7 @@ int main(int argc, char *argv[]){
 
 	current_path(eventname);
 
-	auto selectmodelsname = path("SelectedModels");
+	auto selectmodelsname = path("FinalModels");
 	create_directory(selectmodelsname);
 
 
@@ -381,7 +381,7 @@ int main(int argc, char *argv[]){
 		if (scanbumper->modelcode[0] != 'N') {
 			fprintf(g, "%lf %s\n", scanbumper->Amp, scanbumper->modelcode);
 			printf("%lf %s", scanbumper->Amp, scanbumper->modelcode);
-			copy_file(path("Models") / path(string(scanbumper->modelcode)), path("SelectedModels") / path(string(scanbumper->modelcode)),copy_options::overwrite_existing);
+			copy_file(path("Models") / path(string(scanbumper->modelcode)), path("FinalModels") / path(string(scanbumper->modelcode)),copy_options::overwrite_existing);
 		}
 	}
 	fclose(g);
