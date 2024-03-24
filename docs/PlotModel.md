@@ -11,7 +11,7 @@ import RTModel.plotmodel as plm
 import glob
 
 event = '/event001'
-models = glob.glob(event +'/SelectedModels/*')
+models = glob.glob(event +'/FinalModels/*')
 model = models[0] # let's plot the first of the best models
 
 myplot = plm.plotmodel(eventname = event, modelfile = model)
