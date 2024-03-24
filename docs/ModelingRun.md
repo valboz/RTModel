@@ -86,7 +86,7 @@ At the end of the modeling run, a summary is displayed with the best chi square 
 
 ### Best models
 
-The best models listed in `nature.txt` are available as text files in the subdirectory `event001/SelectedModels`.
+The best models listed in `nature.txt` are available as text files in the subdirectory `event001/FinalModels`.
 
 Each file contains the list of parameters in the first line, including the background and source fluxes for each telescope and the total chi square. This means that the first line contains `nps + 2 * ntel + 1` values, where `nps` is the number of parameters in the model category (e.g. 7 for binary-lens-single-source) and `ntel` is the number of datasets.
 
@@ -105,7 +105,7 @@ ini/                     # Directory containing text files specifying the option
 InitCond/                # Directory containing the text files with the initial conditions for fitting
 PreModels/               # Directory containing subdirectories with all models calculated by all fits
 Models/                  # Directory containing selected models for each category
-SelectedModels/          # Directory containing the best models as proposed in the final assessment (see above)
+FinalModels/          # Directory containing the best models as proposed in the final assessment (see above)
 LCToFit.txt              # Text file containing the formatted and pre-processed data points
 FilterToData.txt         # Table of datasets names
 spline.txt               # List of points in the spline approximation used for initial conditions
