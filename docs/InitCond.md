@@ -24,6 +24,17 @@ After the execution of `InitCond`, you may call the `run()` function to complete
 
 ## Setting initial conditions
 
+In order to set initial conditions for modeling, `InitCond` executes the following steps:
+
+- Spline approximation of each dataset;
+- Identification of peaks in each datasets;
+- Removal of duplicate peaks;
+- Definition of initial conditions for single-lens models by using the main peak(s) and a grid search over the shape parameters;
+- Definition of initial conditions for binary-lens models by matching detected peaks to peaks of templates from a libary;
+- Addition of old models from previous runs (if any).
+
+The details of each step will be illustrated in a future publication. 
+
 ## Options for initial conditions
 
 ### The `config_InitCond()` function
@@ -41,13 +52,16 @@ The call to `config_InitCond()` will affect all following executions of the `Ini
 
 ### Description of the options
 
-self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
-self.InitCond_peakthreshold = peakthreshold # Number of sigmas necessary for a deviation to be identified as a maximum or a minimum.
-self.InitCond_oldmodels = oldmodels # Maximum number of old models to include in new run as initial conditions
-self.InitCond_override = override # Override peak identification and manually set peak times
-self.InitCond_nostatic = nostatic or onlyorbital # No static models will be calculated.
-self.InitCond_noparallax = onlyorbital; # Only orbital motion models will be calculated.
-self.InitCond_usesatellite = usesatellite; # Satellite to be used for initial conditions. Ground telescopes by default.
+Here we describe the options for `InitCond` in detail indicating their default values.
 
+- `peakthreshold = 10.0`: Number of sigmas necessary for a deviation to be identified as a peak in a concave section with respect to a straight line joining the left and right boundaries of the section. A too low value will include noise in the baseline among peaks. A too high vlaue will ignore small anomalies.
+- `npeaks = 2`: Number of peaks in the observed light curve to be considered for setting initial conditions. If you choose to use more than 2 peaks you will have many more fits to be run, with greater chances of success but longer computational time.
+- `nostatic = False`: If True, static models will not be calculated. This is useful if higher orders are significant and cannot be treated as a simple perturbation of static models. Furthermore, this option is recommended if you have observations from a satellite spaced by a distance of the order of au.
+- `onlyorbital = False`: If true, only orbital motion models will be calculated.
+- `usesatellite = 0`: Initial conditions are set only considering peaks in the indicated satellite. If zero, ground datasets are used for initial conditions.
+- `oldmodels = 4`: If previous runs have been archived, the chosen number of best models from the last previous run are included as initial conditions. This can be useful for refining old models with new data or options.
+- `override = None: If a t-uple is specified here (e.g `(8760.1, 8793.1)`), the elements of the t-uple are taken as peak positions in the data and directly used to define the initial conditions. The whole spline and peak identification procedure is then skipped.
+
+Notice that the options that are not explicitly specified in the call to `config_InitCond()` are always reset to their default values.
 
 [Go to **Fitting**](Fitting.md)
