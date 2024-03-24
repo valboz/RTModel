@@ -105,7 +105,7 @@ ini/                     # Directory containing text files specifying the option
 InitCond/                # Directory containing the text files with the initial conditions for fitting
 PreModels/               # Directory containing subdirectories with all models calculated by all fits
 Models/                  # Directory containing selected models for each category
-FinalModels/          # Directory containing the best models as proposed in the final assessment (see above)
+FinalModels/             # Directory containing the best models as proposed in the final assessment (see above)
 LCToFit.txt              # Text file containing the formatted and pre-processed data points
 FilterToData.txt         # Table of datasets names
 spline.txt               # List of points in the spline approximation used for initial conditions
