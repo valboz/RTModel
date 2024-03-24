@@ -57,7 +57,7 @@ Here we describe the options in detail with their default values:
 - `renormalize = 1`: if non-zero, all datasets are re-normalized based on the scatter assessment.
 - `thresholdoutliers = 10`: threshold in sigmas to remove outliers.
 
-Notice that only the options that are not explicitly specified in the call to `config_Reader()` are always reset to their default values.
+Notice that the options that are not explicitly specified in the call to `config_Reader()` are always reset to their default values.
 
 ### How to switch off pre-processing
 
