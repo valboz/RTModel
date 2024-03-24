@@ -2,11 +2,9 @@
 
 # Initial conditions
 
-As explained in [Full modeling run](ModelingRun.md), all steps in the modeling run are performed by external pre-compiled executables. Each of them can be launched separately through the corresponding function available in `RTModel`.
-
 ## The `InitCond` module
 
-The second step in the modeling run is the determination of the initial conditions for the following fits. This is performed by a specific external module called `InitCond`. This can be launched by the corresponding function called `InitCond()`:
+The second step in the modeling run is the determination of the initial conditions for the following fits. This task is performed by a specific external module called `InitCond`. This can be launched by the corresponding function called `InitCond()`:
 
 ```
 import RTModel
@@ -15,12 +13,11 @@ rtm.Reader()
 rtm.InitCond()
 ```
 
-With this code, we just perform the data pre-processing performed by `Reader` without proceeding to the following steps. In the `/event001` directory you will see the following products appear:
-- a new subfolder called `ini`. This contains the file `Reader.ini` file, which contains the current options with which `Reader` has been launched;
-- a file named `LCToFit.txt` containing all data points that will be used for modeling after combining all photometry files found in `/Data`;
-- a file named `FilterToData.txt` containing the ordered list of names of the datasets used to build `LCToFit.txt`.
+With this code, we first perform the data pre-processing by `Reader` and then we set the initial conditions by `InitCond`. In the `/event001` directory you will see the following products appear:
+- in the subfolder `ini/`, the file `InitCond.ini` appears, which contains the current options with which `InitCond` has been launched;
+- 
 
-After the execution of `Reader`, you may call the `run()` function to complete the modeling run or the `InitCond()` function if you just want to check the results of the next step, which is [Initial conditions](InitCond.md) settings.
+After the execution of `InitCond`, you may call the `run()` function to complete the modeling run or the `launch_fits()` function for the fits you are interested in, as described in [Fitting](Fitting.md).
 
 ## Setting initial conditions
 
