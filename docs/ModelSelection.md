@@ -2,34 +2,9 @@
 
 # Model selection
 
-The third step in the modeling run is fitting of all models from the given initial conditions. This task is performed by a specific external module called `LevMar`. For more direct control, the user may either choose to launch all fits of a given category or launch one individual fit from a specified initial condition. We will examine both possibilities in the following.
-
 ## The `ModelSelector` module
 
-The basic fittinf module can be launched by the corresponding function called `LevMar()`:
-
-```
-import RTModel
-rtm = RTModel.RTModel('/event001')
-rtm.Reader()
-rtm.InitCond()
-rtm.LevMar('PS0000')
-```
-
-With this code, we first perform the data pre-processing by `Reader`, we set the initial conditions by `InitCond` and finally launch the fit of the single-lens-single-source model from the first initial condition found in the file `InitCondPS.txt` (see [Initial conditions](InitCond.md)). Initial condition seeds in each `InitCondXX.txt` file are numbered starting from zero (e.g. `PS0011` would be the 12th initial condition).
-
-In the `/event001` directory you will see the following products appear:
-- A new subdirectory called `PreModels/` is created with a file `minchi.dat`. This file contains the value of the minimum chi square among all  preliminary models contained in the subdirectories within `PreModels/`.
-- In the subdirectory `PreModels/` there will be a subsubdirectory called `PS0000/`, dedicated to the models resulting from this run of `LevMar`.
-- Inside `PS0000/` we will find some files numbered `0.txt`, `1.txt`, ... containing the preliminary models found by this run of `LevMar`.
-- There will also be files named `PS0000-stepchain0.txt`, `PS0000-stepchain1.txt` ... containing all steps of the Levenberg-Marquardt fit taken for each of the corresponding models.
-- Besides these, there will also be a file `nlc.dat` containing the numbers of models calculated so far and a file `tPS0000.dat` generated at the exit of the `LevMar` module to mark the successful closure of the module.
-
-After the execution of `LevMar`, you may call the `run()` function to complete the modeling run or continue with other calls to `LevMar()`, depending on your intentions.
-
-## Launching all fits for a specific category
-
-The `LevMar()` function only launches one fit and will be rarely useful to a generic user, except for checking or repeating a specific initial condition. More interesting is the `launch_fits()` function, that launches all fits for a specific model category:
+The fourth step in the modeling run is the selection of best models for a given model category. This task is performed by a specific external module called `ModelSelector`. This module can be launched by the corresponding function called `ModelSelector()`:
 
 ```
 import RTModel
@@ -37,34 +12,44 @@ rtm = RTModel.RTModel('/event001')
 rtm.Reader()
 rtm.InitCond()
 rtm.launch_fits('PS')
+rtm.ModelSelector('PS')
 ```
 
-In this code, the `launch_fits()` will launch all fits of the `'PS'` [model category](ModelCategories.md) using all available processors or those that have been indicated by the users through the `set_processors()` function (see [Modeling Run](ModelingRun.md)). A progress bar will inform the user of the fits completed and those yet to be done.
+With this code, we first perform the data pre-processing by `Reader`, we set the initial conditions by `InitCond`, we launch all fits of the single-lens-single-source model with `launch_fits` and then we select the best models within this category with `ModelSelector`.
 
-At the end of the execution of the `launch_fits()` function, the `PreModels/` directory will be populated by all subdirectories corresponding to fits from all initial conditions in `InitCondPS.txt`. The file `minchi.dat` will contain the minimum chi square found so far, with the name of the subdirectory containing the best model.
+In the `/event001` directory you will see the following products appear:
+- A new subdirectory called `Models/` is created. This will contain the best models for each category.
+- One or more files names `PSXXXX-X.txt` containing the details of the selected models. Each model is identified by the label for the model category followed by the number of initial condition and then by the fit number.
+- In addition, in the `/InitCond` subdirectory, some initial conditions files are updated to include more initial conditions obtained by perturbing the best models found in1 this category. For example, after the single-lens-single-source fits, initial conditions for binary lenses starting from best models found with single lens are added. These are particularly useful to model small anomalies due to planets.
 
-The following step would be the [Model selection](ModelSelection.md) within the fitted model category.
+After the execution of `ModelSelector`, you may call the `run()` function to complete the modeling run or continue with other calls to `launch_fits()` and `ModelSelector()`, or going to [final assessment](FinalAssessment.md) with `Finalizer()`, depending on your intentions.
 
-## The Levenberg-Marquardt fit
+## Model files
 
-The `LevMar` module executes a number of Levenberg-Marquardt fits from the specified initial condition. Every time a minimum is found, it is filled with a 'bumper'. Any subsequent run hitting the bumper will be bounced off in a different direction in the parameter space. In this way, new minima can be found from the same initial condition.
+Each model file contains:
 
-The details of this fitting strategy will be illustrated in a future publication. 
+- The parameters of the model, starting from the non-linear parameters as described in [Model categories](ModelCategories.md), followed by the blend and source fluxes for each dataset, in the order shown in `FilterToData.txt`, and closing with the chi square.
+- The 1-sigma error for each parameter as listed in the first line, except for the chi square.
+- The covariance matrix for the parameters as used in the fit. Some of them are fit in log scale (see [Model categories](ModelCategories.md)).
 
-## Options for fitting
+## The model selection
 
-### The `config_LevMar()` function
+The `ModelSelector` module sorts all preliminary model of the chosen category by their chi square. Models with overlapping covariance ellipsoid are discarded as duplicates. Reflections are considered according to the symmetries of the model category.
 
-The user may specify his/her own options to drive the initial conditions to the desired result by calling the `config_InitCond()` function with the proper options:
+## Options for model selection
+
+### The `config_ModelSelector()` function
+
+The user may specify his/her own options to drive the initial conditions to the desired result by calling the `config_ModelSelector()` function with the proper options:
 
 ```
 import RTModel
 rtm = RTModel.RTModel('/event001')
-rtm.config_LevMar(nfits = 5, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0)
+rtm.config_ModelSelector(sigmasoverlap = 3.0, sigmachisquare = 1.0, maxmodels = 10)
 rtm.run()
 ```
 
-The call to `config_LevMar()` will affect all following executions of the `LevMar` module, whether called through `run()` or `launch_fits()` or `LevMar()`. If you want to change your options, you may call `config_LevMar()` again.
+The call to `config_ModelSelector()` will affect all following executions of the `ModelSelector` module, whether called through `run()` or `ModelSelector()`. If you want to change your options, you may call `config_ModelSelector()` again.
 
 ### Description of the options
 
