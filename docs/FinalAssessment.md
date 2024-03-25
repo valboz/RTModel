@@ -13,56 +13,22 @@ rtm.Reader()
 rtm.InitCond()
 rtm.launch_fits('PS')
 rtm.ModelSelector('PS')
+...
+rtm.Finalizer()
 ```
 
-With this code, we first perform the data pre-processing by `Reader`, we set the initial conditions by `InitCond`, we launch all fits of the single-lens-single-source model with `launch_fits` and then we select the best models within this category with `ModelSelector`.
+With this code, we first perform all steps as detailed in the previous sections and then we make the final assessment through `Finalizer()`.
 
 In the `/event001` directory you will see the following products appear:
-- A new subdirectory called `Models/` is created. This will contain the best models for each category.
-- One or more files names `PSXXXX-X.txt` containing the details of the selected models. Each model is identified by the label for the model category followed by the number of initial condition and then by the fit number.
-- In addition, in the `/InitCond` subdirectory, some initial conditions files are updated to include more initial conditions obtained by perturbing the best models found in1 this category. For example, after the single-lens-single-source fits, initial conditions for binary lenses starting from best models found with single lens are added. These are particularly useful to model small anomalies due to planets.
+- A new subdirectory called `FinalModels/` is created. This will contain the final proposed models for the microlensing event, which are just copies of those appearing in the directory `Models/` that have passed all critieria.
+- A file `nature.txt` containing a summary of the chi square achieved in each model category, a final assessment, and the list of the competing models that have passed all criteria and copied to the directory `FinalModels/`.
 
-After the execution of `ModelSelector`, you may call the `run()` function to complete the modeling run or continue with other calls to `launch_fits()` and `ModelSelector()`, or going to [final assessment](FinalAssessment.md) with `Finalizer()`, depending on your intentions.
+The execution of `Finalizer` closes the modeling run. You may then proceed to [plotting](PlotModel.md) the best models.
 
-## Model files
+## Making the final assessment
 
-Each model file contains:
+The `Finalizer` module compares models of different categories according to Wilks' theorem, which states that the level at which a model with p additional parameters is preferred can be assessed by the chi square distribution with p degrees of freedom. More details will be given in our future publication. Models that are not nested one within the other are compared with the softer threshold given by the 1-sigma level in the chi square distribution.
 
-- The parameters of the model, starting from the non-linear parameters as described in [Model categories](ModelCategories.md), followed by the blend and source fluxes for each dataset, in the order shown in `FilterToData.txt`, and closing with the chi square.
-- The 1-sigma error for each parameter as listed in the first line, except for the chi square.
-- The covariance matrix for the parameters as used in the fit. Some of them are fit in log scale (see [Model categories](ModelCategories.md)).
-
-## The model selection
-
-The `ModelSelector` module sorts all preliminary model of the chosen category by their chi square. Models with overlapping covariance ellipsoid are discarded as duplicates. Reflections are considered according to the symmetries of the model category.
-
-## Options for model selection
-
-### The `config_ModelSelector()` function
-
-The user may specify his/her own options to drive the initial conditions to the desired result by calling the `config_ModelSelector()` function with the proper options:
-
-```
-import RTModel
-rtm = RTModel.RTModel('/event001')
-rtm.config_ModelSelector(sigmasoverlap = 3.0, sigmachisquare = 1.0, maxmodels = 10)
-rtm.run()
-```
-
-The call to `config_ModelSelector()` will affect all following executions of the `ModelSelector` module, whether called through `run()` or `ModelSelector()`. If you want to change your options, you may call `config_ModelSelector()` again.
-
-### Description of the options
-
-Here we describe the options for `LevMar` in detail indicating their default values.
-
-- `sigmasoverlap = 3.0`: Maximum number of sigmas to declare overlap.
-- `sigmachisquare = 1.0`: Besides the best model, `ModelSelector` retains competing models up to a threshold given by sqrt(2*chisqure), which represents one sigma in the chi square distribution. This threshold can be changed by this option to include less or more competing models in the final selection.
-- `maxmodels = 10`: Maximum number of competing models to report
-
-Notice that the options that are not explicitly specified in the call to `config_LevMar()` are always reset to their default values.
-
-### Recording the options
-
-In each modeling run, the options for `ModelSelector` are stored in the file `ModelSelector.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
+There are no available options for `Finalizer()` since an unsatisfied user may easily vet the models in the directory `Models/` according to his/her own criteria.
 
 [Go to **Animating fits**](Animation.md)
