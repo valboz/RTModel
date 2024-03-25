@@ -29,6 +29,17 @@ After the execution of `LevMar`, you may call the `run()` function to complete t
 
 The `LevMar()` function only launches one fit and will be rarely useful to a generic user. More interesting is the `launch_fits()` function, that launches all fits for a specific model category:
 
+```
+import RTModel
+rtm = RTModel.RTModel('/event001')
+rtm.Reader()
+rtm.InitCond()
+rtm.launch_fits('PS')
+```
+
+In this code, the `launch_fits()` will launch all fits of the `'PS'` [model category](ModelCategories.md) using all available processors or those that have been indicated by the users through the `set_processors()` function (see [Modeling Run](ModelingRun.md)). A progress bar will inform the user of the fits completed and those yet to be done.
+
+At the end of the execution of the `launch_fits()` function, the `PreModels/` directory will be populated by all subdirectories corresponding to fits from all initial conditions in `InitCondPS.txt`. The file `minchi.dat` will contain the minimum chi square found so far, with the name of the subdirectory containing the best model.
 
 ## Setting initial conditions
 
