@@ -4,13 +4,14 @@
 
 ## The `LevMar` module
 
-The third step in the modeling run is fitting of all models from the given initial conditions. This task is performed by a specific external module called `LevMar`. This can be launched by the corresponding function called `InitCond()`:
+The third step in the modeling run is fitting of all models from the given initial conditions. This task is performed by a specific external module called `LevMar`. This can be launched by the corresponding function called `LevMar()`:
 
 ```
 import RTModel
 rtm = RTModel.RTModel('/event001')
 rtm.Reader()
 rtm.InitCond()
+rtm.LevMar('PS0000')
 ```
 
 With this code, we first perform the data pre-processing by `Reader` and then we set the initial conditions by `InitCond`. In the `/event001` directory you will see the following products appear:
