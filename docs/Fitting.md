@@ -6,7 +6,7 @@ The third step in the modeling run is fitting of all models from the given initi
 
 ## The `LevMar` module
 
-The basic fittinf module can be launched by the corresponding function called `LevMar()`:
+The basic fitting module can be launched by the corresponding function called `LevMar()`:
 
 ```
 import RTModel
