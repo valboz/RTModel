@@ -47,16 +47,9 @@ The following step would be the [Model selection](ModelSelection.md) within the 
 
 ## The Levenberg-Marquardt fit
 
-In order to set initial conditions for modeling, `InitCond` executes the following steps:
+The `LevMar` module executes a number of Levenberg-Marquardt fits from the specified initial condition. Every time a minimum is found, it is filled with a 'bumper'. Any subsequent run hitting the bumper will be bounced off in a different direction in the parameter space. In this way, new minima can be found from the same initial condition.
 
-- Spline approximation of each dataset;
-- Identification of peaks in each datasets;
-- Removal of duplicate peaks;
-- Definition of initial conditions for single-lens models by using the main peak(s) and a grid search over the shape parameters;
-- Definition of initial conditions for binary-lens models by matching detected peaks to peaks of templates from a libary;
-- Addition of old models from previous runs (if any).
-
-The details of each step will be illustrated in a future publication. 
+The details of this fitting strategy will be illustrated in a future publication. 
 
 ## Options for fitting
 
@@ -75,20 +68,17 @@ The call to `config_LevMar()` will affect all following executions of the `LevMa
 
 ### Description of the options
 
-Here we describe the options for `InitCond` in detail indicating their default values.
+Here we describe the options for `LevMar` in detail indicating their default values.
 
-- `peakthreshold = 10.0`: Number of sigmas necessary for a deviation to be identified as a peak in a concave section with respect to a straight line joining the left and right boundaries of the section. A too low value will include noise in the baseline among peaks. A too high vlaue will ignore small anomalies.
-- `npeaks = 2`: Number of peaks in the observed light curve to be considered for setting initial conditions. If you choose to use more than 2 peaks you will have many more fits to be run, with greater chances of success but longer computational time.
-- `nostatic = False`: If True, static models will not be calculated. This is useful if higher orders are significant and cannot be treated as a simple perturbation of static models. Furthermore, this option is recommended if you have observations from a satellite spaced by a distance of the order of au.
-- `onlyorbital = False`: If true, only orbital motion models will be calculated.
-- `usesatellite = 0`: Initial conditions are set only considering peaks in the indicated satellite. If zero, ground datasets are used for initial conditions.
-- `oldmodels = 4`: If previous runs have been archived, the chosen number of best models from the last previous run are included as initial conditions. This can be useful for refining old models with new data or options.
-- `override = None`: If a t-uple is specified here (e.g `(8760.1, 8793.1)`), the elements of the t-uple are taken as peak positions in the data and directly used to define the initial conditions. The whole spline and peak identification procedure is then skipped.
+- `nfits = 5`: Number of fits executed from the same initial condition.
+- `maxsteps = 50`: Maximum number of steps for each fit.
+- `timelimit = 600.0`: Maximum time in seconds allowed for the execution of `LevMar`. If the limit is reached, the execution is stopped and the last step is saved as a preliminary model.
+- `bumperpower = 2.0`: Size of the bumper in the parameter space expressed in sigmas. The bumper is created with the shape determined by the local covariance matrix. and the size given by this parameter.
 
-Notice that the options that are not explicitly specified in the call to `config_InitCond()` are always reset to their default values.
+Notice that the options that are not explicitly specified in the call to `config_LevMar()` are always reset to their default values.
 
 ### Recording the options
 
-In each modeling run, the options for `InitCond` are stored in the file `InitCond.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
+In each modeling run, the options for `LevMar` are stored in the file `LevMar.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
 
 [Go to **Model selection**](ModelSelection.md)
