@@ -52,7 +52,7 @@ Advanced users may attempt a deeper understanding of the modeling steps and opti
 
 - [Data pre-processing](DataPreprocessing.md)
 
-- [Initial conditions](InitialConditions.md)
+- [Initial conditions](InitCond.md)
 
 - [Fitting](Fitting.md)
 
