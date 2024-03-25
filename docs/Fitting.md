@@ -2,9 +2,11 @@
 
 # Fitting
 
+The third step in the modeling run is fitting of all models from the given initial conditions. This task is performed by a specific external module called `LevMar`. For more direct control, the user may either choose to launch all fits of a given category or launch one individual fit from a specified initial condition. We will examine both possibilities in the following.
+
 ## The `LevMar` module
 
-The third step in the modeling run is fitting of all models from the given initial conditions. This task is performed by a specific external module called `LevMar`. This can be launched by the corresponding function called `LevMar()`:
+The basic fittinf module can be launched by the corresponding function called `LevMar()`:
 
 ```
 import RTModel
@@ -17,17 +19,17 @@ rtm.LevMar('PS0000')
 With this code, we first perform the data pre-processing by `Reader`, we set the initial conditions by `InitCond` and finally launch the fit of the single-lens-single-source model from the first initial condition found in the file `InitCondPS.txt` (see [Initial conditions](InitCond.md)). Initial condition seeds in each `InitCondXX.txt` file are numbered starting from zero (e.g. `PS0011` would be the 12th initial condition).
 
 In the `/event001` directory you will see the following products appear:
-- A new subdirectory called `PreModels/` is created with a file `minchi.dat`. This file contains the value of the minimum chi square among all calculated preliminary models contained in the subdirectories within `PreModels/`.
-- In this subdirectory there will be a subsubdirectory called `PS0000/`, dedicated to the models resulting from this run of `LevMar`.
+- A new subdirectory called `PreModels/` is created with a file `minchi.dat`. This file contains the value of the minimum chi square among all  preliminary models contained in the subdirectories within `PreModels/`.
+- In the subdirectory `PreModels/` there will be a subsubdirectory called `PS0000/`, dedicated to the models resulting from this run of `LevMar`.
 - Inside `PS0000/` we will find some files numbered `0.txt`, `1.txt`, ... containing the preliminary models found by this run of `LevMar`.
 - There will also be files named `PS0000-stepchain0.txt`, `PS0000-stepchain1.txt` ... containing all steps of the Levenberg-Marquardt fit taken for each of the corresponding models.
-- Besides these, there will also be a file `nlc.dat` containing the numbers of models calculated so far and a file `tPS0000.dat` generated at the ecit of the `LevMar` module to mark the successful closure of the module.
+- Besides these, there will also be a file `nlc.dat` containing the numbers of models calculated so far and a file `tPS0000.dat` generated at the exit of the `LevMar` module to mark the successful closure of the module.
 
 After the execution of `LevMar`, you may call the `run()` function to complete the modeling run or continue with other calls to `LevMar()`, depending on your intentions.
 
 ## Launching all fits for a specific category
 
-The `LevMar()` function only launches one fit and will be rarely useful to a generic user. More interesting is the `launch_fits()` function, that launches all fits for a specific model category:
+The `LevMar()` function only launches one fit and will be rarely useful to a generic user, except for checking or repeating a specific initial condition. More interesting is the `launch_fits()` function, that launches all fits for a specific model category:
 
 ```
 import RTModel
@@ -41,7 +43,9 @@ In this code, the `launch_fits()` will launch all fits of the `'PS'` [model cate
 
 At the end of the execution of the `launch_fits()` function, the `PreModels/` directory will be populated by all subdirectories corresponding to fits from all initial conditions in `InitCondPS.txt`. The file `minchi.dat` will contain the minimum chi square found so far, with the name of the subdirectory containing the best model.
 
-## Setting initial conditions
+The following step would be the [Model selection](ModelSelection.md) within the fitted model category.
+
+## The Levenberg-Marquardt fit
 
 In order to set initial conditions for modeling, `InitCond` executes the following steps:
 
@@ -54,20 +58,20 @@ In order to set initial conditions for modeling, `InitCond` executes the followi
 
 The details of each step will be illustrated in a future publication. 
 
-## Options for initial conditions
+## Options for fitting
 
-### The `config_InitCond()` function
+### The `config_LevMar()` function
 
 The user may specify his/her own options to drive the initial conditions to the desired result by calling the `config_InitCond()` function with the proper options:
 
 ```
 import RTModel
 rtm = RTModel.RTModel('/event001')
-rtm.config_InitCond(npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0)
+rtm.config_LevMar(nfits = 5, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0)
 rtm.run()
 ```
 
-The call to `config_InitCond()` will affect all following executions of the `InitCond` module, whether called through `run()` or `InitCond()`. If you want to change your options, you may call `config_InitCond()` again.
+The call to `config_LevMar()` will affect all following executions of the `LevMar` module, whether called through `run()` or `launch_fits()` or `LevMar()`. If you want to change your options, you may call `config_LevMar()` again.
 
 ### Description of the options
 
