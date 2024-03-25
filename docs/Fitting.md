@@ -14,12 +14,21 @@ rtm.InitCond()
 rtm.LevMar('PS0000')
 ```
 
-With this code, we first perform the data pre-processing by `Reader`, we set the initial conditions by `InitCond` and then launch the fit of the single-lens-single-source model from the first initial condition found in the file `InitCondPS.txt` (see [Initial conditions](InitCond.md)).
+With this code, we first perform the data pre-processing by `Reader`, we set the initial conditions by `InitCond` and finally launch the fit of the single-lens-single-source model from the first initial condition found in the file `InitCondPS.txt` (see [Initial conditions](InitCond.md)). Initial condition seeds in each `InitCondXX.txt` file are numbered starting from zero (e.g. `PS0011` would be the 12th initial condition).
 
 In the `/event001` directory you will see the following products appear:
-- A new subdirectory called `PreModels/` is created. In this subdirectory there will be a subsubdirectory called `PS0000` 
+- A new subdirectory called `PreModels/` is created with a file `minchi.dat`. This file contains the value of the minimum chi square among all calculated preliminary models contained in the subdirectories within `PreModels/`.
+- In this subdirectory there will be a subsubdirectory called `PS0000/`, dedicated to the models resulting from this run of `LevMar`.
+- Inside `PS0000/` we will find some files numbered `0.txt`, `1.txt`, ... containing the preliminary models found by this run of `LevMar`.
+- There will also be files named `PS0000-stepchain0.txt`, `PS0000-stepchain1.txt` ... containing all steps of the Levenberg-Marquardt fit taken for each of the corresponding models.
+- Besides these, there will also be a file `nlc.dat` containing the numbers of models calculated so far and a file `tPS0000.dat` generated at the ecit of the `LevMar` module to mark the successful closure of the module.
 
-After the execution of `InitCond`, you may call the `run()` function to complete the modeling run or the `launch_fits()` function for the fits you are interested in, as described in [Fitting](Fitting.md).
+After the execution of `LevMar`, you may call the `run()` function to complete the modeling run or continue with other calls to `LevMar()`, depending on your intentions.
+
+## Launching all fits for a specific category
+
+The `LevMar()` function only launches one fit and will be rarely useful to a generic user. More interesting is the `launch_fits()` function, that launches all fits for a specific model category:
+
 
 ## Setting initial conditions
 
