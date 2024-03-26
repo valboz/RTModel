@@ -29,7 +29,7 @@ class RTModel:
             self.levmarexe = 'LevMar'
             self.modelselectorexe = 'ModelSelector'
             self.finalizerexe = 'Finalizer'
-        self.eventname = event
+        self.eventname = os.path.realpath(event)
         if(event == None):
             self.eventname = os.getcwd()
         else:
@@ -50,7 +50,7 @@ class RTModel:
         self.nprocessors = nprocessors
 
     def set_event(self, event):
-        self.eventname = event
+        self.eventname = os.path.realpath(event)
 
     def set_satellite_dir(self, satellitedir):
         self.satellitedir = satellitedir
@@ -232,7 +232,7 @@ class RTModel:
     def run(self, event = None):
         phase =0
         if(event!= None):
-            self.eventname = event            
+            self.eventname = os.path.realpath(event)
         self.done = False        
         while not(self.done):
             print("o " + time.asctime())
@@ -267,7 +267,8 @@ class RTModel:
             # Launch ModelSelector for this class
             else:
                 self.ModelSelector(self.modelcodes[phase//2-2])
-                phase += 1                      
+                phase += 1     
+                
     def archive_run(self, destination = None):
         olddir = os.getcwd()
         os.chdir(self.eventname)
