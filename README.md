@@ -38,6 +38,8 @@ Provisional [documentation for the use of RTModel](docs/README.md) is available 
 
 In the directory [events](events) we provide some microlensing data on which you may practise with `RTModel`.
 
+A Jupyter notebook for quick start-up is also available in the [jupyter](jupyter) folder.
+
 ## License
 `RTModel` is freely available to the community under the 
 GNU Lesser General Public License Version 3 included in this repository.
