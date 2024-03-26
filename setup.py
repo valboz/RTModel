@@ -25,4 +25,5 @@ objects = compiler.compile(['RTModel/lib/Finalizer.cpp','RTModel/lib/bumper.cpp'
 compiler.link_executable(objects, 'RTModel/bin/Finalizer',extra_postargs = opts2)
 
 setup(
+    packages=['RTModel', 'RTModel.plotmodel']
 )
