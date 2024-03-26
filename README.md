@@ -34,7 +34,7 @@ A C++ compiler compatible with C++17 standard is needed for installation.
 `RTModel` also incorporates version 3.7 of [`VBBinaryLensing`](https://github.com/valboz/VBBinaryLensing).
 
 ## Documentation
-Provisional [documentation for the use of RTModel](docs/README.md) is available and under development.
+Full [documentation for the use of RTModel](docs/README.md) is available.
 
 In the directory [events](events) we provide some microlensing data on which you may practise with `RTModel`.
 
