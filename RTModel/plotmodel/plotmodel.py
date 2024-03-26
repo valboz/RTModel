@@ -420,9 +420,32 @@ class plotmodel:
         self.animation_fig.save('ani.gif',dpi = 150)        
         plt.close(self.fig)
         
-  
+def plotchain(eventname, model, par1, par2):
+    chains = []
+    filenames = glob.glob(eventname+ '/PreModels/' + model + '/*step*')
+    for fil in filenames:
+        with open(fil) as f:
+            chainstrings = f.readlines()
+        chainlist = []
+        for st in chainstrings:
+            chunks = st.split(' ')
+            chainlist.append([float(v) for v in chunks])
+        chain = np.array(chainlist)
+        chains.append(chain)
+    colors = ['blue','red','green','darkorange','magenta','cyan','gray','teal','maroon','gold','lime','darkviolet']
+    while(len(colors)<len(chains)):
+        colors.extend(colors)
+    fig, ax = plt.subplots()
+#    ax.set_xlabel('s')
+#    ax.set_ylabel('q')
+    for i in range(len(filenames)):
+        chain = chains[i]
+        x = chain.transpose()[par1]
+        y = chain.transpose()[par2]
+        ax.plot(x,y,color = colors[i])
+        ax.scatter(x[-1], y[-1],s=20,color = colors[i])
     
-        
+
 
 
 
