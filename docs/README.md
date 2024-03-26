@@ -61,3 +61,29 @@ Advanced users may attempt a deeper understanding of the modeling steps and opti
 - [Final assessment and results](FinalAssessment.md)
 
 - [Animating fits](Animation.md)
+
+## Success rate
+
+The success rate of `RTModel` has been evaluated on the simulated events created for the [WFIRST data challenge](https://roman.ipac.caltech.edu/docs/street_data_challenge1_results.pdf) by Matthew Penny. 
+
+### Planetary regime
+
+In this challenge there were 48 binary events with q<0.03 (planetary regime). The results obtained by the current version of  `RTModel` with the default options were the following:
+- 37 full successes;
+- 7 cases in which an s<1 solution was found instead of the s>1 (or the opposite);
+- 3 cases in which a binary solution was preferred;
+- 1 case in which the anomaly was not detected at all (too much noise)
+
+### Binary regime
+
+In the binary regime q>0.03 there were 78 events simulated in the data challenge. We note that orbital motion was simulated by assigning the two transverse components, which leads to non-physical trajectories not reproducible by circular orbital motion. Anyway, the results obtained are the following:
+
+- 58 full successes;
+- 5 cases in which an s<1 solution was found instead of the s>1;
+- 12 cases in which a different binary model was found;
+- 3 cases in which the anomaly was too weak or perfectly reproduced by a single-lens with parallax
+
+The success rate is observed to decrease significantly for events with high orbital motion. This should be partly due to the different way this effect is taken into account in the simulation and in our fitting code.
+
+In addition, we note that such events with strong higher order effects are better fit with the `nostatic = True` option (see [Initial conditions](InitCond.md)).
+
