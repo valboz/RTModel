@@ -9,7 +9,7 @@ It is sometimes useful to analyze the fitting process by simple visualization to
 Suppose you want to see how the binary-lens fit from the initial condition 190 works for the event `/event001`. The following code will visualize the step chain of the Levenberg-Marquardt fits in the `(s,q)` plane:
 
 ```
-import plotmodel as plm
+import RTModel.plotmodel as plm
 import matplotlib.pyplot as plt
 
 eventname = '/event001'
