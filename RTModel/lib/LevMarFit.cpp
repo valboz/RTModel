@@ -518,9 +518,6 @@ void LevMar::Run(){
 	int il,k,ichi,flag,ilam,bumpnum,bumpcounter;
 	double minchi,bestchi,c1,c0,oldlambda,lambda,inclambda,fac,fac2;
 	bumper *scanbumper,*scanbumper2;
-#ifdef __micromage
-	int levcom;
-#endif __micromage
 
 	if(!error){
 		try{
