@@ -20,7 +20,7 @@ plotchain(eventname,model,0,1)
 
 The output will look like this
 
-<img src="plotchain_.png" width = 900>
+<img src="plotchain.png" width = 400>
 
 
 
