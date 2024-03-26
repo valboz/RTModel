@@ -11,9 +11,6 @@ Suppose you want to see how the binary-lens fit from the initial condition 190 w
 ```
 import plotmodel as plm
 import matplotlib.pyplot as plt
-import os
-import numpy as np
-import glob
 
 eventname = '/event001'
 model = 'LS0190'
@@ -33,8 +30,8 @@ The `plotchain()` function shows the chains of steps taken by the Levenberg-Marq
 The fit process can be animated by the following code
 
 ```
-filename = 'PreModels/LS0190/LS0190-stepchain0.dat'
-plm.plotmodel(eventname = eventname, modelfile = filename, printpars = False, animate = 1,interval = 800)
+stepchainfile = 'PreModels/LS0190/LS0190-stepchain0.dat'
+plm.plotmodel(eventname = eventname, modelfile = stepchainfile, printpars = False, animate = 1,interval = 800)
 ```
 
 The output is a gif file `ani.gif` generated in the directory `/event001` which looks like this
