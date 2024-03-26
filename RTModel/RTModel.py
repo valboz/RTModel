@@ -29,10 +29,10 @@ class RTModel:
             self.levmarexe = 'LevMar'
             self.modelselectorexe = 'ModelSelector'
             self.finalizerexe = 'Finalizer'
-        self.eventname = os.path.realpath(event)
         if(event == None):
             self.eventname = os.getcwd()
         else:
+            self.eventname = os.path.realpath(event)
             print("Event name: " + self.eventname)
         self.inidir = "ini"
         self.modelcodes = ['PS', 'PX', 'BS', 'BO', 'LS', 'LX', 'LO']
