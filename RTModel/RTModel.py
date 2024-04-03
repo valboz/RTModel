@@ -17,7 +17,7 @@ class RTModel:
         print('*********************')
         self.pathtoRTM = inspect.getfile(RTModel)
         self.bindir = os.path.dirname(self.pathtoRTM) + '/bin/'
-        if os.name =='nt':
+        if(os.path.exists(self.bindir + 'Reader.exe')):
             self.readerexe = 'Reader.exe'
             self.initcondexe = 'InitCond.exe'
             self.levmarexe = 'LevMar.exe'
