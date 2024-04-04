@@ -12,7 +12,10 @@ if(os.name == 'nt'):
 else:
     opts = ['-std=c++17', '-fpermissive']
     opts2 = ['-lstdc++', '-lm']
-    
+if sys.platform == 'darwin':
+    opts.append('-mmacosx-version-min=10.15')
+    opts2.append('-mmacosx-version-min=10.15')
+
 objects = compiler.compile(['RTModel/lib/Reader.cpp'],extra_postargs = opts)
 compiler.link_executable(objects, 'RTModel/bin/Reader',extra_postargs = opts2)
 objects = compiler.compile(['RTModel/lib/InitCond.cpp'],extra_postargs = opts)
