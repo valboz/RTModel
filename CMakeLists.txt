@@ -28,7 +28,6 @@ target_include_directories(Finalizer PRIVATE RTModel/include)
 # ===================
 
 set(site_packages_binary_directory "${SKBUILD_PLATLIB_DIR}/RTModel/bin")
-message("$SKBUILD_PLATLIB_DIR")
 
 install(TARGETS Reader DESTINATION ${site_packages_binary_directory})
 install(TARGETS InitCond DESTINATION ${site_packages_binary_directory})
