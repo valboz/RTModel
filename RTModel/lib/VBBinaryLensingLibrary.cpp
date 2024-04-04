@@ -3212,7 +3212,7 @@ void VBBinaryLensing::OrderImages(_sols *Sols, _curve *Newpts) {
 		cpres[i] = cprec[i];
 		scan = Newpts->first;
 		for (int j = 0; j<nprec; j++) {
-			A[i][j] = (signbit(cprec[i]->last->dJ) == signbit(scan->dJ))? *(cprec[i]->last) - *scan : 100;
+			A[i][j] = (std::signbit(cprec[i]->last->dJ) == std::signbit(scan->dJ))? *(cprec[i]->last) - *scan : 100;
 			if (A[i][j]<mi) {
 				mi = A[i][j];
 				issoc[0] = i;
@@ -3490,7 +3490,7 @@ void VBBinaryLensing::OrderImages(_sols *Sols, _curve *Newpts) {
 		mi = 1.e100;
 		for (int i = 0; i<npres; i++) {
 			for (int j = 0; j<npres; j++) {
-				A[i][j] = signbit(cpres[i]->last->dJ) == signbit(cfoll[j]->first->dJ)? *(cpres[i]->last) - *(cfoll[j]->first) : 100;
+				A[i][j] = std::signbit(cpres[i]->last->dJ) == std::signbit(cfoll[j]->first->dJ)? *(cpres[i]->last) - *(cfoll[j]->first) : 100;
 				if (A[i][j]<mi) {
 					mi = A[i][j];
 					issoc[0] = i;
