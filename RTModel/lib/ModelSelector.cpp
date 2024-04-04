@@ -3,11 +3,11 @@
 
 #define _USE_MATH_DEFINES
 #define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <malloc.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <cstdlib>
 #include <filesystem>
 #include <regex>
 #include "bumper.h"

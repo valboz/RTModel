@@ -31,10 +31,10 @@ char systemslash = '/';
 
 #include "VBBinaryLensingLibrary.h"
 #define _USE_MATH_DEFINES
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #ifndef __unmanaged
 using namespace VBBinaryLensingLibrary;

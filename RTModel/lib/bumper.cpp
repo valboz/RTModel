@@ -4,8 +4,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _USE_MATH_DEFINES
 #include "bumper.h"
-#include <math.h>
-#include <malloc.h>
+#include <cmath>
+#include <cstdlib>
 
 const double epsilon = 1.e-99;
 	

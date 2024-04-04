@@ -6,12 +6,12 @@
 #include "LevMarFit.h"
 #include "bumper.h"
 #include <VBBinaryLensingLibrary.h>
-#include <stdio.h>
+#include <cstdio>
 #include <time.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <malloc.h>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <cstdlib>
 #include <regex>
 #include <filesystem>
 
