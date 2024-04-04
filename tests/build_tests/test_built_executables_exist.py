@@ -11,6 +11,7 @@ def test_reader_executable_exists():
 def test_init_cond_executable_exists():
     rt_model = RTModel()
     init_cond_executable_path = Path(rt_model.bindir + rt_model.initcondexe)
+    print(rt_model.bindir)
     assert init_cond_executable_path.exists()
 
 def test_lev_mar_executable_exists():
