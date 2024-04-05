@@ -27,19 +27,10 @@ target_include_directories(Finalizer PRIVATE RTModel/include)
 # Install executables
 # ===================
 
-set(site_packages_binary_directory "${SKBUILD_PLATLIB_DIR}/RTModel/bin")
+set(binary_directory "${SKBUILD_PLATLIB_DIR}/RTModel/bin")
 
-install(TARGETS Reader DESTINATION ${site_packages_binary_directory})
-install(TARGETS InitCond DESTINATION ${site_packages_binary_directory})
-install(TARGETS LevMar DESTINATION ${site_packages_binary_directory})
-install(TARGETS ModelSelector DESTINATION ${site_packages_binary_directory})
-install(TARGETS Finalizer DESTINATION ${site_packages_binary_directory})
-
-# Current RTModel pathing results in editable installs searching the source directories.
-set(source_binary_directory "${CMAKE_CURRENT_LIST_DIR}/RTModel/bin")
-
-install(TARGETS Reader DESTINATION ${source_binary_directory})
-install(TARGETS InitCond DESTINATION ${source_binary_directory})
-install(TARGETS LevMar DESTINATION ${source_binary_directory})
-install(TARGETS ModelSelector DESTINATION ${source_binary_directory})
-install(TARGETS Finalizer DESTINATION ${source_binary_directory})
+install(TARGETS Reader DESTINATION ${binary_directory})
+install(TARGETS InitCond DESTINATION ${binary_directory})
+install(TARGETS LevMar DESTINATION ${binary_directory})
+install(TARGETS ModelSelector DESTINATION ${binary_directory})
+install(TARGETS Finalizer DESTINATION ${binary_directory})
