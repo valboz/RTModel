@@ -65,7 +65,7 @@ Here we consider two sources and one lens. The two sources have different fluxes
 
 Note that both sources may have positive or negative impact parameters.
 
-The source radius is only given for the primary star, while the secondary star has a source radius calculated by the relation rho2 = rho1 * FR^(3.6), coming from approximate stellar mass-luminosity-radius relations for solar-type stars. In general, we do not expect that both sources have a detectable finite-size effect, so this relation is enforced with the only purpose to avoid the exploration of grossly unphysical models.
+The source radius is only given for the primary star, while the secondary star has a source radius calculated by the relation rho2 = rho1 * FR^(0.225), coming from approximate stellar mass-luminosity-radius relations for solar-type stars. In general, we do not expect that both sources have a detectable finite-size effect, so this relation is enforced with the only purpose to avoid the exploration of grossly unphysical models.
 
 ## Single-lens-binary-source with xallarap (BO)
 
