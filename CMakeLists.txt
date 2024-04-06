@@ -27,10 +27,17 @@ target_include_directories(Finalizer PRIVATE RTModel/include)
 # Install executables
 # ===================
 
-set(binary_directory "${SKBUILD_PLATLIB_DIR}/RTModel/bin")
+if(SKBUILD)  # Only run if called through scikit-build-core. That is, don't run when called through CMake directly.
+    set(binary_directory "${SKBUILD_PLATLIB_DIR}/RTModel/bin")
 
-install(TARGETS Reader DESTINATION ${binary_directory})
-install(TARGETS InitCond DESTINATION ${binary_directory})
-install(TARGETS LevMar DESTINATION ${binary_directory})
-install(TARGETS ModelSelector DESTINATION ${binary_directory})
-install(TARGETS Finalizer DESTINATION ${binary_directory})
+    install(TARGETS Reader DESTINATION ${binary_directory})
+    install(TARGETS InitCond DESTINATION ${binary_directory})
+    install(TARGETS LevMar DESTINATION ${binary_directory})
+    install(TARGETS ModelSelector DESTINATION ${binary_directory})
+    install(TARGETS Finalizer DESTINATION ${binary_directory})
+
+    # Ensure data files are present in platlib.
+    add_custom_command(TARGET Reader POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_LIST_DIR}/RTModel/data" "${SKBUILD_PLATLIB_DIR}/RTModel/data")
+endif()
