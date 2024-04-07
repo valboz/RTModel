@@ -17,7 +17,6 @@ add_executable(LevMar RTModel/lib/bumper.cpp RTModel/lib/LevMar.cpp RTModel/lib/
         RTModel/lib/VBBinaryLensingLibrary.cpp)
 target_include_directories(LevMar PRIVATE RTModel/include)
 
-
 add_executable(ModelSelector RTModel/lib/bumper.cpp RTModel/lib/ModelSelector.cpp)
 target_include_directories(ModelSelector PRIVATE RTModel/include)
 
