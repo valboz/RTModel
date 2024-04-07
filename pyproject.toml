@@ -5,7 +5,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "RTModel"
 description = "RTModel is a tool for microlensing event interpretation."
-version = "2.0"
+version = "2.0.1"
 keywords = ['Microlensing analysis and fitting']
 authors = [
     { name = "Valerio Bozza", email = "valboz@sa.infn.it" },
@@ -14,7 +14,7 @@ license = { text = "GPL-3.0" }
 requires-python = ">=3.6,<4"
 readme = "README.md"
 classifiers = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Science/Research',
     'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
     'Programming Language :: Python :: 3',
