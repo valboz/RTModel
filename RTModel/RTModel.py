@@ -5,7 +5,7 @@ import sys
 import glob
 import sysconfig
 import time
-import inspect
+#import inspect
 from tqdm import tqdm
 import shutil
 
@@ -16,7 +16,7 @@ class RTModel:
         print('*********************')
         print('****   RTModel   ****')
         print('*********************')
-        self.pathtoRTM = inspect.getfile(RTModel)
+        #self.pathtoRTM = inspect.getfile(RTModel)
         self.bindir = sysconfig.get_path('platlib') + '/RTModel/bin/'
         if(os.path.exists(self.bindir + 'Reader.exe')):
             self.readerexe = 'Reader.exe'
