@@ -35,6 +35,14 @@ if(SKBUILD)  # Only run if called through scikit-build-core. That is, don't run 
     install(TARGETS ModelSelector DESTINATION ${binary_directory})
     install(TARGETS Finalizer DESTINATION ${binary_directory})
 
+    set(source_binary_directory "${CMAKE_CURRENT_LIST_DIR}/RTModel/bin")
+
+    install(TARGETS Reader DESTINATION ${source_binary_directory})
+    install(TARGETS InitCond DESTINATION ${source_binary_directory})
+    install(TARGETS LevMar DESTINATION ${source_binary_directory})
+    install(TARGETS ModelSelector DESTINATION ${source_binary_directory})
+    install(TARGETS Finalizer DESTINATION ${source_binary_directory})
+
     # Ensure data files are present in platlib.
     add_custom_command(TARGET Reader POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
