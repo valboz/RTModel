@@ -14,7 +14,10 @@ The library is in the form of a standard Python package that launches specific s
 
 ## Attribution
 
-A paper is in preparation describing all algorithms behind RTModel in detail.
+`RTModel` has been created by Valerio Bozza (University of Salerno) as a product of many years of direct experience on microlensing modeling (see [RTModel webpage](http://www.fisica.unisa.it/GravitationAstrophysics/RTModel.htm)). A paper is in preparation describing all algorithms behind RTModel in detail.
+
+We are grateful to Greg Olmschenk, who revised the package installation in order to make it as cross-platform as possible.
+
 At the moment, any use of this code for scientific publications should be acknowledged by citing this GitHub repository. 
 
 ## Installation
@@ -29,15 +32,15 @@ Then go to the repository directory and type
 pip install .
 ```
 
-Currently, `RTModel` works on Linux and Windows, requiring Python >= 3.6. 
-A C++ compiler compatible with C++17 standard is needed for installation.
-`RTModel` also incorporates version 3.7 of [`VBBinaryLensing`](https://github.com/valboz/VBBinaryLensing).
-
 In alternative, you may directly install it from PyPI without cloning this repository:
 
 ```
 pip install RTModel
 ```
+
+Currently, `RTModel` works on Linux, Windows and MacOS, requiring Python >= 3.6. 
+A C++ compiler compatible with C++17 standard is needed for installation.
+`RTModel` also incorporates version 3.7 of [`VBBinaryLensing`](https://github.com/valboz/VBBinaryLensing).
 
 ## Documentation
 Full [documentation for the use of RTModel](docs/README.md) is available.
