@@ -6,12 +6,12 @@
 #include "LevMarFit.h"
 #include "bumper.h"
 #include <VBBinaryLensingLibrary.h>
-#include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include <malloc.h>
+#include <cstdio>
+#include <ctime>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <cstdlib>
 #include <regex>
 #include <filesystem>
 
@@ -200,7 +200,7 @@ void LevMar::ReadFiles(int argc,char *argv[]){
 	switch(modelcode[0]){
 		case 'P':
 			if(modelcode[1]=='X'){
-				model=&(VBBinaryLensing::ESPLLightCurveParallax);
+				model=&VBBinaryLensing::ESPLLightCurveParallax;
 				nps=6;
 				double presigmapr[] ={.5,.5,5.,4.6,1,1};
 				double preleftlim[]={-13.,-6.9,-10.e100,-11.5,-10.,-10.};
@@ -212,7 +212,7 @@ void LevMar::ReadFiles(int argc,char *argv[]){
 				PrintOut=&LevMar::PrintOutPX;
 				PrintFile=&LevMar::PrintFilePX;
 			}else{
-				model=&(VBBinaryLensing::ESPLLightCurve);
+				model=&VBBinaryLensing::ESPLLightCurve;
 				nps=4;
 				double presigmapr[] ={.5,.5,5.,4.6};
 				double preleftlim[]={-13.,-6.9,-10.e100,-11.5};
@@ -232,7 +232,7 @@ void LevMar::ReadFiles(int argc,char *argv[]){
 			break;
 		case 'B':
 			if(modelcode[1]=='O'){
-				model=&(VBBinaryLensing::BinSourceSingleLensXallarap);
+				model=&VBBinaryLensing::BinSourceSingleLensXallarap;
 				nps=10;
 				double presigmapr[] ={1,1,1,15,3,3,1,3,6,3};
 				double preleftlim[]={-3.,-1.e100,-6.9,-11.5,-3.,-3.,0,-3,-6,-4.6};
@@ -244,7 +244,7 @@ void LevMar::ReadFiles(int argc,char *argv[]){
 				PrintOut=&LevMar::PrintOutBO;
 				PrintFile=&LevMar::PrintFileBO;
 			}else{
-				model=&(VBBinaryLensing::BinSourceExtLightCurve);
+				model=&VBBinaryLensing::BinSourceExtLightCurve;
 				nps=7;
 				double presigmapr[] ={.1,.4,1,1,1,1,4.6};
 				double preleftlim[]={-6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5};
@@ -264,7 +264,7 @@ void LevMar::ReadFiles(int argc,char *argv[]){
 			break;
 		case 'L':
 			if(modelcode[1]=='X'){
-				model=&(VBBinaryLensing::BinaryLightCurveParallax);
+				model=&VBBinaryLensing::BinaryLightCurveParallax;
 				nps=9;
 				double presigmapr[] ={.1,.4,.1,.1,4.6,.1,1.,1.,1.};
 				double preleftlim[]={-4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.};
@@ -278,7 +278,7 @@ void LevMar::ReadFiles(int argc,char *argv[]){
 				PrintFile=&LevMar::PrintFileLX;
 			}else{ 
 				if(modelcode[1]=='O'){
-					model=&(VBBinaryLensing::BinaryLightCurveOrbital);
+					model=&VBBinaryLensing::BinaryLightCurveOrbital;
 					nps=12;
 					double presigmapr[]={1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3.};
 					double preleftlim[]={-4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7};
@@ -292,7 +292,7 @@ void LevMar::ReadFiles(int argc,char *argv[]){
 					PrintFile=&LevMar::PrintFileLO;
 				}else{
 					if (modelcode[1] == 'P') {
-						model = &(VBBinaryLensing::BinaryLightCurveOrbital);
+						model = &VBBinaryLensing::BinaryLightCurveOrbital;
 						nps = 12;
 						double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,.0001,.0001,1.,1.,3. };
 						double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-.0001,-.0001,-1,-1,1.e-7 };
@@ -309,7 +309,7 @@ void LevMar::ReadFiles(int argc,char *argv[]){
 					}
 					else {
 						if (modelcode[1] == 'K') {
-							model = &(VBBinaryLensing::BinaryLightCurveKepler);
+							model = &VBBinaryLensing::BinaryLightCurveKepler;
 							nps = 14;
 							double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3., 3., 3. };
 							double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001 };
@@ -323,7 +323,7 @@ void LevMar::ReadFiles(int argc,char *argv[]){
 							PrintFile = &LevMar::PrintFileLK;
 						}
 						else {
-							model = &(VBBinaryLensing::BinaryLightCurve);
+							model = &VBBinaryLensing::BinaryLightCurve;
 							nps = 7;
 							double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1. };
 							double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100 };

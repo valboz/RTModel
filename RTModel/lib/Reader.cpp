@@ -4,10 +4,10 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #define _USE_MATH_DEFINES
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <malloc.h>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+#include <cstdlib>
 #include <regex>
 #include <filesystem>
 

@@ -37,7 +37,7 @@
 
 #define _sign(x) ((x>0)? +1 : -1)
 
-#include<stdio.h>
+#include<cstdio>
 
 class _curve;
 class _sols;

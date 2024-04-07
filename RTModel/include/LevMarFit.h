@@ -1,7 +1,7 @@
 // LevMarFit.h
 // Definition of the LevMar and bumper classes for Levenberg-Marquardt fitting
 
-#include <stdio.h>
+#include <cstdio>
 #include "bumper.h"
 #include <regex>
 #include <filesystem>
