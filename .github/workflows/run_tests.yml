@@ -28,4 +28,5 @@ jobs:
       - name: test
         run: |
           pip install pytest
-          pytest
+          cd ..
+          pytest RTModel/tests
