@@ -4,13 +4,14 @@ on: [push, pull_request]
 
 jobs:
   run_tests:
-    name: run_tests_on_${{ matrix.os }}_python_${{ matrix.python_version }}
+    name: run_tests_on_${{ matrix.os }}_python_${{ matrix.python_version }}_pip_install_flag_${{ matrix.pip_install_flag }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python_version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        pip_install_flag: ["none", "editable", "user"]
 
     steps:
       - uses: actions/checkout@v3
@@ -21,12 +22,20 @@ jobs:
           python-version: ${{ matrix.python_version }}
 
       - name: install
+        shell: bash
         run: |
           python -m pip install --upgrade pip
-          pip install -v .
+          if [ "${{ matrix.pip_install_flag }}" = "editable" ]; then
+            pip_install_flag="--editable"
+          elif [ "${{ matrix.pip_install_flag }}" = "user" ]; then
+            pip_install_flag="--user"
+          else
+            pip_install_flag=""
+          fi
+          pip install -v ${pip_install_flag} .
 
       - name: test
         run: |
           pip install pytest
           cd ..
-          pytest RTModel/tests
+          python -m pytest RTModel/tests
