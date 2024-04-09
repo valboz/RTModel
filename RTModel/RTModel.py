@@ -1,14 +1,13 @@
-
+import site
 import subprocess
 import os
 import sys
 import glob
-import sysconfig
 import time
-import inspect
+from pathlib import Path
+
 from tqdm import tqdm
 import shutil
-
 
 class RTModel:
     def __init__(self, event = None):
@@ -16,9 +15,7 @@ class RTModel:
         print('*********************')
         print('****   RTModel   ****')
         print('*********************')
-        self.pathtoRTM = inspect.getfile(RTModel)
-        self.bindir = os.path.dirname(self.pathtoRTM) + '/bin/'
-        # self.bindir = sysconfig.get_path('platlib') + '/RTModel/bin/'
+        self.bindir = self.find_bin_directory()
         if(os.path.exists(self.bindir + 'Reader.exe')):
             self.readerexe = 'Reader.exe'
             self.initcondexe = 'InitCond.exe'
@@ -293,3 +290,23 @@ class RTModel:
             for nam in filelist:
                 shutil.move(nam,rundir)
         os.chdir(olddir)
+
+    @staticmethod
+    def find_bin_directory() -> str:
+        """
+        Searches for the RTModel/bin directory in the available site-packages directories.
+
+        :return: The string of the parth to the bin directory.
+        """
+        bin_directory_string = None
+        site_packages_directories = site.getsitepackages()
+        site_packages_directories.append(site.getusersitepackages())
+        for site_packages_directory in site_packages_directories:
+            bin_directory_path = Path(site_packages_directory).joinpath('RTModel/bin')
+            if bin_directory_path.exists():
+                bin_directory_string = str(bin_directory_path) + '/'
+                break
+        if bin_directory_string is None:
+            raise FileNotFoundError(f'RTModel binary directory not found. Searched {site_packages_directories} '
+                                    f'site-packages directories.')
+        return bin_directory_string
