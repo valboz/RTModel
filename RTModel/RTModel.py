@@ -9,6 +9,7 @@ from pathlib import Path
 from tqdm import tqdm
 import shutil
 
+
 class RTModel:
     def __init__(self, event = None):
         # Directory preliminaries
