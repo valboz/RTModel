@@ -3,6 +3,13 @@ cmake_minimum_required(VERSION 3.19)
 project(RTModel LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(MINIMUM_GCC_VERSION "9.0")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS MINIMUM_GCC_VERSION)
+        message(FATAL_ERROR "GCC must be ${MINIMUM_GCC_VERSION} or greater.")
+    endif()
+endif()
 
 # Build executables
 # =================
