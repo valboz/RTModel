@@ -14,11 +14,9 @@ The library is in the form of a standard Python package that launches specific s
 
 ## Attribution
 
-`RTModel` has been created by Valerio Bozza (University of Salerno) as a product of many years of direct experience on microlensing modeling (see [RTModel webpage](http://www.fisica.unisa.it/GravitationAstrophysics/RTModel.htm)). A paper is in preparation describing all algorithms behind RTModel in detail.
+`RTModel` has been created by Valerio Bozza (University of Salerno) as a product of many years of direct experience on microlensing modeling (see [RTModel webpage](http://www.fisica.unisa.it/GravitationAstrophysics/RTModel.htm)). Any scientific use of `RTModel` should be acknowledged by citing the paper ([V.Bozza, arXiv:2405.04092](https://arxiv.org/abs/2405.04092)) describing all the algorithms behind the code.
 
 We are grateful to Greg Olmschenk, who revised the package installation in order to make it as cross-platform as possible.
-
-At the moment, any use of this code for scientific publications should be acknowledged by citing this GitHub repository. 
 
 ## Installation
 
