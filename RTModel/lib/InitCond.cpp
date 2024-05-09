@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
 		dn = 0;
 		for (int i = 0; i < np; i++) {
 			fscanf(f, "%d %lf %lf %lf %d", &(ifil), &(tt[i]), &(yy[i]), &(eerr[i]), &(satellite));
-			if (satellite > 0) {
+			if (satellite != usesatellite) {
 				np--;
 				i--;
 			}
