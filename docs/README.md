@@ -85,5 +85,5 @@ In the stellar binary regime q>0.03 there were 78 events simulated in the data c
 
 The success rate is observed to decrease significantly for events with high orbital motion. This should be partly due to the different way this effect is taken into account in the simulation and in our fitting code.
 
-In addition, we note that such events with strong higher order effects are better fit with the `nostatic = True` option (see [Initial conditions](InitCond.md)).
+In addition, we note that such events with strong higher order effects would have been better fit with the `nostatic = True` option (see [Initial conditions](InitCond.md)).
 
