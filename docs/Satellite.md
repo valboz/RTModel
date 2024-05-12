@@ -17,6 +17,8 @@ In particular, we assume five columns:
 - Distance from Earth (AU)
 - Distance rate change (not really needed but included by default in Horizons).
 
+In order to obtain the table in the correct format in [Horizons](http://ssd.jpl.nasa.gov/horizons.cgi), in Table Settings you should only check flags 1. Astrometric RA & Dec and 20. Observer range & range-rate. Date/time format should be Julian Day calendar, angle format should be decimal degrees, range units should be astronomical units.
+
 An example of a valid satellite ephemerid tables is in [/events/satellite1.txt](/events/satellite1.txt).
 
 The satellite table(s) should be named "satellite*.txt" (with * replaced by a number) and placed in some directory `/satellitedir', which does not need to be inside the event directory. 
