@@ -26,13 +26,13 @@ int main(int argc, char* argv[]) {
 	char modelcode[256];
 	char command[256], buffer[256];
 	double value;
-	double t,  y,  w, * pr, * sigmapr, * Cov, *Curv, fac, facr, c1, c0, chithr, bestplan = 1.e100, bestbin = 1.e100;
+	double t, y, w, * pr, * sigmapr, * Cov, * Curv, fac, facr, c1, c0, chithr, bestplan = 1.e100, bestbin = 1.e100;
 	double renorm;
 	int nfil, il, nlc, nmod, np, k;
-	int nps=4,dof;
+	int nps = 4, dof;
 	FILE* f, * g;
 
-	bumper* bumperlist=0, *scanbumper, *scanbumper2;
+	bumper* bumperlist = 0, * scanbumper, * scanbumper2;
 
 
 	printf("******************************************\n");
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 					//};
 				}
 				if (strcmp(command, "maxmodels") == 0) {
-					maxmodels = (int) value;
+					maxmodels = (int)value;
 				}
 				if (strcmp(command, "sigmasoverlap") == 0) {
 					supfac = value;
@@ -140,15 +140,15 @@ int main(int argc, char* argv[]) {
 
 	printf("\n\nReading data\n");
 
-	
+
 	current_path(eventname);
-	
+
 	f = fopen("LCToFit.txt", "r");
 	fscanf(f, "%d", &np);
 	nfil = 1;
 	for (int i = 0; i < np; i++) {
 		fscanf(f, "%d %lf %lf %lf %d", &il, &t, &y, &w, &k);
-		if ((i != 0) && il!=nfil-1) {
+		if ((i != 0) && il != nfil - 1) {
 			nfil++;
 		}
 	}
@@ -216,7 +216,7 @@ int main(int argc, char* argv[]) {
 					break;
 				case 'B':
 					if (modelcode[1] == 'O') {
-						sigmapr[2] = sigmapr[2] / pr[2];							
+						sigmapr[2] = sigmapr[2] / pr[2];
 						sigmapr[3] = sigmapr[3] / pr[3];
 						sigmapr[9] = sigmapr[9] / pr[9];
 						pr[2] = log(pr[2]);
@@ -272,7 +272,7 @@ int main(int argc, char* argv[]) {
 							scanbumper = bumperlist;
 							bumperlist = new bumper(pr, nps);
 							bumperlist->SetCovariance(Cov, dof / c0);
-							strcpy(bumperlist->modelcode, (char *) (itr).path().filename().string().c_str());
+							strcpy(bumperlist->modelcode, (char*)(itr).path().filename().string().c_str());
 							bumperlist->il = i1;
 							bumperlist->Amp = c0;
 							bumperlist->next = scanbumper;
@@ -328,80 +328,60 @@ int main(int argc, char* argv[]) {
 
 			switch (modelcode[0]) {
 				// Single lens
-				case 'P':
-					facr = 0.;
-					for (int i = 0; i < nps; i++) {
-						for (int j = 0; j < nps; j++) {
-							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-						}
+			case 'P':
+				facr = 0.;
+				for (int i = 0; i < nps; i++) {
+					for (int j = 0; j < nps; j++) {
+						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
 					}
-					fac = facr;
-					break;
+				}
+				fac = facr;
+				break;
 				// Binary lens
-				case 'L':
-					// Check with no reflections
-					pr[1] = scanbumper->p0[1];
-					pr[2] = scanbumper->p0[2];
-					pr[3] = scanbumper->p0[3];
-					while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2*M_PI;
-					while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2*M_PI;
+			case 'L':
+				// Check with no reflections
+				pr[1] = scanbumper->p0[1];
+				pr[2] = scanbumper->p0[2];
+				pr[3] = scanbumper->p0[3];
+				while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+				while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
+				facr = 0.;
+				for (int i = 0; i < nps; i++) {
+					for (int j = 0; j < nps; j++) {
+						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+					}
+				}
+				fac = facr;
+				if (modelcode[1] == 'S') {
+					// Repeat with reflection along x1 axis
+					pr[3] = 2 * M_PI - scanbumper->p0[3];
+					pr[2] = -scanbumper->p0[2];
+					while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+					while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
+
+					scanbumper->signCovariance(2);
+					scanbumper->signCovariance(3);
+					CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
+
 					facr = 0.;
 					for (int i = 0; i < nps; i++) {
 						for (int j = 0; j < nps; j++) {
 							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
 						}
 					}
-					fac = facr;
-					if(modelcode[1]=='S') {
-						// Repeat with reflection along x1 axis
-						pr[3] = 2 * M_PI - scanbumper->p0[3];
-						pr[2] = -scanbumper->p0[2];
-						while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2*M_PI;
-						while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2*M_PI;
+					if (facr < fac) fac = facr;
+					scanbumper->signCovariance(2);
+					scanbumper->signCovariance(3);
 
-						scanbumper->signCovariance(2);
-						scanbumper->signCovariance(3);
-						CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
-
-						facr = 0.;
-						for (int i = 0; i < nps; i++) {
-							for (int j = 0; j < nps; j++) {
-								facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-							}
-						}
-						if (facr < fac) fac = facr;
-						scanbumper->signCovariance(2);
-						scanbumper->signCovariance(3);
-
-						// Repeat with reflection between the two masses
-						pr[1] = -scanbumper->p0[1];
-						pr[3] = M_PI - scanbumper->p0[3];
-						pr[2] = -scanbumper->p0[2];
-						while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2*M_PI;
-						while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2*M_PI;
-						scanbumper->signCovariance(1);
-						scanbumper->signCovariance(2);
-						scanbumper->signCovariance(3);
-						CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
-						facr = 0.;
-						for (int i = 0; i < nps; i++) {
-							for (int j = 0; j < nps; j++) {
-								facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-							}
-						}
-						if (facr < fac) fac = facr;
-						scanbumper->signCovariance(1);
-						scanbumper->signCovariance(2);
-						scanbumper->signCovariance(3);
-					}
-
-					// Repeat with both reflections
-					pr[3] = scanbumper->p0[3] - M_PI;
-					pr[2] = scanbumper->p0[2];
+					// Repeat with reflection between the two masses
 					pr[1] = -scanbumper->p0[1];
-					while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2*M_PI;
-					while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2*M_PI;
+					pr[3] = M_PI - scanbumper->p0[3];
+					pr[2] = -scanbumper->p0[2];
+					while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+					while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
 					scanbumper->signCovariance(1);
+					scanbumper->signCovariance(2);
+					scanbumper->signCovariance(3);
 					CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
 					facr = 0.;
 					for (int i = 0; i < nps; i++) {
@@ -411,44 +391,64 @@ int main(int argc, char* argv[]) {
 					}
 					if (facr < fac) fac = facr;
 					scanbumper->signCovariance(1);
-					break;
-					// Binary source
-				case 'B':
-					// Check with no reflections
-					pr[1] = scanbumper->p0[1];
-					pr[2] = scanbumper->p0[2];
-					pr[3] = scanbumper->p0[3];
-					pr[4] = scanbumper->p0[4];
-					pr[5] = scanbumper->p0[5];
+					scanbumper->signCovariance(2);
+					scanbumper->signCovariance(3);
+				}
+
+				// Repeat with both reflections
+				pr[3] = scanbumper->p0[3] - M_PI;
+				pr[2] = scanbumper->p0[2];
+				pr[1] = -scanbumper->p0[1];
+				while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+				while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
+				scanbumper->signCovariance(1);
+				CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
+				facr = 0.;
+				for (int i = 0; i < nps; i++) {
+					for (int j = 0; j < nps; j++) {
+						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+					}
+				}
+				if (facr < fac) fac = facr;
+				scanbumper->signCovariance(1);
+				break;
+				// Binary source
+			case 'B':
+				// Check with no reflections
+				pr[1] = scanbumper->p0[1];
+				pr[2] = scanbumper->p0[2];
+				pr[3] = scanbumper->p0[3];
+				pr[4] = scanbumper->p0[4];
+				pr[5] = scanbumper->p0[5];
+				facr = 0.;
+				for (int i = 0; i < nps; i++) {
+					for (int j = 0; j < nps; j++) {
+						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+					}
+				}
+				fac = facr;
+				if (modelcode[1] == 'S') {
+					// Exchange two sources
+					pr[1] = -scanbumper->p0[1];
+					pr[2] = scanbumper->p0[3];
+					pr[3] = scanbumper->p0[2];
+					pr[4] = scanbumper->p0[5];
+					pr[5] = scanbumper->p0[4];
+					scanbumper->signCovariance(1);
+					scanbumper->flipCovariance(2, 3);
+					scanbumper->flipCovariance(4, 5);
+					CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
 					facr = 0.;
 					for (int i = 0; i < nps; i++) {
 						for (int j = 0; j < nps; j++) {
 							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
 						}
 					}
-					fac = facr;
-					if (modelcode[1] == 'S') {
-						// Exchange two sources
-						pr[1] = -scanbumper->p0[1];
-						pr[2] = scanbumper->p0[3];
-						pr[3] = scanbumper->p0[2];
-						pr[4] = scanbumper->p0[5];
-						pr[5] = scanbumper->p0[4];
-						scanbumper->signCovariance(1);
-						scanbumper->flipCovariance(2, 3);
-						scanbumper->flipCovariance(4, 5);
-						CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
-						facr = 0.;
-						for (int i = 0; i < nps; i++) {
-							for (int j = 0; j < nps; j++) {
-								facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-							}
-						}
-						if (facr < fac) fac = facr;
-						scanbumper->signCovariance(1);
-						scanbumper->flipCovariance(2, 3);
-						scanbumper->flipCovariance(4, 5);
-					}
+					if (facr < fac) fac = facr;
+					scanbumper->signCovariance(1);
+					scanbumper->flipCovariance(2, 3);
+					scanbumper->flipCovariance(4, 5);
+				}
 			}
 			// If models are closer than threshold, the higher chi square model is set beyond acceptance threshold
 			if (fac < supfac) {
@@ -466,7 +466,7 @@ int main(int argc, char* argv[]) {
 
 	// Remove models beyond threshold and all duplicates which have been sent beyond threshold
 	if (bumperlist) {
-		while (bumperlist->Amp>chithr) {
+		while (bumperlist->Amp > chithr) {
 			nmod--;
 			scanbumper = bumperlist->next;
 			delete bumperlist;
@@ -475,7 +475,7 @@ int main(int argc, char* argv[]) {
 		scanbumper = bumperlist;
 		fac = bumperlist->Amp;
 		while (scanbumper->next) {
-			if (scanbumper->next->Amp>chithr) {
+			if (scanbumper->next->Amp > chithr) {
 				nmod--;
 				scanbumper2 = scanbumper->next->next;
 				delete scanbumper->next;
@@ -503,14 +503,14 @@ int main(int argc, char* argv[]) {
 		// Copy corresponding file to directory Models
 		auto frompath = path("PreModels") / path(scanbumper->modelcode) / path(to_string(scanbumper->il) + ".txt");
 		auto topath = path("Models") / path(string(scanbumper->modelcode) + "-" + to_string(scanbumper->il) + ".txt");
-		copy_file(frompath, topath,copy_options::overwrite_existing);
+		copy_file(frompath, topath, copy_options::overwrite_existing);
 		scanbumper = scanbumper->next;
 	}
 
 
 	current_path("InitCond");
 
-	switch(modelcode[0]) {
+	switch (modelcode[0]) {
 	case 'L':
 		if (modelcode[1] == 'S') {
 			// Preparation of initial conditions for parallax
@@ -543,7 +543,7 @@ int main(int argc, char* argv[]) {
 				}
 				fclose(g);
 			}
-		}	
+		}
 		if (modelcode[1] == 'X') {
 			printf("\n- Preparing initial conditions for orbital motion");
 			if (f = fopen("PreInitCondLO.txt", "r")) {
@@ -576,9 +576,10 @@ int main(int argc, char* argv[]) {
 		if (modelcode[1] == 'S') {
 			// Preparation of initial conditions for parallax
 			printf("\n- Preparing initial conditions for parallax");
-			if (f = fopen("PreInitCondPX.txt", "r")) {				
+			if (f = fopen("PreInitCondPX.txt", "r")) {
+				int npeaks = 0;
 				g = fopen("InitCondPX.txt", "w");
-				fscanf(f, "%d", &np);
+				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "0 %d\n", np + 2 * nmod);
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
 				for (int i = 0; i < np; i++) {
@@ -604,11 +605,11 @@ int main(int argc, char* argv[]) {
 			}
 			printf("\n- Adding initial conditions for planets");
 			if (f = fopen("PreInitCondLS.txt", "r")) {
-				int npeaks=0;
+				int npeaks = 0;
 				double* peaks;
 				g = fopen("InitCondLS.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "%d %d\n",npeaks, np + 4 * nmod);
+				fprintf(g, "%d %d\n", npeaks, np + 4 * nmod);
 				peaks = (double*)malloc(sizeof(double) * npeaks);
 
 				printf("\nNumber of initial conditions: %d", np + 4 * nmod);
@@ -645,7 +646,7 @@ int main(int argc, char* argv[]) {
 					}
 
 					double u0 = exp(pr[0]);
-					double s0,s;
+					double s0, s;
 					for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 						if (ipeak == idpeak) continue;
 						double q = 0.001;
@@ -658,14 +659,14 @@ int main(int argc, char* argv[]) {
 						while (xc < 4 * sqrt(q) / (s0 * s0)) q *= 0.1;
 						s = s0 + 4 * sqrt(q) / (s0 * s0);
 						alpha = alpha0;
-						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho,exp(pr[1]),pr[2]);
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2]);
 						s = s0 - 4 * sqrt(q) / (s0 * s0);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2]);
 
 						s = 0.5 * (sqrt(4 + xc * xc) - xc);
 
 						while (xc < 2 * sqrt(q) / s) q *= 0.1;
-						alpha = alpha0 + M_PI + asin(fabs(2*sqrt(q)/s)/xc);
+						alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q) / s) / xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2]);
 						alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q) / s) / xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2]);
@@ -852,7 +853,7 @@ int main(int argc, char* argv[]) {
 					fclose(g);
 					free(peaks);
 
-					rename("InitCondLO-2.txt", "InitCondLO.txt");					
+					rename("InitCondLO-2.txt", "InitCondLO.txt");
 				}
 			}
 		}
@@ -862,8 +863,9 @@ int main(int argc, char* argv[]) {
 			// Preparation of initial conditions for xallarap
 			printf("\n- Preparing initial conditions for xallarap");
 			if (f = fopen("PreInitCondBO.txt", "r")) {
+				int npeaks = 0;
 				g = fopen("InitCondBO.txt", "w");
-				fscanf(f, "%d", &np);
+				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "0 %d\n", np + 2 * nmod);
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
 				for (int i = 0; i < np; i++) {
@@ -883,7 +885,7 @@ int main(int argc, char* argv[]) {
 					double u01 = pr[2];
 					double u02 = pr[3];
 					double tE = exp(pr[0]);
-					double qs = exp(pr[1]/4);
+					double qs = exp(pr[1] / 4);
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", u01, pr[4], tE, exp(pr[6]), (pr[5] - pr[4]) / tE / (1 + qs) * qs, (-u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
 					// Reflected solution
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", u01, pr[4], tE, exp(pr[6]), (pr[5] - pr[4]) / tE / (1 + qs) * qs, (u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
