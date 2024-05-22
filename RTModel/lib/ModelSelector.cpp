@@ -10,7 +10,8 @@
 #include <cstdlib>
 #include <filesystem>
 #include <regex>
-#include "bumper.h"
+#include "..\\..\\LevMar\LevMar\bumper.h"
+//#include "bumper.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -517,9 +518,10 @@ int main(int argc, char* argv[]) {
 			printf("\n- Preparing initial conditions for parallax");
 			strcpy(filename, "PreInitCondLX.txt");
 			if (f = fopen("PreInitCondLX.txt", "r")) {
+				int npeaks = 0;
 				g = fopen("InitCondLX.txt", "w");
-				fscanf(f, "%d", &np);
-				fprintf(g, "0 %d\n", np + 2 * nmod);
+				fscanf(f, "%d %d", &npeaks, &np);
+				fprintf(g, "%d %d\n", npeaks, np + 2 * nmod);
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < 9; j++) {
@@ -547,9 +549,10 @@ int main(int argc, char* argv[]) {
 		if (modelcode[1] == 'X') {
 			printf("\n- Preparing initial conditions for orbital motion");
 			if (f = fopen("PreInitCondLO.txt", "r")) {
+				int npeaks = 0;
 				g = fopen("InitCondLO.txt", "w");
-				fscanf(f, "%d", &np);
-				fprintf(g, "0 %d\n", np + nmod);
+				fscanf(f, "%d %d", &npeaks, &np);
+				fprintf(g, "%d %d\n",npeaks, np + nmod);
 				printf("\nNumber of initial conditions: %d", np + nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < 12; j++) {
@@ -580,7 +583,7 @@ int main(int argc, char* argv[]) {
 				int npeaks = 0;
 				g = fopen("InitCondPX.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "0 %d\n", np + 2 * nmod);
+				fprintf(g, "%d %d\n", npeaks, np + 2 * nmod);
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < 6; j++) {
@@ -684,10 +687,10 @@ int main(int argc, char* argv[]) {
 				double* peaks;
 				g = fopen("InitCondLX-2.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "%d %d\n", npeaks, np + 4 * nmod);
+				fprintf(g, "%d %d\n", npeaks, np + ((npeaks>0)? 4 * nmod : 0));
 				peaks = (double*)malloc(sizeof(double) * npeaks);
 
-				printf("\nNumber of initial conditions: %d", np + 4 * nmod);
+				printf("\nNumber of initial conditions: %d", np + ((npeaks > 0) ? 4 * nmod : 0));
 				for (int i = 0; i < npeaks; i++) {
 					fscanf(f, "%lg", &peaks[i]);
 					fprintf(g, "%le", peaks[i]);
@@ -776,10 +779,10 @@ int main(int argc, char* argv[]) {
 					double* peaks;
 					g = fopen("InitCondLO-2.txt", "w");
 					fscanf(f, "%d %d", &npeaks, &np);
-					fprintf(g, "%d %d\n", npeaks, np + 4 * nmod);
+					fprintf(g, "%d %d\n", npeaks, np + ((npeaks > 0) ? 4 * nmod : 0));
 					peaks = (double*)malloc(sizeof(double) * npeaks);
 
-					printf("\nNumber of initial conditions: %d", np + 4 * nmod);
+					printf("\nNumber of initial conditions: %d", np + ((npeaks > 0) ? 4 * nmod : 0));
 					for (int i = 0; i < npeaks; i++) {
 						fscanf(f, "%lg", &peaks[i]);
 						fprintf(g, "%le", peaks[i]);
