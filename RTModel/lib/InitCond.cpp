@@ -20,8 +20,8 @@ char systemslash = '/';
 #endif
 
 // Main global parameters
-int nobspeaks=2; // Number of peaks in the observed light curve to be considered for setting initial conditions.
-double sigmathr=5.; // Number of sigmas for spline approximation
+int nobspeaks = 2; // Number of peaks in the observed light curve to be considered for setting initial conditions.
+double sigmathr = 5.; // Number of sigmas for spline approximation
 double peakthr = 10.; // Number of sigmnas necessary for a deviation to be identified as a maximum or a minimum.
 int maxoldmodels = 4; // Maximum number of old models to include in new run as initial conditions
 bool override = false; // Override peak identification and manually set peak times
@@ -30,44 +30,44 @@ bool noparallax = false; // Only orbital motion models will be calculated.
 int usesatellite = 0; // Satellite to be used for initial conditions. Ground telescopes by default.
 
 // Structure datapoint: stores time (t), flux (y), error (yerr), significance (sig), time range for the uncertainty (tl-tr)
-struct datapoint{
-	datapoint *prev,*next;
+struct datapoint {
+	datapoint* prev, * next;
 	int i;
-	double t,y,tl,tr,yerr,sig;
+	double t, y, tl, tr, yerr, sig;
 };
 
 // Structure dataset: a list of datapoints with obvious functions
-struct dataset{
-	dataset *prev,*next;
-	datapoint *first,*last;
+struct dataset {
+	dataset* prev, * next;
+	datapoint* first, * last;
 	int length;
 
 	dataset();
 	~dataset();
-	datapoint *addpoint(int,double,double,double);
-	void addpoint(double *,double *,double *,int,int,int);
-	void remove(datapoint *);
-	void clone(datapoint *);
+	datapoint* addpoint(int, double, double, double);
+	void addpoint(double*, double*, double*, int, int, int);
+	void remove(datapoint*);
+	void clone(datapoint*);
 };
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
 	char eventname[256] = "";
 	regex filebest;
-	char fileinit[256]="";
+	char fileinit[256] = "";
 	char command[256], buffer[256];
-	double value,value2;
-	double tv,yv,errv,t0,tE,t1,t2,tasy,mean,sw;
-	double *t,*y,*err,*tt,*yy,*eerr;
-	double maxdev, curdev, asydev=0,w1,w2;
-	FILE *f;
-	int flag,np,nps,npc,*nnp,nfil,ifil,dn,satellite;
+	double value, value2;
+	double tv, yv, errv, t0, tE, t1, t2, tasy, mean, sw;
+	double* t, * y, * err, * tt, * yy, * eerr;
+	double maxdev, curdev, asydev = 0, w1, w2;
+	FILE* f;
+	int flag, np, nps, npc, * nnp, nfil, ifil, dn, satellite;
 	double fint;
-	dataset **peaklist, *cpeaks, *newpeaks;
-	datapoint *p,*pm,*pmm,*pl,*pr,*pasy=0, *highestpeak, *minimum, *startsection, *endsection, *sectionpeak;
+	dataset** peaklist, * cpeaks, * newpeaks;
+	datapoint* p, * pm, * pmm, * pl, * pr, * pasy = 0, * highestpeak, * minimum, * startsection, * endsection, * sectionpeak;
 
 
-// Directory preliminaries. Reads event name from arguments.
+	// Directory preliminaries. Reads event name from arguments.
 
 	printf("******************************************\n");
 	printf("*************     InitCond      **********\n");
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 	}
 	current_path(eventname);
 
-// Look for previous runs to include previously found best models
+	// Look for previous runs to include previously found best models
 
 	auto searchstring = regex("run.*");
 	int lastrun = -1;
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-// Reading InitCond.ini and set parameters accordingly
+	// Reading InitCond.ini and set parameters accordingly
 
 	if (exists("ini")) {
 		current_path("ini");
@@ -143,13 +143,13 @@ int main(int argc, char *argv[])
 					t2 = value2;
 				}
 				if (strcmp(command, "npeaks") == 0) {
-					nobspeaks = (int) value;
+					nobspeaks = (int)value;
 				}
 				if (strcmp(command, "peakthreshold") == 0) {
 					peakthr = value;
 				}
 				if (strcmp(command, "oldmodels") == 0) {
-					maxoldmodels = (int) value;
+					maxoldmodels = (int)value;
 				}
 				if (strcmp(command, "nostatic") == 0) {
 					nostatic = true;
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 					nostatic = true;
 				}
 				if (strcmp(command, "usesatellite") == 0) {
-					usesatellite = (int) value;
+					usesatellite = (int)value;
 				}
 			}
 			fclose(f);
@@ -174,13 +174,13 @@ int main(int argc, char *argv[])
 	printf("\nThreshold for peak identification %lf", peakthr);
 	sigmathr = peakthr * 0.5;
 	printf("\nOld models to be included in next run %d", maxoldmodels);
-	if(noparallax) printf("\nOnly orbital motion models will be initialized");
+	if (noparallax) printf("\nOnly orbital motion models will be initialized");
 	if (nostatic && !noparallax) printf("\nStatic models will not be initialized");
 
 	// Check for Override. If you do not like the initial conditions found by this algorithm, 
 	// you may optopnally override them by writing the times of two peaks in InitCond.ini.
-	
-	if(override){
+
+	if (override) {
 		// Use hand-made initial conditions if desired.
 		printf("\n- Overriding peak identification -\n");
 		newpeaks = new dataset;
@@ -190,9 +190,9 @@ int main(int argc, char *argv[])
 		pr->t = t2;
 		pl->next = pr;
 		pl->prev = 0;
-		pr->prev=pl;
+		pr->prev = pl;
 		pr->next = 0;
-		newpeaks->first=pl;
+		newpeaks->first = pl;
 		newpeaks->length = 2;
 		newpeaks->last = pr;
 	}
@@ -489,7 +489,7 @@ int main(int argc, char *argv[])
 				}
 
 				// Remove other points in the same concave section of this peak
-				curpeak = startsection->next; 
+				curpeak = startsection->next;
 				while (curpeak != endsection) {
 					curpeak = curpeak->next;
 					if (curpeak->prev != sectionpeak) cpeaks->remove(curpeak->prev);
@@ -583,7 +583,7 @@ int main(int argc, char *argv[])
 			// Removing anything that is not a maximum
 			for (curpeak = cpeaks->first; curpeak; curpeak = p) {
 				p = curpeak->next;
-				if (curpeak->sig <=peakthr*0.01) cpeaks->remove(curpeak);
+				if (curpeak->sig <= peakthr * 0.01) cpeaks->remove(curpeak);
 			}
 
 			// cpeaks now only contains a list of maxima with their significance and time interval
@@ -749,21 +749,21 @@ int main(int argc, char *argv[])
 		}
 
 	}
-// At this point, newpeaks contains the list of peaks to be used to generate initial conditions ordered by significance
-// We are ready for matching to the template library
+	// At this point, newpeaks contains the list of peaks to be used to generate initial conditions ordered by significance
+	// We are ready for matching to the template library
 
-// Reading old best models, if any
-// This block is used by to include the best models from previous run in the set of initial conditions for the next run.
-// Conventions
-// First letter: P for single-source-single-lens, L for binary lens, B for binary source
-// Second letter: S for static, X for parallax, O for orbital motion
-// Three numbers for models sorted by increasing chi square
-// .txt
+	// Reading old best models, if any
+	// This block is used by to include the best models from previous run in the set of initial conditions for the next run.
+	// Conventions
+	// First letter: P for single-source-single-lens, L for binary lens, B for binary source
+	// Second letter: S for static, X for parallax, O for orbital motion
+	// Three numbers for models sorted by increasing chi square
+	// .txt
 
 	current_path(eventname);
-	if(!exists("InitCond"))	create_directory("InitCond");
+	if (!exists("InitCond"))	create_directory("InitCond");
 	current_path("InitCond");
-	
+
 	searchstring = regex(".*Init.*\\.txt");
 	for (auto const& itr : directory_iterator(".")) {
 		string curfile = (itr).path().filename().string();
@@ -773,7 +773,7 @@ int main(int argc, char *argv[])
 	}
 
 
-// Single lens - Single Source initial conditions
+	// Single lens - Single Source initial conditions
 
 	current_path(eventname);
 
@@ -803,17 +803,17 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	printf("\n- Writing initial conditions for fitting to %s\n\n",fileinit);
+	printf("\n- Writing initial conditions for fitting to %s\n\n", fileinit);
 	current_path(eventname);
 	current_path("InitCond");
 	f = fopen(fileinit, "w");
 	int nu0 = 3, ntE = 5, nrho = 4;
 	// First we write the number of peaks used (only 1) and the number of initial conditions that are going to be generated
 	if (nostatic) {
-		fprintf(f, "%d %d\n", 1, nu0 * ntE * nrho*2 + dn);
+		fprintf(f, "%d %d\n", 1, nu0 * ntE * nrho * 2 + dn);
 	}
 	else {
-		fprintf(f, "%d %d\n", 1, nu0* ntE* nrho + dn);
+		fprintf(f, "%d %d\n", 1, nu0 * ntE * nrho + dn);
 	}
 	// Then we write the characteristics of the peaks used
 	p = newpeaks->first;
@@ -869,7 +869,7 @@ int main(int argc, char *argv[])
 		current_path("InitCond");
 
 		f = fopen("PreInitCondPX.txt", "w");
-		fprintf(f, "%d\n", dn);
+		fprintf(f, "0 %d\n", dn);
 		for (int i = 0; i < dn; i++) {
 			for (int j = 0; j < 6; j++) {
 				fprintf(f, "%le ", tt[i * 6 + j]);
@@ -880,7 +880,7 @@ int main(int argc, char *argv[])
 		free(tt);
 	}
 
-// Binary Source initial conditions
+	// Binary Source initial conditions
 
 	current_path(eventname);
 
@@ -911,7 +911,7 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	printf("\n- Writing initial conditions for fitting to %s\n\n",fileinit);
+	printf("\n- Writing initial conditions for fitting to %s\n\n", fileinit);
 
 	current_path(eventname);
 	current_path("InitCond");
@@ -921,10 +921,10 @@ int main(int argc, char *argv[])
 	int nFR = 3;
 	// First we write the number of peaks used and the number of initial conditions that are going to be generated
 	if (nostatic) {
-		fprintf(f, "%d %d\n", newpeaks->length, nu0 * nu0 * ntE * nFR * (newpeaks->length * (newpeaks->length - 1) / 2)*2 + dn);
+		fprintf(f, "%d %d\n", newpeaks->length, nu0 * nu0 * ntE * nFR * (newpeaks->length * (newpeaks->length - 1) / 2) * 2 + dn);
 	}
 	else {
-		fprintf(f, "%d %d\n", newpeaks->length, nu0* nu0* ntE* nFR* (newpeaks->length* (newpeaks->length - 1) / 2) + dn);
+		fprintf(f, "%d %d\n", newpeaks->length, nu0 * nu0 * ntE * nFR * (newpeaks->length * (newpeaks->length - 1) / 2) + dn);
 	}
 	// Then we write the characteristics of the peaks used
 	for (p = newpeaks->first; p; p = p->next) {
@@ -946,11 +946,11 @@ int main(int argc, char *argv[])
 						for (int iFR = 0; iFR < nFR; iFR++) {
 							if (nostatic) {
 								//{u0, t0, log_tE, log_Rs, xi1, xi2, omega, inc, phi, log_qs}
-								double u01 = pow(10., -2. +  iu);
-								double u02 = pow(10., -2. +  iu2);
+								double u01 = pow(10., -2. + iu);
+								double u02 = pow(10., -2. + iu2);
 								double tE = pow(10., -1. + itE);
 								double qs = pow(10., (-1. + iFR) / 4.0);
-								fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001,(pr->t - pl->t)/ tE/(1+qs)*qs, (-u02+u01)/ (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
+								fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (-u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
 								fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
 							}
 							else {
@@ -993,7 +993,7 @@ int main(int argc, char *argv[])
 		current_path("InitCond");
 
 		f = fopen("PreInitCondBO.txt", "w");
-		fprintf(f, "%d\n", dn);
+		fprintf(f, "0 %d\n", dn);
 		for (int i = 0; i < dn; i++) {
 			for (int j = 0; j < 10; j++) {
 				fprintf(f, "%le ", tt[i * 10 + j]);
@@ -1004,8 +1004,8 @@ int main(int argc, char *argv[])
 		free(tt);
 	}
 
-		
-// Binary lens initial conditions
+
+	// Binary lens initial conditions
 
 	current_path(eventname);
 	current_path("InitCond");
@@ -1031,8 +1031,8 @@ int main(int argc, char *argv[])
 
 	current_path(eventname);
 
-	dn=0;
-	tt=(double *) malloc(sizeof(double)*nps*maxoldmodels);
+	dn = 0;
+	tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
 	if (exists(runstring + "\\Models")) {
 		current_path(runstring + "\\Models");
 		for (auto const& itr : directory_iterator(".")) {
@@ -1048,55 +1048,55 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-	printf("\n- Writing initial conditions for fitting to %s\n\n",fileinit);
+	printf("\n- Writing initial conditions for fitting to %s\n\n", fileinit);
 
 	// Reading parameters for initial conditions from the template library
 	current_path(exedir);
 	current_path("..");
 	current_path("data");
-	f=fopen("TemplateLibrary.txt","r");
-	fscanf(f,"%d",&np);
-	printf("\nTemplates in library: %d",np);
-	yy=(double *) malloc(sizeof(double)*np*7); // yy will contain all the information read from TemplateLibrary.txt
-	for(int i=0;i<np*7;i++){
-		fscanf(f,"%lf",&yy[i]);
+	f = fopen("TemplateLibrary.txt", "r");
+	fscanf(f, "%d", &np);
+	printf("\nTemplates in library: %d", np);
+	yy = (double*)malloc(sizeof(double) * np * 7); // yy will contain all the information read from TemplateLibrary.txt
+	for (int i = 0; i < np * 7; i++) {
+		fscanf(f, "%lf", &yy[i]);
 	}
 	fclose(f);
 
 	current_path(eventname);
 	current_path("InitCond");
 
-	f=fopen(fileinit,"w");
+	f = fopen(fileinit, "w");
 	// First we write the number of peaks used and the number of initial conditions that are going to be generated
 	if (nostatic) {
-		fprintf(f, "%d %d\n", newpeaks->length, np * (newpeaks->length * (newpeaks->length - 1))*2 + dn);
+		fprintf(f, "%d %d\n", newpeaks->length, np * (newpeaks->length * (newpeaks->length - 1)) * 2 + dn);
 	}
 	else {
 		fprintf(f, "%d %d\n", newpeaks->length, np * (newpeaks->length * (newpeaks->length - 1)) + dn);
 	}
 	// Then we write the characteristics of the peaks used
-	for(p=newpeaks->first;p;p=p->next){
-		fprintf(f,"%le %le %le %le %le\n",p->t,p->tl,p->tr,p->y,p->sig);
+	for (p = newpeaks->first; p; p = p->next) {
+		fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
 	}
 	// First we write the initial conditions from previous best models
-	for(int i=0;i<dn;i++){
-		for(int j=0;j<nps;j++){
-			fprintf(f,"%le ",tt[i*nps+j]);
+	for (int i = 0; i < dn; i++) {
+		for (int j = 0; j < nps; j++) {
+			fprintf(f, "%le ", tt[i * nps + j]);
 		}
-		fprintf(f,"\n");
+		fprintf(f, "\n");
 	}
 	// Here we write the initial conditions by matching the newpeaks to the peaks recorded in the template library
-	for(int i=0;i<np;i++){
-		for(pl=newpeaks->first;pl->next;pl=pl->next){
-			for(pr=pl->next;pr;pr=pr->next){
-				t1=(pl->t<pr->t)? pl->t : pr->t;
-				t2=(pl->t<pr->t)? pr->t : pl->t;
-				tE=(t2-t1)/(yy[i*7+6]-yy[i*7+5]);  // yy[i*7+6] and yy[i*7+5] are the peak times of the ith template
-				t0=t2-tE*yy[i*7+6];
-				for(int j=0;j<5;j++){
-					fprintf(f,"%le ",yy[i*7+j]); // We use the s,q,u0,alpha,rho parameters from the template
+	for (int i = 0; i < np; i++) {
+		for (pl = newpeaks->first; pl->next; pl = pl->next) {
+			for (pr = pl->next; pr; pr = pr->next) {
+				t1 = (pl->t < pr->t) ? pl->t : pr->t;
+				t2 = (pl->t < pr->t) ? pr->t : pl->t;
+				tE = (t2 - t1) / (yy[i * 7 + 6] - yy[i * 7 + 5]);  // yy[i*7+6] and yy[i*7+5] are the peak times of the ith template
+				t0 = t2 - tE * yy[i * 7 + 6];
+				for (int j = 0; j < 5; j++) {
+					fprintf(f, "%le ", yy[i * 7 + j]); // We use the s,q,u0,alpha,rho parameters from the template
 				}
-				fprintf(f,"%le %le",tE,t0); // and use tE and t0 from the time matching
+				fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 				if (nostatic) {
 					fprintf(f, " 0.0 0.0"); // parallax for nostatic
 					if (noparallax) {
@@ -1109,7 +1109,7 @@ int main(int argc, char *argv[])
 					yy[i * 7 + 2] = -yy[i * 7 + 2];
 					yy[i * 7 + 3] = -yy[i * 7 + 3];
 					for (int j = 0; j < 5; j++) {
-						fprintf(f, "%le ", yy[i * 7 + j]); 
+						fprintf(f, "%le ", yy[i * 7 + j]);
 					}
 					fprintf(f, "%le %le", tE, t0);
 					fprintf(f, " 0.0 0.0"); // parallax for nostatic
@@ -1119,13 +1119,13 @@ int main(int argc, char *argv[])
 					fprintf(f, "\n");
 				}
 
-				tE=(t1-t2)/(yy[i*7+6]-yy[i*7+5]); // We also include the time-reverse matching
-				t0=t1-tE*yy[i*7+6];
-				yy[i*7+2]=-yy[i*7+2];  //u0 and alpha are reversed
-				yy[i*7+3]=yy[i*7+3]+M_PI;
-				tE=-tE;
-				for(int j=0;j<5;j++){
-					fprintf(f,"%le ",yy[i*7+j]);
+				tE = (t1 - t2) / (yy[i * 7 + 6] - yy[i * 7 + 5]); // We also include the time-reverse matching
+				t0 = t1 - tE * yy[i * 7 + 6];
+				yy[i * 7 + 2] = -yy[i * 7 + 2];  //u0 and alpha are reversed
+				yy[i * 7 + 3] = yy[i * 7 + 3] + M_PI;
+				tE = -tE;
+				for (int j = 0; j < 5; j++) {
+					fprintf(f, "%le ", yy[i * 7 + j]);
 				}
 				fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 				if (nostatic) {
@@ -1155,8 +1155,8 @@ int main(int argc, char *argv[])
 	fclose(f);
 	free(tt);
 
-	
-// Reading old best parallaxmodels, if any
+
+	// Reading old best parallaxmodels, if any
 
 	current_path(eventname);
 
@@ -1186,7 +1186,7 @@ int main(int argc, char *argv[])
 		current_path("InitCond");
 
 		f = fopen("PreInitCondLX.txt", "w");
-		fprintf(f, "%d\n", dn);
+		fprintf(f, "0 %d\n", dn);
 		for (int i = 0; i < dn; i++) {
 			for (int j = 0; j < 9; j++) {
 				fprintf(f, "%le ", tt[i * 9 + j]);
@@ -1196,8 +1196,8 @@ int main(int argc, char *argv[])
 		fclose(f);
 		free(tt);
 	}
-	
-// Reading old best orbitalmodels, if any
+
+	// Reading old best orbitalmodels, if any
 
 	current_path(eventname);
 
@@ -1227,7 +1227,7 @@ int main(int argc, char *argv[])
 		current_path("InitCond");
 
 		f = fopen("PreInitCondLO.txt", "w");
-		fprintf(f, "%d\n", dn);
+		fprintf(f, "0 %d\n", dn);
 		for (int i = 0; i < dn; i++) {
 			for (int j = 0; j < 12; j++) {
 				fprintf(f, "%le ", tt[i * 12 + j]);
@@ -1246,7 +1246,7 @@ int main(int argc, char *argv[])
 	free(yy);
 	delete newpeaks;
 
-    return 0;
+	return 0;
 }
 
 ////////////////////////////////
@@ -1256,44 +1256,45 @@ int main(int argc, char *argv[])
 ///////////////////////////
 ////////////////////////////
 
-dataset::dataset(){
-	length=0;
-	prev=next=0;
-	first=last=0;
+dataset::dataset() {
+	length = 0;
+	prev = next = 0;
+	first = last = 0;
 }
 
-dataset::~dataset(){
-	datapoint *p,*q;
+dataset::~dataset() {
+	datapoint* p, * q;
 
 	delete next;
-	for(p=first;p;p=q){
-		q=p->next;
+	for (p = first; p; p = q) {
+		q = p->next;
 		delete p;
 	}
 }
 
-datapoint *dataset::addpoint(int i,double t, double y,double err){
-	datapoint *p;
-	p=new datapoint;
+datapoint* dataset::addpoint(int i, double t, double y, double err) {
+	datapoint* p;
+	p = new datapoint;
 	p->i = i;
-	p->t=t;
-	p->y=y;
+	p->t = t;
+	p->y = y;
 	p->yerr = err;
-	if(length){
+	if (length) {
 		if (p->t < first->t) {
 			first->prev = p;
 			p->next = first;
 			p->prev = 0;
 			first = p;
-		}else{
+		}
+		else {
 			if (p->t >= last->t) {
 				last->next = p;
 				p->prev = last;
 				p->next = 0;
 				last = p;
-			}		
+			}
 			else {
-				datapoint *scan = first;
+				datapoint* scan = first;
 				while (scan->next->t < t) scan = scan->next;
 				scan->next->prev = p;
 				p->next = scan->next;
@@ -1301,66 +1302,72 @@ datapoint *dataset::addpoint(int i,double t, double y,double err){
 				p->prev = scan;
 			}
 		}
-	}else{
-		first=last=p;
-		p->prev=0;
+	}
+	else {
+		first = last = p;
+		p->prev = 0;
 		p->next = 0;
 	}
-	p->tl=p->tr=0;
-	p->sig=0;
+	p->tl = p->tr = 0;
+	p->sig = 0;
 	length++;
 	return p;
 }
 
-void dataset::addpoint(double *t, double *y,double *err,int i,int n,int sign){
-	datapoint *p;
-	int flag,j;
-	p=new datapoint;
-	if(length){
-		p->prev=last;
-		last->next=p;
-		last=p;
-	}else{
-		first=last=p;
-		p->prev=0;
+void dataset::addpoint(double* t, double* y, double* err, int i, int n, int sign) {
+	datapoint* p;
+	int flag, j;
+	p = new datapoint;
+	if (length) {
+		p->prev = last;
+		last->next = p;
+		last = p;
 	}
-	p->next=0;
+	else {
+		first = last = p;
+		p->prev = 0;
+	}
+	p->next = 0;
 	length++;
 
-	p->t=t[i];
-	p->y=y[i];
-	p->yerr=err[i];
-	p->sig=0;
+	p->t = t[i];
+	p->y = y[i];
+	p->yerr = err[i];
+	p->sig = 0;
 
-	flag=0;
-	j=i-1;
-	while(flag<2){
-		if((j<0)||(sign*(p->y-y[j])>sigmathr*(err[j]+p->yerr))){
+	flag = 0;
+	j = i - 1;
+	while (flag < 2) {
+		if ((j < 0) || (sign * (p->y - y[j]) > sigmathr * (err[j] + p->yerr))) {
 			flag++;
-		}else flag=0;
+		}
+		else flag = 0;
 		j--;
 	}
-	if(j<0){
-		p->tl=-1.e100;
-	}else{
-		p->tl=t[j+1];
+	if (j < 0) {
+		p->tl = -1.e100;
+	}
+	else {
+		p->tl = t[j + 1];
 	}
 
-	flag=0;
-	j=i+1;
-//	double xx,tt;
-	while(flag<2){
+	flag = 0;
+	j = i + 1;
+	//	double xx,tt;
+	while (flag < 2) {
 		//xx=(sign*(p->y-y[j])/(err[j]+p->yerr));
 		//tt=t[j];
-		if((j>=n) || (sign*(p->y-y[j])>sigmathr*(err[j]+p->yerr))){
+		if ((j >= n) || (sign * (p->y - y[j]) > sigmathr * (err[j] + p->yerr))) {
 			flag++;
-		}else flag=0;
+		}
+		else flag = 0;
 		j++;
 	}
-	if(j>=n){
-		p->tr=1.e100;
-	}else{
-		p->tr=t[j-1];
+	if (j >= n) {
+		p->tr = 1.e100;
+	}
+	else {
+		p->tr = t[j - 1];
 	}
 
 
@@ -1375,24 +1382,26 @@ void dataset::addpoint(double *t, double *y,double *err,int i,int n,int sign){
 	//}
 }
 
-void dataset::remove(datapoint *p){
-	if(first==p){
-		first=p->next;
-	}else{
-		 p->prev->next=p->next;
+void dataset::remove(datapoint* p) {
+	if (first == p) {
+		first = p->next;
 	}
-	if(last==p){
-		last=p->prev;
-	}else{
-		p->next->prev=p->prev;
+	else {
+		p->prev->next = p->next;
+	}
+	if (last == p) {
+		last = p->prev;
+	}
+	else {
+		p->next->prev = p->prev;
 	}
 	length--;
 }
 
-void dataset::clone(datapoint *p){
-	datapoint *q;
-	q=addpoint(p->i,p->t,p->y,p->yerr);
-	q->sig=p->sig;
-	q->tl=p->tl;
-	q->tr=p->tr;
+void dataset::clone(datapoint* p) {
+	datapoint* q;
+	q = addpoint(p->i, p->t, p->y, p->yerr);
+	q->sig = p->sig;
+	q->tl = p->tl;
+	q->tr = p->tr;
 }
