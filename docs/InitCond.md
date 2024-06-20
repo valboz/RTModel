@@ -54,7 +54,7 @@ The call to `config_InitCond()` will affect all following executions of the `Ini
 
 Here we describe the options for `InitCond` in detail indicating their default values.
 
-- `peakthreshold = 10.0`: Number of sigmas necessary for a deviation to be identified as a peak in a concave section with respect to a straight line joining the left and right boundaries of the section. A too low value will include noise in the baseline among peaks. A too high vlaue will ignore small anomalies.
+- `peakthreshold = 10.0`: Number of sigmas necessary for a deviation to be identified as a peak in a concave section with respect to a straight line joining the left and right boundaries of the section. A too low value will include noise in the baseline among peaks. A too high value will ignore small anomalies.
 - `npeaks = 2`: Number of peaks in the observed light curve to be considered for setting initial conditions. If you choose to use more than 2 peaks you will have many more fits to be run, with greater chances of success but longer computational time.
 - `nostatic = False`: If True, static models will not be calculated. This is useful if higher orders are significant and cannot be treated as a simple perturbation of static models. Furthermore, this option is recommended if you have observations from a satellite spaced by a distance of the order of au.
 - `onlyorbital = False`: If true, only orbital motion models will be calculated.
