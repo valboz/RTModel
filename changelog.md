@@ -1,0 +1,2 @@
+- **v2.0.6** - 2024/06/10 - Corrected a few bugs on satellites and initial conditions
+- **v2.0** - 2024/04/10 - First public release
