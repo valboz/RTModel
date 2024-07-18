@@ -292,6 +292,71 @@ class RTModel:
                 shutil.move(nam,rundir)
         os.chdir(olddir)
 
+    def recover_options(self,run = None):
+        if(self.eventname == None):
+            print('! No event chosen')
+        if(run!=None):
+            pathname = run
+        else:
+            pathname = self.eventname
+        with open(pathname + '/' + self.inidir + '/Reader.ini','r') as f:
+            lines = f.readlines()
+            for line in lines:
+                chunks = line.split()
+                if(chunks[0]=='tau'):
+                    self.Reader_tau = float(chunks[2])
+                elif(chunks[0]=='binning'):
+                    self.Reader_binning = int(chunks[2])
+                elif(chunks[0]=='otherseasons'):
+                    self.Reader_otherseasons = int(chunks[2])
+                elif(chunks[0]=='renormalize'):
+                    self.Reader_renormalize = int(chunks[2])
+                elif(chunks[0]=='thresholdoutliers'):
+                    self.Reader_thresholdoutliers = float(chunks[2])
+        with open(pathname + '/' + self.inidir + '/InitCond.ini','r') as f:
+            lines = f.readlines()
+            self.InitCond_nostatic = False
+            self.InitCond_noparallax = False
+            self.InitCond_override = None
+            for line in lines:
+                chunks = line.split()
+                if(chunks[0]=='npeaks'):
+                    self.InitCond_npeaks = int(chunks[2])
+                elif(chunks[0]=='peakthreshold'):
+                    self.InitCond_peakthreshold = float(chunks[2])
+                elif(chunks[0]=='oldmodels'):
+                    self.InitCond_oldmodels = int(chunks[2])
+                elif(chunks[0]=='usesatellite'):
+                    self.InitCond_usesatellite = int(chunks[2])
+                elif(chunks[0]=='nostatic'):
+                    self.InitCond_nostatic = (int(chunks[2])!=0)
+                elif(chunks[0]=='noparallax'):
+                    self.InitCond_noparallax = (int(chunks[2])!=0)
+                elif(chunks[0]=='override'):
+                    self.InitCond_override = (float(chunks[2]),float(chunks[3]))
+        with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
+            lines = f.readlines()
+            for line in lines:
+                chunks = line.split()
+                if(chunks[0]=='nfits'):
+                    self.LevMar_nfits = int(chunks[2])
+                elif(chunks[0]=='maxsteps'):
+                    self.LevMar_maxsteps = int(chunks[2])
+                elif(chunks[0]=='timelimit'):
+                    self.LevMar_timelimit = float(chunks[2])
+                elif(chunks[0]=='bumperpower'):
+                    self.LevMar_bumperpower = float(chunks[2])
+        with open(pathname + '/' + self.inidir + '/ModelSelector.ini','r') as f:
+            lines = f.readlines()
+            for line in lines:
+                chunks = line.split()
+                if(chunks[0]=='sigmasoverlap'):
+                    self.ModelSelector_sigmasoverlap = float(chunks[2])
+                elif(chunks[0]=='sigmachisquare'):
+                    self.ModelSelector_sigmachisquare = float(chunks[2])
+                elif(chunks[0]=='maxmodels'):
+                    self.ModelSelector_maxmodels = int(chunks[2])
+    
     @staticmethod
     def find_bin_directory() -> str:
         """
