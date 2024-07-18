@@ -99,8 +99,8 @@ class RTModel:
             f.write('usesatellite = ' + str(self.InitCond_usesatellite) + '\n')
             if(self.InitCond_nostatic):            
                 f.write('nostatic = 1\n')
-            if(self.InitCond_noparallax):            
-                f.write('noparallax = 1\n')
+            if(self.InitCond_onlyorbital):            
+                f.write('onlyorbital = 1\n')
             if(self.InitCond_override != None):
                 f.write('override = ' + str(self.InitCond_override[0])+ ' ' + str(self.InitCond_override[1]) + '\n')            
         print('- Launching: InitCond')
@@ -328,7 +328,7 @@ class RTModel:
             lines = f.read().splitlines()
             print('InitCond --- ',lines) 
             self.InitCond_nostatic = False
-            self.InitCond_noparallax = False
+            self.InitCond_onlyorbital = False
             self.InitCond_override = None
             for line in lines:
                 chunks = line.split()
@@ -342,8 +342,8 @@ class RTModel:
                     self.InitCond_usesatellite = int(chunks[2])
                 elif(chunks[0]=='nostatic'):
                     self.InitCond_nostatic = (int(chunks[2])!=0)
-                elif(chunks[0]=='noparallax'):
-                    self.InitCond_noparallax = (int(chunks[2])!=0)
+                elif(chunks[0]=='onlyorbital'):
+                    self.InitCond_onlyorbital = (int(chunks[2])!=0)
                 elif(chunks[0]=='override'):
                     self.InitCond_override = (float(chunks[2]),float(chunks[3]))
         with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
