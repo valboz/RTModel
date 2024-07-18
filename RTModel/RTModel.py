@@ -99,8 +99,8 @@ class RTModel:
             f.write('usesatellite = ' + str(self.InitCond_usesatellite) + '\n')
             if(self.InitCond_nostatic):            
                 f.write('nostatic = 1\n')
-            if(self.InitCond_onlyorbital):            
-                f.write('onlyorbital = 1\n')
+            if(self.InitCond_noparallax):            
+                f.write('noparallax = 1\n')
             if(self.InitCond_override != None):
                 f.write('override = ' + str(self.InitCond_override[0])+ ' ' + str(self.InitCond_override[1]) + '\n')            
         print('- Launching: InitCond')
@@ -110,7 +110,17 @@ class RTModel:
             print('! Error in setting initial conditions!')
             self.done = True
         else:
-            print('  OK')
+            initfils=glob.glob(self.eventname + '/InitCond/*LS*')
+            if(len(initfils)==0):
+                initfils=glob.glob(self.eventname + '/InitCond/*LX*')
+                if(len(initfils)==0):
+                    initfils=glob.glob(self.eventname + '/InitCond/*LO*')
+            with open(initfils[0], 'r') as f:
+                npeaks = int(f.readline().split()[0])
+                print('Peaks:  ',end ='')
+                for i in range(0,npeaks):
+                    print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
+            print('\n  OK')
 
     def config_LevMar(self, nfits = 5, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0):
         self.LevMar_nfits = nfits # Number of models to be calculated from the same initial condition using the bumper method
