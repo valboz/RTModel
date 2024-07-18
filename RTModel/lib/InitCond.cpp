@@ -26,7 +26,7 @@ double peakthr = 10.; // Number of sigmnas necessary for a deviation to be ident
 int maxoldmodels = 4; // Maximum number of old models to include in new run as initial conditions
 bool override = false; // Override peak identification and manually set peak times
 bool nostatic = false; // No static models will be calculated.
-bool noparallax = false; // Only orbital motion models will be calculated.
+bool onlyorbital = false; // Only orbital motion models will be calculated.
 int usesatellite = 0; // Satellite to be used for initial conditions. Ground telescopes by default.
 
 // Structure datapoint: stores time (t), flux (y), error (yerr), significance (sig), time range for the uncertainty (tl-tr)
@@ -155,8 +155,8 @@ int main(int argc, char* argv[])
 				if (strcmp(command, "nostatic") == 0) {
 					nostatic = true;
 				}
-				if (strcmp(command, "noparallax") == 0) {
-					noparallax = true;
+				if (strcmp(command, "onlyorbital") == 0) {
+					onlyorbital = true;
 					nostatic = true;
 				}
 				if (strcmp(command, "usesatellite") == 0) {
@@ -175,8 +175,8 @@ int main(int argc, char* argv[])
 	printf("\nThreshold for peak identification %lf", peakthr);
 	sigmathr = peakthr * 0.5;
 	printf("\nOld models to be included in next run %d", maxoldmodels);
-	if (noparallax) printf("\nOnly orbital motion models will be initialized");
-	if (nostatic && !noparallax) printf("\nStatic models will not be initialized");
+	if (onlyorbital) printf("\nOnly orbital motion models will be initialized");
+	if (nostatic && !onlyorbital) printf("\nStatic models will not be initialized");
 
 	// Check for Override. If you do not like the initial conditions found by this algorithm, 
 	// you may optopnally override them by writing the times of two peaks in InitCond.ini.
@@ -1016,7 +1016,7 @@ int main(int argc, char* argv[])
 	current_path("InitCond");
 
 	dn = 0;
-	if (noparallax) {
+	if (onlyorbital) {
 		filebest = regex("LO.*\\.txt");
 		strcpy(fileinit, "PreInitCondLO.txt");
 		nps = 12;
@@ -1104,7 +1104,7 @@ int main(int argc, char* argv[])
 				fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 				if (nostatic) {
 					fprintf(f, " 0.0 0.0"); // parallax for nostatic
-					if (noparallax) {
+					if (onlyorbital) {
 						fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
 					}
 				}
@@ -1118,7 +1118,7 @@ int main(int argc, char* argv[])
 					}
 					fprintf(f, "%le %le", tE, t0);
 					fprintf(f, " 0.0 0.0"); // parallax for nostatic
-					if (noparallax) {
+					if (onlyorbital) {
 						fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
 					}
 					fprintf(f, "\n");
@@ -1135,7 +1135,7 @@ int main(int argc, char* argv[])
 				fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 				if (nostatic) {
 					fprintf(f, " 0.0 0.0"); // parallax for nostatic
-					if (noparallax) {
+					if (onlyorbital) {
 						fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
 					}
 				}
@@ -1149,7 +1149,7 @@ int main(int argc, char* argv[])
 					}
 					fprintf(f, "%le %le", tE, t0);
 					fprintf(f, " 0.0 0.0"); // parallax for nostatic
-					if (noparallax) {
+					if (onlyorbital) {
 						fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
 					}
 					fprintf(f, "\n");
@@ -1206,7 +1206,7 @@ int main(int argc, char* argv[])
 
 	current_path(eventname);
 
-	if (!noparallax) {
+	if (!onlyorbital) {
 		printf("\n- Writing initial conditions for fitting with Orbital Motion to PreInitCondLO.txt\n\n");
 
 		dn = 0;
