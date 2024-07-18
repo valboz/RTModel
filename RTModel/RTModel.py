@@ -300,7 +300,8 @@ class RTModel:
         else:
             pathname = self.eventname
         with open(pathname + '/' + self.inidir + '/Reader.ini','r') as f:
-            lines = f.readlines()
+            lines = f.read().splitlines()
+            print('Reader --- ',lines) 
             for line in lines:
                 chunks = line.split()
                 if(chunks[0]=='tau'):
@@ -314,9 +315,10 @@ class RTModel:
                 elif(chunks[0]=='thresholdoutliers'):
                     self.Reader_thresholdoutliers = float(chunks[2])
         with open(pathname + '/' + self.inidir + '/InitCond.ini','r') as f:
-            lines = f.readlines()
+            lines = f.read().splitlines()
+            print('InitCond --- ',lines) 
             self.InitCond_nostatic = False
-            self.InitCond_onlyorbital = False
+            self.InitCond_noparallax = False
             self.InitCond_override = None
             for line in lines:
                 chunks = line.split()
@@ -330,12 +332,13 @@ class RTModel:
                     self.InitCond_usesatellite = int(chunks[2])
                 elif(chunks[0]=='nostatic'):
                     self.InitCond_nostatic = (int(chunks[2])!=0)
-                elif(chunks[0]=='onlyorbital'):
-                    self.InitCond_onlyorbital = (int(chunks[2])!=0)
+                elif(chunks[0]=='noparallax'):
+                    self.InitCond_noparallax = (int(chunks[2])!=0)
                 elif(chunks[0]=='override'):
                     self.InitCond_override = (float(chunks[2]),float(chunks[3]))
         with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
-            lines = f.readlines()
+            lines = f.read().splitlines()
+            print('LevMar --- ',lines) 
             for line in lines:
                 chunks = line.split()
                 if(chunks[0]=='nfits'):
@@ -347,7 +350,8 @@ class RTModel:
                 elif(chunks[0]=='bumperpower'):
                     self.LevMar_bumperpower = float(chunks[2])
         with open(pathname + '/' + self.inidir + '/ModelSelector.ini','r') as f:
-            lines = f.readlines()
+            lines = f.read().splitlines()
+            print('ModelSelector --- ',lines) 
             for line in lines:
                 chunks = line.split()
                 if(chunks[0]=='sigmasoverlap'):
