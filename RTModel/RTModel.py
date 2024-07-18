@@ -86,7 +86,7 @@ class RTModel:
         self.InitCond_oldmodels = oldmodels # Maximum number of old models to include in new run as initial conditions
         self.InitCond_override = override # Override peak identification and manually set peak times
         self.InitCond_nostatic = nostatic or onlyorbital # No static models will be calculated.
-        self.InitCond_noparallax = onlyorbital; # Only orbital motion models will be calculated.
+        self.InitCond_onlyorbital = onlyorbital; # Only orbital motion models will be calculated.
         self.InitCond_usesatellite = usesatellite; # Satellite to be used for initial conditions. Ground telescopes by default.
         
     def InitCond(self):
@@ -99,8 +99,8 @@ class RTModel:
             f.write('usesatellite = ' + str(self.InitCond_usesatellite) + '\n')
             if(self.InitCond_nostatic):            
                 f.write('nostatic = 1\n')
-            if(self.InitCond_noparallax):            
-                f.write('noparallax = 1\n')
+            if(self.InitCond_onlyorbital):            
+                f.write('onlyorbital = 1\n')
             if(self.InitCond_override != None):
                 f.write('override = ' + str(self.InitCond_override[0])+ ' ' + str(self.InitCond_override[1]) + '\n')            
         print('- Launching: InitCond')
@@ -316,7 +316,7 @@ class RTModel:
         with open(pathname + '/' + self.inidir + '/InitCond.ini','r') as f:
             lines = f.readlines()
             self.InitCond_nostatic = False
-            self.InitCond_noparallax = False
+            self.InitCond_onlyorbital = False
             self.InitCond_override = None
             for line in lines:
                 chunks = line.split()
@@ -330,8 +330,8 @@ class RTModel:
                     self.InitCond_usesatellite = int(chunks[2])
                 elif(chunks[0]=='nostatic'):
                     self.InitCond_nostatic = (int(chunks[2])!=0)
-                elif(chunks[0]=='noparallax'):
-                    self.InitCond_noparallax = (int(chunks[2])!=0)
+                elif(chunks[0]=='onlyorbital'):
+                    self.InitCond_onlyorbital = (int(chunks[2])!=0)
                 elif(chunks[0]=='override'):
                     self.InitCond_override = (float(chunks[2]),float(chunks[3]))
         with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
