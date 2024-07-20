@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
 	}
 	fclose(f);
 
-	pr = (double*)malloc(sizeof(double) * (nps + 2 * nfil));
+	pr = (double*)malloc(sizeof(double) * (20 + 2 * nfil)); //20 instead of nps because it is used also for higher order models
 	sigmapr = (double*)malloc(sizeof(double) * (nps + 2 * nfil));
 	Cov = (double*)malloc(sizeof(double) * (nps * nps));
 	Curv = (double*)malloc(sizeof(double) * (nps * nps));
