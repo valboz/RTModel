@@ -5,7 +5,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "RTModel"
 description = "RTModel is a tool for microlensing event interpretation."
-version = "2.0.6"
+version = "2.0.7"
 keywords = ['Microlensing analysis and fitting']
 authors = [
     { name = "Valerio Bozza", email = "valboz@sa.infn.it" },
