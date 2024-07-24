@@ -797,6 +797,7 @@ int main(int argc, char* argv[])
 	if (exists(runstring + "\\Models")) {
 		current_path(runstring + "\\Models");
 		for (auto const& itr : directory_iterator(".")) {
+			if (dn >= maxoldmodels) break;
 			string curfile = (itr).path().filename().string();
 			if (regex_match(curfile, filebest)) {
 				f = fopen(curfile.c_str(), "r");
