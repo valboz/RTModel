@@ -5,7 +5,6 @@ import sys
 import glob
 import time
 from pathlib import Path
-
 from tqdm import tqdm
 import shutil
 
@@ -86,7 +85,7 @@ class RTModel:
         self.InitCond_oldmodels = oldmodels # Maximum number of old models to include in new run as initial conditions
         self.InitCond_override = override # Override peak identification and manually set peak times
         self.InitCond_nostatic = nostatic or onlyorbital # No static models will be calculated.
-        self.InitCond_noparallax = onlyorbital; # Only orbital motion models will be calculated.
+        self.InitCond_onlyorbital = onlyorbital; # Only orbital motion models will be calculated.
         self.InitCond_usesatellite = usesatellite; # Satellite to be used for initial conditions. Ground telescopes by default.
         
     def InitCond(self):
@@ -99,8 +98,8 @@ class RTModel:
             f.write('usesatellite = ' + str(self.InitCond_usesatellite) + '\n')
             if(self.InitCond_nostatic):            
                 f.write('nostatic = 1\n')
-            if(self.InitCond_noparallax):            
-                f.write('noparallax = 1\n')
+            if(self.InitCond_onlyorbital):            
+                f.write('onlyorbital = 1\n')
             if(self.InitCond_override != None):
                 f.write('override = ' + str(self.InitCond_override[0])+ ' ' + str(self.InitCond_override[1]) + '\n')            
         print('- Launching: InitCond')
@@ -110,7 +109,17 @@ class RTModel:
             print('! Error in setting initial conditions!')
             self.done = True
         else:
-            print('  OK')
+            initfils=glob.glob(self.eventname + '/InitCond/*LS*')
+            if(len(initfils)==0):
+                initfils=glob.glob(self.eventname + '/InitCond/*LX*')
+                if(len(initfils)==0):
+                    initfils=glob.glob(self.eventname + '/InitCond/*LO*')
+            with open(initfils[0], 'r') as f:
+                npeaks = int(f.readline().split()[0])
+                print('Peaks:  ',end ='')
+                for i in range(0,npeaks):
+                    print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
+            print('\n  OK')
 
     def config_LevMar(self, nfits = 5, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0):
         self.LevMar_nfits = nfits # Number of models to be calculated from the same initial condition using the bumper method
@@ -292,6 +301,79 @@ class RTModel:
                 shutil.move(nam,rundir)
         os.chdir(olddir)
 
+    def recover_options(self,run = None):
+        if(self.eventname == None):
+            print('! No event chosen')
+        if(run!=None):
+            pathname = run
+        else:
+            pathname = self.eventname
+        if(os.path.exists(pathname + '/' + self.inidir + '/Reader.ini')):
+            with open(pathname + '/' + self.inidir + '/Reader.ini','r') as f:
+                lines = f.read().splitlines()
+                print('Reader --- ',lines) 
+                for line in lines:
+                    chunks = line.split()
+                    if(chunks[0]=='tau'):
+                        self.Reader_tau = float(chunks[2])
+                    elif(chunks[0]=='binning'):
+                        self.Reader_binning = int(chunks[2])
+                    elif(chunks[0]=='otherseasons'):
+                        self.Reader_otherseasons = int(chunks[2])
+                    elif(chunks[0]=='renormalize'):
+                        self.Reader_renormalize = int(chunks[2])
+                    elif(chunks[0]=='thresholdoutliers'):
+                        self.Reader_thresholdoutliers = float(chunks[2])
+        if(os.path.exists(pathname + '/' + self.inidir + '/InitCond.ini')):
+            with open(pathname + '/' + self.inidir + '/InitCond.ini','r') as f:
+                lines = f.read().splitlines()
+                print('InitCond --- ',lines) 
+                self.InitCond_nostatic = False
+                self.InitCond_onlyorbital = False
+                self.InitCond_override = None
+                for line in lines:
+                    chunks = line.split()
+                    if(chunks[0]=='npeaks'):
+                        self.InitCond_npeaks = int(chunks[2])
+                    elif(chunks[0]=='peakthreshold'):
+                        self.InitCond_peakthreshold = float(chunks[2])
+                    elif(chunks[0]=='oldmodels'):
+                        self.InitCond_oldmodels = int(chunks[2])
+                    elif(chunks[0]=='usesatellite'):
+                        self.InitCond_usesatellite = int(chunks[2])
+                    elif(chunks[0]=='nostatic'):
+                        self.InitCond_nostatic = (int(chunks[2])!=0)
+                    elif(chunks[0]=='onlyorbital'):
+                        self.InitCond_onlyorbital = (int(chunks[2])!=0)
+                    elif(chunks[0]=='override'):
+                        self.InitCond_override = (float(chunks[2]),float(chunks[3]))
+        if(os.path.exists(pathname + '/' + self.inidir + '/LevMar.ini')):        
+            with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
+                lines = f.read().splitlines()
+                print('LevMar --- ',lines) 
+                for line in lines:
+                    chunks = line.split()
+                    if(chunks[0]=='nfits'):
+                        self.LevMar_nfits = int(chunks[2])
+                    elif(chunks[0]=='maxsteps'):
+                        self.LevMar_maxsteps = int(chunks[2])
+                    elif(chunks[0]=='timelimit'):
+                        self.LevMar_timelimit = float(chunks[2])
+                    elif(chunks[0]=='bumperpower'):
+                        self.LevMar_bumperpower = float(chunks[2])
+        if(os.path.exists(pathname + '/' + self.inidir + '/ModelSelector.ini')):
+            with open(pathname + '/' + self.inidir + '/ModelSelector.ini','r') as f:
+                lines = f.read().splitlines()
+                print('ModelSelector --- ',lines) 
+                for line in lines:
+                    chunks = line.split()
+                    if(chunks[0]=='sigmasoverlap'):
+                        self.ModelSelector_sigmasoverlap = float(chunks[2])
+                    elif(chunks[0]=='sigmachisquare'):
+                        self.ModelSelector_sigmachisquare = float(chunks[2])
+                    elif(chunks[0]=='maxmodels'):
+                        self.ModelSelector_maxmodels = int(chunks[2])
+    
     @staticmethod
     def find_bin_directory() -> str:
         """
