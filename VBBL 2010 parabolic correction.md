@@ -1,12 +1,12 @@
 ## Orignial integral
-$$
+$
 \begin{aligned}
 
 dA_I &= \frac{1}{2}\int_{\theta_i}^{\theta_i+\Delta\theta} \vec{x} \wedge \vec{x'} d\theta \\
 \vec{x} &= \vec{x}_{\theta_0} + \vec{x'}_{\theta_0}d\theta+\frac{1}{2}\vec{x''_{\theta_0}}d\theta^2+\frac{1}{6}\vec{x'''_{\theta_0}}d\theta^3\\
 \vec{x'} &= \vec{x'}_{\theta_0} + \vec{x''}_{\theta_0}d\theta+\frac{1}{2}\vec{x'''_{\theta_0}}d\theta^2+\frac{1}{6}\vec{x''''_{\theta_0}}d\theta^3\\
 \end{aligned}
-$$
+$
 so we have the Taylor expansion of this integration: we only consider the first four order (fifth order after integration)
 $$
 \begin{aligned}
