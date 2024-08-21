@@ -275,7 +275,7 @@ int main(int argc, char *argv[]){
 			strcpy(stringa, "Planetary lens");
 		}
 		else {
-			strcpy(stringa, "Binary or Planetary lens");
+			strcpy(stringa, "Binary lens or Planetary lens");
 		}
 	}
 
