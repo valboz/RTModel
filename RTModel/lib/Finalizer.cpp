@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
     double thrs[10] = { 0,36.,40.0872,43.4518,46.4625,49.2497,51.878 ,54.3854 ,56.7964 ,59.1282 }; // thresholds at 6 sigma for n more parameters
 	string modelcodes[ncategories] = { "PS","PX","BS","BO","LS","LX","LO" };
 	string modelnames[ncategories] = { "Single-Lens-Single-Source","Single-Lens-Single-Source with parallax",\
-									"Binary Source","Binary Source with xallarap",\
+									"Binary source","Binary source with xallarap",\
 									""," with parallax"," with orbital motion" };
 	int npss[ncategories] = { 4,6,7,10,7,9,12 };
 	double chis[ncategories];
