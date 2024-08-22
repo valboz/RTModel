@@ -62,6 +62,7 @@ class plotmodel:
         self.causticcolor = (0.5,0.5,0.5)
         self.satellitecolors = ['k-','r-','g-','b-','y-']
         self.legendlocation = 'best'
+        self.parstring = ''
         if(animate):
             self.animateplots(interval = interval)
         else:
@@ -99,6 +100,7 @@ class plotmodel:
                 self.telescopes = f.readlines()
                 for i in range(0,self.nfil):
                     self.telescopes[i] = self.telescopes[i][0:self.telescopes[i].index('.')]
+                self.telescopes = [tel.split('_')[0] for tel in self.telescopes]
             while(len(self.colors)<self.nfil):
                 self.colors.extend(self.colors)
 
@@ -274,16 +276,24 @@ class plotmodel:
         # tE=parsprint[parnames[modnumber].index('tE')]
 
     def printparameters(self):
-        print('Parameters')
+        self.parstring = 'Parameters\n'
         for i in range(self.npars[self.modnumber]):
             if((not self.animate) and len(self.parameters)==0):
-                    print(self.parnames[self.modnumber][i],' = ', self.parsprint[i], ' +- ', self.parerrs[i])
+                    self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + self.approx(i) + '\n'  #+ str(self.parsprint[i]) +  ' +- ' + str(self.parerrs[i]) + '\n'
             else:
-                print(self.parnames[self.modnumber][i],' = ', self.parsprint[i])
-        print()
-        print('blending = ', np.array(self.blends)/np.array(self.sources))
-        print('baseline = ', -2.5*np.log10(np.array(self.blends)+np.array(self.sources)))
-        print('chi2 =', self.chi2)
+                self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + str(self.parsprint[i]) + '\n'
+        self.parstring = self.parstring + '\n'
+        self.parstring = self.parstring + 'blending = ' + str(np.array(self.blends)/np.array(self.sources)) + '\n'
+        self.parstring = self.parstring + 'baseline = ' + str(-2.5*np.log10(np.array(self.blends)+np.array(self.sources))) + '\n'
+        self.parstring = self.parstring + 'chi2 =' + str(self.chi2)
+        print(self.parstring)
+
+    def fexp(self, f):
+        return int(math.floor(math.log10(abs(f)))) if f != 0 else 0
+    
+    def approx(self, i):
+        exerr= self.fexp(self.parerrs[i])-1
+        return f'{self.parsprint[i]:.{max(0,-exerr+3)}f}' + ' +- ' + f'{self.parerrs[i]:.{max(0,-exerr)}f}'
 
     def axeslightcurve(self,ax):
         for i in range(0,self.nfil):
@@ -314,12 +324,31 @@ class plotmodel:
         self.axeslightcurve(axs[0])
         self.axesresiduals(axs[1])
         plt.subplots_adjust(hspace=0.1)
+        self.figure = fig
 
-    
+    def showicon(self,outputfile):
+        plt.figure()
+        fig, ax =plt.subplots(1,1,figsize=(6,6))
+        for i in range(0,self.nfil):
+            ax.errorbar(self.lctimes[i],self.lcmags[i],yerr=self.lcerrs[i],color=self.colors[i],fmt='.',label=self.telescopes[i])
+        for i in range(len(self.usedsatellites)):
+            ax.plot(self.magnifications[i][0],self.magnifications[i][1],self.satellitecolors[i],linewidth=2.5)
+        ax.set_ylim([self.maxmag,self.minmag])
+        ax.set_xlim([self.tmin,self.tmax])
+        ax.tick_params(left = False, right = False , labelleft = False , 
+                labelbottom = False, bottom = False) 
+        for axis in ['top', 'bottom', 'left', 'right']:
+            ax.spines[axis].set_linewidth(6)  # change width
+        plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
+        self.figure = fig
+        self.figure.savefig(outputfile)
+        plt.close()
+  
     def showcaustics(self):
         plt.figure()
         fig, ax =plt.subplots(figsize=[5,5])
         self.axescaustics(ax)
+        self.figure = fig
 
     def axescaustics(self,ax):
         for cau in self.caus:
@@ -365,6 +394,7 @@ class plotmodel:
         self.axescaustics(axes['right'])
         plt.subplots_adjust(hspace=0.1)
         plt.show()
+        self.figure = fig
         if(self.printpars):
             self.printparameters()
     
