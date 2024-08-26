@@ -168,6 +168,7 @@ class RTModel:
                 ninitconds = int(line[1])   
             processes = []
             procnumbers = []
+            procepochs = []
             iinitcond = 0
             finitcond = 0
             finitcondold = -1       
@@ -175,9 +176,16 @@ class RTModel:
             while(finitcond < ninitconds):
                 i=0
                 while i < len(processes):
+                    if(time.time() - procepochs[i] > self.LevMar_timelimit):
+                        processes[i].kill()
+                        premodfiles = glob.glob(self.eventname +'/PreModels/*.txt')
+                        strmodel =  modelcode + '{:0>4}'.format(str(procnumbers[i]))
+                        with open(self.eventname +'/PreModels/' + strmodel + '/t' + strmodel + '.dat','w') as f:
+                            f.write(f'{len(premodfiles)} {self.LevMar_nfits}')
                     if(processes[i].poll() != None):
                         processes.pop(i)
                         procnumbers.pop(i)
+                        procepochs.pop(i)
                         finitcond += 1
                     else:
                         i += 1
@@ -186,6 +194,7 @@ class RTModel:
                     if(glob.glob(self.eventname +'/PreModels/' + strmodel + '/t' + strmodel + '.dat')==[]):
                         processes.append(subprocess.Popen([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL))
                         procnumbers.append(iinitcond)
+                        procepochs.append(time.time())
                     else:
                         finitcond += 1
                     iinitcond += 1
