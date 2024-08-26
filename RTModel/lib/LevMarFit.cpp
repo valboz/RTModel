@@ -5,7 +5,8 @@
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include <VBBinaryLensingLibrary.h>
+#include "..\..\..\Projects\VBBinaryLensing3.0\VBBinaryLensing3.0\VBBinaryLensingLibrary.h"
+//#include <VBBinaryLensingLibrary.h>
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
@@ -22,7 +23,7 @@ using namespace std::filesystem;
 
 int nlc = 5; // Number of models to be calculated from the same initial condition using the bumper method
 int maxsteps = 50; // Maximum number of steps in each fit
-double maxtime = 600.0; // Maximum time in seconds for total execution
+double maxtime = 1.e100; // 600.0; // Maximum time in seconds for total execution (no longer controlled within LevMar)
 double bumperpower = 2.0; // Repulsion factor of bumpers
 double maxbumpcount = 25;
 
@@ -167,7 +168,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						maxsteps = (int)value;
 					}
 					if (strcmp(command, "timelimit") == 0) {
-						maxtime = value;
+						maxtime = maxtime; // value; // No longer controlled within LevMar
 					}
 					if (strcmp(command, "bumperpower") == 0) {
 						bumperpower = value;
@@ -332,7 +333,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 							double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1. };
 							double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100 };
 							double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100 };
-							error = InitCond(presigmapr, preleftlim, prerightlim);
+							error=InitCond(presigmapr, preleftlim, prerightlim);
 							pr[0] = log(pr[0]);
 							pr[1] = log(pr[1]);
 							pr[4] = log(pr[4]);
