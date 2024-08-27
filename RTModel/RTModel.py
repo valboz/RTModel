@@ -127,14 +127,23 @@ class RTModel:
         self.LevMar_timelimit = timelimit # Maximum time in seconds for total execution
         self.LevMar_bumperpower = bumperpower # Repulsion factor of bumpers
     
-    def LevMar(self,strmodel):
+    def LevMar(self,strmodel, parameters_file = None, parameters = None):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
             os.makedirs(self.eventname + '/' + self.inidir)
+        if(parameters != None):
+            parameters_file = self.eventname + '/' + self.inidir + '/parameters.ini'
+            with open(parameters_file,'w') as f:
+                line =''
+                for fl in parameters:
+                    line = line + str(fl) + ' '
+                f.write(line)
         with open(self.eventname + '/' + self.inidir + '/LevMar.ini','w') as f:
             f.write('nfits = ' + str(self.LevMar_nfits) + '\n')
             f.write('maxsteps = ' + str(self.LevMar_maxsteps) + '\n')
             f.write('timelimit = ' + str(self.LevMar_timelimit) + '\n')
             f.write('bumperpower = ' + str(self.LevMar_bumperpower) + '\n')
+            if(parameters_file != None):
+                f.write('parametersfile = ' + parameters_file)
         print('- Launching: LevMar')
         print('  Fitting ' + strmodel + ' ...')
         completedprocess = subprocess.run([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
@@ -317,6 +326,9 @@ class RTModel:
             pathname = run
         else:
             pathname = self.eventname
+        if(not(os.path.exists(pathname))):
+            print("Invalid path!")
+            return
         if(os.path.exists(pathname + '/' + self.inidir + '/Reader.ini')):
             with open(pathname + '/' + self.inidir + '/Reader.ini','r') as f:
                 lines = f.read().splitlines()
