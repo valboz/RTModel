@@ -1,4 +1,4 @@
-- **v2.1** - 2024/07/?? - recover_options function; noparallax replaced by onlyorbital everywhere; InitCond prints peaks found; templates package to manage template library; time limit for LevMar now forced by RTModel; Possibility to start fit from user-defined initial conditions through an array or a file; plotmodel: figure, showlightcurves, showcaustics;
+- **v2.1** - 2024/07/?? - recover_options function; noparallax replaced by onlyorbital everywhere; InitCond prints peaks found; templates package to manage template library; time limit for LevMar now forced by RTModel; Possibility to start fit from user-defined initial conditions through an array or a file; plotmodel: figure, showlightcurve, showcaustics;
 - **v2.0.7** - 2024/07/23 - Corrected a bug in ModelSelector showing up for events with a single dataset; corrected a minor bug in re-using old models for PS category.
 - **v2.0.6** - 2024/06/10 - Corrected a few bugs on satellites and initial conditions
 - **v2.0** - 2024/04/10 - First public release
