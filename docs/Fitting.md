@@ -49,7 +49,7 @@ The following step would be the [Model selection](ModelSelection.md) within the 
 
 The `LevMar` module executes a number of Levenberg-Marquardt fits from the specified initial condition. Every time a minimum is found, it is filled with a 'bumper'. Any subsequent run hitting the bumper will be bounced off in a different direction in the parameter space. In this way, new minima can be found from the same initial condition.
 
-The details of this fitting strategy will be illustrated in a future publication. 
+The details of this fitting strategy are illustrated in the [RTModel paper](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract). 
 
 ## Options for fitting
 
