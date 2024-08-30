@@ -59,10 +59,10 @@ Here we describe the options for `LevMar` in detail indicating their default val
 - `sigmachisquare = 1.0`: Besides the best model, `ModelSelector` retains competing models up to a threshold given by sqrt(2*chisqure), which represents one sigma in the chi square distribution. This threshold can be changed by this option to include less or more competing models in the final selection.
 - `maxmodels = 10`: Maximum number of competing models to report
 
-Notice that the options that are not explicitly specified in the call to `config_LevMar()` are always reset to their default values.
+Notice that the options that are not explicitly specified in the call to `config_LevMar()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
 
 ### Recording the options
 
-In each modeling run, the options for `ModelSelector` are stored in the file `ModelSelector.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
+In each modeling run, the options for `ModelSelector` are stored in the file `ModelSelector.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run. The function `recover_options()` can be used to load the options from a previous run.
 
 [Go to **Final assessment**](FinalAssessment.md)
