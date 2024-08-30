@@ -50,3 +50,5 @@ If you want to show the gif file in a Jupyter notebook you may use the following
 from IPython.display import Image
 Image(filename = 'ani.gif')
 ```
+
+[Go to **Template libraries**](TemplateLibraries.md)
