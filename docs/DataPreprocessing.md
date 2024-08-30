@@ -70,7 +70,7 @@ Re-binning and outliers removal do not intervene if set to very high numbers and
 
 ### Recording the options
 
-In each modeling run, the options for `Reader` are stored in the file `Reader.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
+In each modeling run, the options for `Reader` are stored in the file `Reader.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run. The function `recover_options()` can be used to load the options from a previous run.
 
 ## Forcing error-bar normalization
 
