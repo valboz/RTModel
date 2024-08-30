@@ -56,12 +56,12 @@ Here we describe the options for `InitCond` in detail indicating their default v
 
 - `peakthreshold = 10.0`: Number of sigmas necessary for a deviation to be identified as a peak in a concave section with respect to a straight line joining the left and right boundaries of the section. A too low value will include noise in the baseline among peaks. A too high value will ignore small anomalies.
 - `npeaks = 2`: Number of peaks in the observed light curve to be considered for setting initial conditions. If you choose to use more than 2 peaks you will have many more fits to be run, with greater chances of success but longer computational time.
-- `nostatic = False`: If True, static models will not be calculated. This is useful if higher orders are significant and cannot be treated as a simple perturbation of static models. Furthermore, this option is recommended if you have observations from a satellite spaced by a distance of the order of au.
-- `onlyorbital = False`: If true, only orbital motion models will be calculated.
+- `nostatic = False`: If `True`, static models will not be calculated. This is useful if higher orders are significant and cannot be treated as a simple perturbation of static models. Furthermore, this option is recommended if you have observations from a satellite spaced by a distance of the order of au.
+- `onlyorbital = False`: If `True`, only orbital motion models will be calculated.
 - `usesatellite = 0`: Initial conditions are set only considering peaks in the indicated satellite. If zero, ground datasets are used for initial conditions.
 - `oldmodels = 4`: If previous runs have been archived, the chosen number of best models from the last previous run are included as initial conditions. This can be useful for refining old models with new data or options.
 - `override = None`: If a t-uple is specified here (e.g `(8760.1, 8793.1)`), the elements of the t-uple are taken as peak positions in the data and directly used to define the initial conditions. The whole spline and peak identification procedure is then skipped.
-- `template_library = None`: Alternative user-defined template library to be used to build initial conditions for binary-lens fits. You may learn more about the customization of template libraries in [Template libraries](TemplateLibraries.md).  
+- `template_library = None`: Alternative user-defined template library file to be used to build initial conditions for binary-lens fits. You may learn more about the customization of template libraries in [Template libraries](TemplateLibraries.md).  
 
 Notice that the options that are not explicitly specified in the call to `config_InitCond()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
 
