@@ -62,6 +62,8 @@ Advanced users may attempt a deeper understanding of the modeling steps and opti
 
 - [Animating fits](Animation.md)
 
+- [Template library customization](TemplateLibrary.md)
+
 ## Success rate
 
 The success rate of `RTModel` has been evaluated on the simulated events created for the [WFIRST data challenge](https://roman.ipac.caltech.edu/docs/street_data_challenge1_results.pdf) by Matthew Penny. 
