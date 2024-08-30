@@ -65,7 +65,7 @@ Finally, all optional parameters in the call of the `plotmodel` can be also mani
 
 ## Retrieving and saving the figures
 
-It is possible to generate separate plots for the light curve and for the caustic with the source trajectory independently using the following functions
+It is possible to generate separate plots for the light curve and for the caustic with the source trajectory using the following functions
 
 ```
 myplot.showlightcurve()
