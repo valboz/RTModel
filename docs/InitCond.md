@@ -30,7 +30,7 @@ In order to set initial conditions for modeling, `InitCond` executes the followi
 - Identification of peaks in each datasets;
 - Removal of duplicate peaks;
 - Definition of initial conditions for single-lens models by using the main peak(s) and a grid search over the shape parameters;
-- Definition of initial conditions for binary-lens models by matching detected peaks to peaks of templates from a libary;
+- Definition of initial conditions for binary-lens models by matching detected peaks to peaks of templates from a library;
 - Addition of old models from previous runs (if any).
 
 The details of each step will be illustrated in a future publication. 
