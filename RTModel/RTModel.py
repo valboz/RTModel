@@ -374,6 +374,8 @@ class RTModel:
                         self.InitCond_onlyorbital = (int(chunks[2])!=0)
                     elif(chunks[0]=='override'):
                         self.InitCond_override = (float(chunks[2]),float(chunks[3]))
+                    elif(chunks[0]=='templatelibrary'):
+                        self.InitCond_template_library = chunks[2]
         if(os.path.exists(pathname + '/' + self.inidir + '/LevMar.ini')):        
             with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
                 lines = f.read().splitlines()
