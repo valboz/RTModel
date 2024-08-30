@@ -18,7 +18,7 @@ Then the modeling starts and you may sit back and watch the progress bars tracki
 The final model(s) proposed by `RTModel` are collected as separate files in the directory `/event001/FinalModels`. You may plot them using the `RTModel.plotmodel` package:
 
 ```
-import plotmodel as plm
+import RTModel.plotmodel as plm
 import glob
 
 event = '/event001'
