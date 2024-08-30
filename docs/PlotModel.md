@@ -72,7 +72,7 @@ myplot.showlightcurve()
 myplot.showcaustics()
 ```
 
-Finally, each plot can be saved to a file. In fact, after the execution of `showlightcurve()`, `showcaustics()`, `showall()` or the constructor `plotmodel(...)`, the property `figure` contains the figure just created. Therefore, you can just save it with the line
+Finally, each plot can be saved to a file. In fact, after the execution of `showlightcurve()`, `showcaustics()`, `showall()` or the constructor of `plotmodel`, the property `figure` contains the figure just created. Therefore, you can save it with the line
 
 ```
 myplot.figure.savefig('myfile.png')
