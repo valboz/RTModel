@@ -40,7 +40,7 @@ LevMar ---  ['nfits = 5', 'maxsteps = 50', 'timelimit = 600.0', 'bumperpower = 2
 ModelSelector ---  ['sigmasoverlap = 3.0', 'sigmachisquare = 1.0', 'maxmodels = 10']
 ```
 
-This is the list of all options used in the previous run. You will find detailed explanations for each of these options in the sections for advanced users, starting from [Data pre-processing](DataPreprocessing.md). At the moment, we note that by this function you can repeat a run using exactly the same options you used in the previous run. In fact, all options are automatically loaded in your object 'rtm' and will be used as they are unless you explicitly change them. 
+This is the list of all options used in the previous run. You will find detailed explanations for each of these options in the sections for advanced users, starting from [Data pre-processing](DataPreprocessing.md). At the moment, we note that by this function you can repeat a run using exactly the same options you used in the previous run. In fact, all options are automatically loaded in your object `rtm` and will be used as they are unless you explicitly change them. 
 
 You may also pick up the options from one of the archived runs by specifying the optional argument `run`
 ```
