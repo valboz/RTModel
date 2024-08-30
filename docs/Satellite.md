@@ -36,9 +36,9 @@ rtm.run()
 
 ## Modeling strategies
 
-By default `RTModel` looks for static models first (without parallax) and then only performs fits with parallax on the best static models found. In case of satellite observations, this strategy may work if the satellite is very close to Earth (Earth or Moon orbiting, L2 are good examples) or for very small parallax values. The small difference between the source trajectories as seen from the Earth and from the satellite can be easily recovered as a higher order refinement.
+By default `RTModel` looks for static models first (without parallax) and then only performs fits with parallax on the best static models found. In case of satellite observations, this strategy may work if the satellite is very close to Earth (Earth or Moon orbiting and L2 are good examples) or for very small parallax values. The small difference between the source trajectories as seen from the Earth and from the satellite can be easily recovered as a higher order refinement.
 
-However, for au-separated satellites, static models are often useless or even driven to completely wrong results if satellite data are forced to follow the same light curve model as for ground telescopes. Then, we should give skip static models and start the search with parallax included from the beginning of the search. This is achieved by the `nostatic = True` option in the `config_InitCond()` function:
+However, for au-separated satellites, static models are often useless or even driven to completely wrong results if satellite data are forced to follow the same light curve model as for ground telescopes. Then, we should skip static models and start the search with parallax included from the beginning of the search. This is achieved by the `nostatic = True` option in the `config_InitCond()` function:
 
 ```
 import RTModel
