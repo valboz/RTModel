@@ -77,8 +77,12 @@ The new file `'MyNewLibrary.txt'` will be in the format accepted by `RTModel` an
 The most useful tool in the `RTModel.templates` subpackage is the `show_template()` function. Here we see an example followed by its output:
 
 ```
-tmpl.show_template(mytemplates[0], tmin = -1, tmax = +1, tstep = 0.00001, accuracy = 0.001)
+newtemplates = tmpl.show_template(mytemplates[0], tmin = -1, tmax = +1, tstep = 0.00001, accuracy = 0.001)
 ```
 <img src="Template.png" width = 500>
 
+The  `show_template(mytemplate)` function calculates and shows the lightcurve corresponding to the parameters found in `mytemplate`, which is a standard list containing at least 5 values for $s$ $q$ $u_0$ $\alpha$ $\rho$. The light curves is shown in units of $t/t_E$ with $t_0=0$ from `tmin` to `tmax` (default values are -3 and +3 respectively). The time step for the plot is specified by `tstep` (default value is 0.001) and the accuracy in the magnification calculation is given by `accuracy` (default value is 0.01).
 
+In addition to the visualization, actually  `show_template()` also shows the values of the parameters found and calculates the peak positions in the template that were found between `tmin` and `tmax`. The peaks found are also reported in the output. It is important to underline that the time accuracy for these peaks depends on the time steps specified through `tstep`. Also the `accuracy` option is important to locate the peak more precisely on relatively flat maxima.
+
+The return value of the `show_template()` function is a list of templates built by combining the parameters found in `mytemplate` and all peaks found in the calculation. So the length of `newtemplates` for a light curve with $n$ peaks will be $n(n-1)/2$. The output templates of `show_template()` can then be easily included in a new library of templates.
