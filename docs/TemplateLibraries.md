@@ -79,6 +79,6 @@ The most useful tool in the `RTModel.templates` subpackage is the `show_template
 ```
 tmpl.show_template(mytemplates[0], tmin = -1, tmax = +1, tstep = 0.00001, accuracy = 0.001)
 ```
-<img src="Template.png" width = 900>
+<img src="Template.png" width = 500>
 
 
