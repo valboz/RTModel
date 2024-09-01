@@ -72,4 +72,13 @@ tmpl.save_library('MyNewLibrary.txt', mytemplates)
 
 The new file `'MyNewLibrary.txt'` will be in the format accepted by `RTModel` and ready for use in your modeling runs.
 
+### Visualization and elaboration of the templates
+
+The most useful tool in the `RTModel.templates` subpackage is the `show_template()` function. Here we see an example followed by its output:
+
+```
+tmpl.show_template(mytemplates[0], tmin = -1, tmax = +1, tstep = 0.00001, accuracy = 0.001)
+```
+<img src="Template.png" width = 900>
+
 
