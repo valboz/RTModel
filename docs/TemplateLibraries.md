@@ -2,6 +2,9 @@
 
 # Template libraries
 
-As explained before, the module [InitCond](InitCond.md) sets the initial conditions for binary-lens fits by matching the peaks found in the observed datasets to the peaks of the templates in a library. This matching provides the values for $t_0$ and $t_E$, while all remaining parameters are read from the template.
+As explained before, the module [InitCond](InitCond.md) sets the initial conditions for binary-lens fits by matching the peaks found in the observed datasets to the peaks of the templates in a library, following an original idea by [Mao & Di Stefano (1995)](https://ui.adsabs.harvard.edu/abs/1995ApJ...440...22M/abstract). This matching provides the values for $t_0$ and $t_E$, while all remaining parameters are read from the template.
 
-The default library used by `InitCond` is available [here](/RTModel/data/TemplateLibrary.txt). The first line indicates the number of templates, while the following lines contain the information for each template one by one. Each line contains the parameters $s$ $q$ $u_0$ $\alpha$ $\rho$ followed by the time of two peaks $t_1$ $t_2$. If the template has more than two peaks, the template is repeated in the following line with different choices of the times of the peaks. The order of the two peaks does not matter, since `InitCond` always include each template and its time-reversal.
+The default library used by `InitCond` is available [here](/RTModel/data/TemplateLibrary.txt). The first line indicates the number of templates, while the following lines contain the information for each template one by one. Each line contains the parameters $s$ $q$ $u_0$ $\alpha$ $\rho$ followed by the time of two peaks $t_1$ $t_2$. If the template has more than two peaks, the template is repeated in the following line with different choices of the times of the peaks. The order of the two peaks does not matter, since `InitCond` always include each template and then its time-reversal. 
+
+The default library is the product of many years of modeling of many different microlensing events. It is based on the idea that a seed is needed in each region of the parameter space where the sequence of peaks in the light curve remains the same (see [Liebig et al. (2015)](https://ui.adsabs.harvard.edu/abs/2015MNRAS.450.1565L/abstract)).
+
