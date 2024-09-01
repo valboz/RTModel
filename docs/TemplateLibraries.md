@@ -32,5 +32,44 @@ rtm.config_InitCond(template_library = 'MyLibrary.txt')
 
 By providing the full path to your library, `InitCond` will use it to determine the initial seeds for binary-lens fitting. A valid library should conform to the same format of the default library, with the first line containing the number of templates and the following lines with the parameters and peak times as explained above.
 
+## The `RTModel.templates` subpackage
+
+The `RTModel.templates` contains useful tools to visualize the templates of the default library and elaborate your own templates.
+
 ### Cloning the default template library
+
+After importing the subpackage, we may start by cloning the default library to a local file
+
+```
+import RTModel.templates as tmpl
+
+tmpl.clone_default_library('MyLibrary.txt')
+```
+
+### Loading and saving libraries
+
+The content of a template library can be loaded to Python by the function
+
+```
+mytemplates = tmpl.load_library('MyLibrary.txt')
+```
+
+As a result, `mytemplates` will contain a standard Python list of all templates found in `'MyLibrary.txt'`:
+
+```
+print(mytemplates)
+
+[[0.7, 0.5, 0.15, 3.5, 0.01, -0.183, 0.016], [0.7, 0.5, 0.15, 3.5, 0.01, -0.183, 0.086], [0.7, 0.5, 0.15, 3.5, 0.01, 0.016, 0.086], ...
+```
+
+At this point, you are free to manipulate the list with standard Python tools. 
+
+When you are happy with your new list of templates, you can save it with the function
+
+```
+tmpl.save_library('MyNewLibrary.txt', mytemplates)
+```
+
+The new file `'MyNewLibrary.txt'` will be in the format accepted by `RTModel` and ready for use in your modeling runs.
+
 
