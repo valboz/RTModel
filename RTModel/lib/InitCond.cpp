@@ -819,16 +819,18 @@ int main(int argc, char* argv[])
 	current_path("InitCond");
 	f = fopen(fileinit, "w");
 	int nu0 = 3, ntE = 5, nrho = 4;
-	// First we write the number of peaks used (only 1) and the number of initial conditions that are going to be generated
+	// First we write the number of peaks used and the number of initial conditions that are going to be generated
 	if (nostatic) {
-		fprintf(f, "%d %d\n", 1, nu0 * ntE * nrho * 2 + dn);
+		fprintf(f, "%d %d\n", newpeaks->length, nu0 * ntE * nrho * newpeaks->length * 2 + dn);
 	}
 	else {
-		fprintf(f, "%d %d\n", 1, nu0 * ntE * nrho + dn);
+		fprintf(f, "%d %d\n", newpeaks->length, nu0 * ntE * nrho * newpeaks->length + dn);
 	}
 	// Then we write the characteristics of the peaks used
-	p = newpeaks->first;
-	fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
+	
+	for (p = newpeaks->first; p; p = p->next) {
+		fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
+	}
 	// First we write the initial conditions from previous best models
 	for (int i = 0; i < dn; i++) {
 		for (int j = 0; j < nps; j++) {
@@ -837,16 +839,18 @@ int main(int argc, char* argv[])
 		fprintf(f, "\n");
 	}
 	// Here we write the initial conditions by matching the newpeaks to the peaks recorded in the template library
-	for (int iu = 0; iu < nu0; iu++) {
-		for (int itE = 0; itE < ntE; itE++) {
-			for (int ir = 0; ir < nrho; ir++) {
-				//			{u0, tE, t0, Rs}
-				if (nostatic) {
-					fprintf(f, "%le %le %le %le 0.0 0.0\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
-					fprintf(f, "%le %le %le %le 0.0 0.0\n", -pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
-				}
-				else {
-					fprintf(f, "%le %le %le %le\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
+	for (p = newpeaks->first; p; p = p->next) {
+		for (int iu = 0; iu < nu0; iu++) {
+			for (int itE = 0; itE < ntE; itE++) {
+				for (int ir = 0; ir < nrho; ir++) {
+					//			{u0, tE, t0, Rs}
+					if (nostatic) {
+						fprintf(f, "%le %le %le %le 0.0 0.0\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
+						fprintf(f, "%le %le %le %le 0.0 0.0\n", -pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
+					}
+					else {
+						fprintf(f, "%le %le %le %le\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
+					}
 				}
 			}
 		}
