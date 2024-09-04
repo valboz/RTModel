@@ -22,9 +22,10 @@ using namespace std::filesystem;
 
 int nlc = 5; // Number of models to be calculated from the same initial condition using the bumper method
 int maxsteps = 50; // Maximum number of steps in each fit
-double maxtime = 600.0; // Maximum time in seconds for total execution
+double maxtime = 1.e100; // 600.0; // Maximum time in seconds for total execution (no longer controlled within LevMar)
 double bumperpower = 2.0; // Repulsion factor of bumpers
 double maxbumpcount = 25;
+char parametersfile[256] = ""; // File from which user parameters are read, if any
 
 
 const double epsilon = 1.e-100;
@@ -106,7 +107,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 	FILE* f;
 	char buffer[3200], initcondfile[256];
 	char command[256];
-	double value;
+	char value[256];
 
 	try {
 
@@ -152,7 +153,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			if (f != 0) {
 				printf("\n\n- Reading options in LevMar.ini");
 				while (!feof(f)) {
-					int red = fscanf(f, "%s %s %lf", command, buffer, &value);
+					int red = fscanf(f, "%s %s %s", command, buffer, value);
 					if (red < 1) {
 						command[0] = 0;
 						//if (red != 0) {
@@ -161,16 +162,20 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						//};
 					}
 					if (strcmp(command, "nfits") == 0) {
-						nlc = (int)value;
+						sscanf(value, "%d", &nlc);
 					}
 					if (strcmp(command, "maxsteps") == 0) {
-						maxsteps = (int)value;
+						sscanf(value, "%d", &maxsteps);
 					}
 					if (strcmp(command, "timelimit") == 0) {
-						maxtime = value;
+						// sscanf(value, "%lf", &maxtime);
+						maxtime = maxtime;  // No longer controlled within LevMar
 					}
 					if (strcmp(command, "bumperpower") == 0) {
-						bumperpower = value;
+						sscanf(value, "%lg", &bumperpower);
+					}
+					if (strcmp(command, "parametersfile") == 0) {
+						strcpy(parametersfile, value);
 					}
 				}
 				fclose(f);
@@ -205,7 +210,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				double presigmapr[] = { .5,.5,5.,4.6,1,1 };
 				double preleftlim[] = { -13.,-6.9,-10.e100,-11.5,-10.,-10. };
 				double prerightlim[] = { .7,6.9,10.e100,0.0,10.,10. };
-				strcpy(initcondfile, "InitCondPX.txt");
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
@@ -332,7 +336,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 							double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1. };
 							double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100 };
 							double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100 };
-							error = InitCond(presigmapr, preleftlim, prerightlim);
+							error=InitCond(presigmapr, preleftlim, prerightlim);
 							pr[0] = log(pr[0]);
 							pr[1] = log(pr[1]);
 							pr[4] = log(pr[4]);
@@ -361,20 +365,26 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 
 int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim) {
 	char buffer[3200], initcondfile[256];
+	int npeaks, ninit, incond;
+	FILE* f;
 	sigmapr = (double*)malloc(sizeof(double) * nps);
 	leftlim = (double*)malloc(sizeof(double) * nps);
 	rightlim = (double*)malloc(sizeof(double) * nps);
 	pr = (double*)malloc(sizeof(double) * nps);
-	sprintf(initcondfile, "InitCond%c%c.txt", modelcode[0], modelcode[1]);
-	current_path("InitCond");
-	FILE* f = fopen(initcondfile, "r");
-	int npeaks, ninit, incond;
-	fscanf(f, "%d %d", &npeaks, &ninit);
-	incond = atoi(outdir + 2);
-	if (incond >= ninit) return 10;
-	fgets(buffer, 3200, f);
-	for (int i = 0; i < npeaks + incond; i++) {
+	if (parametersfile[0] == 0) {
+		sprintf(initcondfile, "InitCond%c%c.txt", modelcode[0], modelcode[1]);
+		current_path("InitCond");
+		f = fopen(initcondfile, "r");
+		fscanf(f, "%d %d", &npeaks, &ninit);
+		incond = atoi(outdir + 2);
+		if (incond >= ninit) return 10;
 		fgets(buffer, 3200, f);
+		for (int i = 0; i < npeaks + incond; i++) {
+			fgets(buffer, 3200, f);
+		}
+	}
+	else {
+		f = fopen(parametersfile, "r");
 	}
 	for (int i = 0; i < nps; i++) {
 		sigmapr[i] = presigmapr[i];

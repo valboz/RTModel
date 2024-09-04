@@ -17,28 +17,28 @@ using namespace std::filesystem;
 const double failthr = 20000000.0; // threshold for chisquare/dof for declaring failure
 const int ncategories = 7;
 
-int main(int argc, char *argv[]){
+int main(int argc, char* argv[]) {
 
-	char eventname[512]="";
-	char filename[30]="";
+	char eventname[512] = "";
+	char filename[30] = "";
 	char command[256], buffer[256];
 	double value;
 	int nfil, * satel;
-	double *t,*y,*w,*pr,*sigmapr,thsigma;
-    double thrs[10] = { 0,36.,40.0872,43.4518,46.4625,49.2497,51.878 ,54.3854 ,56.7964 ,59.1282 }; // thresholds at 6 sigma for n more parameters
+	double* t, * y, * w, * pr, * sigmapr, thsigma;
+	double thrs[10] = { 0,36.,40.0872,43.4518,46.4625,49.2497,51.878 ,54.3854 ,56.7964 ,59.1282 }; // thresholds at 6 sigma for n more parameters
 	string modelcodes[ncategories] = { "PS","PX","BS","BO","LS","LX","LO" };
 	string modelnames[ncategories] = { "Single-Lens-Single-Source","Single-Lens-Single-Source with parallax",\
-									"Binary Source","Binary Source with xallarap",\
+									"Binary source","Binary source with xallarap",\
 									""," with parallax"," with orbital motion" };
 	int npss[ncategories] = { 4,6,7,10,7,9,12 };
 	double chis[ncategories];
 	double cmin, c0, c1, c2, cflat;
-	double chiblp=1.e100, chiblb = 1.e100;
+	double chiblp = 1.e100, chiblb = 1.e100;
 	int mn;
-	char final[2000],stringa[1024];
-	int flag,nmod,ngoodmod,*filter,np;
-	FILE *f,*g;
-	bumper* bumperlist=0, * scanbumper, * scanbumper2;
+	char final[2000], stringa[1024];
+	int flag, nmod, ngoodmod, * filter, np;
+	FILE* f, * g;
+	bumper* bumperlist = 0, * scanbumper, * scanbumper2;
 
 
 	printf("******************************************\n");
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
 	printf("******************************************\n\n\n");
 	printf("This program proposes a final interpretation for the event\n\n");
 
-// Directory preliminaries. Reads event name from arguments.
+	// Directory preliminaries. Reads event name from arguments.
 
 	auto exedir = current_path();
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
 	printf("\n\n- Event: %s\n", eventname);
 
 	current_path(eventname);
-	
+
 	if (exists("Nature.txt")) {
 		printf("\n\nEvent already finalized");
 		return 0;
@@ -98,37 +98,37 @@ int main(int argc, char *argv[]){
 	printf("\nMaximum number of models reported: %d", maxmodels);*/
 
 
-// Read curve to fit
+	// Read curve to fit
 
 	current_path(eventname);
 
 	printf("\n\nReading data\n");
 
-	f=fopen("LCToFit.txt","r");
-    fscanf(f,"%d",&np);
-	filter=(int *) malloc(sizeof(int)*np);
-	satel=(int *) malloc(sizeof(int)*np);
-	t=(double *) malloc(sizeof(double)*np);
-	y=(double *) malloc(sizeof(double)*np);
-	w=(double *) malloc(sizeof(double)*np);
+	f = fopen("LCToFit.txt", "r");
+	fscanf(f, "%d", &np);
+	filter = (int*)malloc(sizeof(int) * np);
+	satel = (int*)malloc(sizeof(int) * np);
+	t = (double*)malloc(sizeof(double) * np);
+	y = (double*)malloc(sizeof(double) * np);
+	w = (double*)malloc(sizeof(double) * np);
 
-	nfil=1;
-	for(int i=0;i<np;i++){
-		fscanf(f,"%d %lf %lf %lf %d",&(filter[i]),&(t[i]),&(y[i]),&(w[i]),&(satel[i]));
-		if((i!=0)&&(filter[i]!=filter[i-1])){
+	nfil = 1;
+	for (int i = 0; i < np; i++) {
+		fscanf(f, "%d %lf %lf %lf %d", &(filter[i]), &(t[i]), &(y[i]), &(w[i]), &(satel[i]));
+		if ((i != 0) && (filter[i] != filter[i - 1])) {
 			nfil++;
 		}
-		w[i]=1/(w[i]);
+		w[i] = 1 / (w[i]);
 	}
 	fclose(f);
 
 
-	pr=(double *) malloc(sizeof(double)*(12+2*nfil));
-	sigmapr = (double *)malloc(sizeof(double)*(12 + 2 * nfil));
+	pr = (double*)malloc(sizeof(double) * (12 + 2 * nfil));
+	sigmapr = (double*)malloc(sizeof(double) * (12 + 2 * nfil));
 
-// Calculate flat chi square
+	// Calculate flat chi square
 
-	c0 = c1=c2=cflat=0;
+	c0 = c1 = c2 = cflat = 0;
 	nfil = 0;
 	for (int i = 0; i < np; i++) {
 		if (filter[i] == nfil) {
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]){
 	nfil++;
 	cflat += c2 - c1 * c1 / c0;
 
-// Compare all models and draw conclusions
+	// Compare all models and draw conclusions
 
 	printf("\n\n********************");
 	printf("\n   Finalization   ");
@@ -157,18 +157,18 @@ int main(int argc, char *argv[]){
 	create_directory(selectmodelsname);
 
 
-	g=fopen("Nature.txt","w");
+	g = fopen("Nature.txt", "w");
 
 	current_path("Models");
 
-// Load chi square of best models of each type
+	// Load chi square of best models of each type
 
 	printf("\n- Reading models\n\n");
 
 	nmod = 0;
 	for (int icat = 0; icat < ncategories; icat++) {
 		chis[icat] = 1.e100;
-		auto searchstring = regex(modelcodes[icat] + "[0-9]*-[0-9]*.txt");
+		auto searchstring = regex(modelcodes[icat] + ".*-[0-9]*.txt");
 		for (auto const& itr : directory_iterator(".")) {
 			string curfile = (itr).path().filename().string();
 			if (regex_match(curfile, searchstring)) {
@@ -223,11 +223,11 @@ int main(int argc, char *argv[]){
 		fprintf(g, "%s: ", modelcodes[icat].c_str());
 		if (chis[icat] < 1.e99) {
 			printf("%lf\n", chis[icat]);
-			fprintf(g,"%lf\n", chis[icat]);
+			fprintf(g, "%lf\n", chis[icat]);
 		}
 		else {
 			printf("N/A\n");
-			fprintf(g,"N/A\n");
+			fprintf(g, "N/A\n");
 		}
 	}
 
@@ -241,8 +241,8 @@ int main(int argc, char *argv[]){
 
 	// Minimum chi square
 
-	mn=0;
-	cmin=bumperlist->Amp;
+	mn = 0;
+	cmin = bumperlist->Amp;
 
 	thsigma = cmin + cmin / np * sqrt(2 * np);
 	for (int i = 0; i < 10; i++) {
@@ -275,7 +275,7 @@ int main(int argc, char *argv[]){
 			strcpy(stringa, "Planetary lens");
 		}
 		else {
-			strcpy(stringa, "Binary or Planetary lens");
+			strcpy(stringa, "Binary lens or Planetary lens");
 		}
 	}
 
@@ -284,7 +284,7 @@ int main(int argc, char *argv[]){
 	if (chis[1] > chis[0] - thrs[npss[1] - npss[0]]) {
 		chis[1] = 1.e100;
 	}
-	if(chis[2] > chis[0] - thrs[npss[2] - npss[0]]) {
+	if (chis[2] > chis[0] - thrs[npss[2] - npss[0]]) {
 		chis[2] = 1.e100;
 	}
 	if (chis[3] > chis[0] - thrs[npss[3] - npss[0]] || chis[3] > chis[1] - thrs[npss[3] - npss[1]] || chis[3] > chis[2] - thrs[npss[3] - npss[2]]) {
@@ -338,7 +338,8 @@ int main(int argc, char *argv[]){
 
 	if (cflat < thsigma) {
 		strcpy(final, "Flat");
-	}else{
+	}
+	else {
 		if (cmin > np * failthr) {
 			strcpy(final, "Uncertain: variable or failed");
 		}
@@ -363,25 +364,25 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-	printf("%s\n", final);	
-// Writing file Nature.txt with the conclusion drawn before
-	fprintf(g,"%s\n",final);
+	printf("%s\n", final);
+	// Writing file Nature.txt with the conclusion drawn before
+	fprintf(g, "%s\n", final);
 
 	printf("----\n");
-	fprintf(g,"----\n");
+	fprintf(g, "----\n");
 
 
 	printf("Number of alternative models: %d\n\nchisquare   model\n", ngoodmod);
 	fprintf(g, "Number of alternative models: %d\n\nchisquare   model\n", ngoodmod);
 
 
-// Writing the names of the files containing alternative models in Nature.txt
+	// Writing the names of the files containing alternative models in Nature.txt
 	current_path("..");
-	for (scanbumper = bumperlist; scanbumper;scanbumper=scanbumper->next) {
+	for (scanbumper = bumperlist; scanbumper; scanbumper = scanbumper->next) {
 		if (scanbumper->modelcode[0] != 'N') {
 			fprintf(g, "%lf %s\n", scanbumper->Amp, scanbumper->modelcode);
 			printf("%lf %s", scanbumper->Amp, scanbumper->modelcode);
-			copy_file(path("Models") / path(string(scanbumper->modelcode)), path("FinalModels") / path(string(scanbumper->modelcode)),copy_options::overwrite_existing);
+			copy_file(path("Models") / path(string(scanbumper->modelcode)), path("FinalModels") / path(string(scanbumper->modelcode)), copy_options::overwrite_existing);
 		}
 	}
 	fclose(g);
@@ -390,8 +391,8 @@ int main(int argc, char *argv[]){
 
 	printf("\n\n- Done");
 
-//	Sleep(5000l);
-	
+	//	Sleep(5000l);
+
 	scanbumper = bumperlist;
 	while (scanbumper) {
 		scanbumper2 = scanbumper->next;
@@ -408,5 +409,5 @@ int main(int argc, char *argv[]){
 	free(w);
 
 
-    return 0;
+	return 0;
 }

@@ -172,7 +172,7 @@ int main(int argc, char* argv[]) {
 	current_path("PreModels");
 	nmod = 0;
 
-	auto searchstring = regex(string(modelcode) + "[0-9]*");
+	auto searchstring = regex(string(modelcode) + ".*");
 	for (auto const& itr : directory_iterator(".")) {
 		if (regex_match((itr).path().filename().string(), searchstring) && (itr).is_directory()) {
 			current_path(itr);

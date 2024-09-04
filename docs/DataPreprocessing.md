@@ -14,7 +14,7 @@ rtm = RTModel.RTModel('/event001')
 rtm.Reader()
 ```
 
-With this code, we just perform the data pre-processing performed by `Reader` without proceeding to the following steps. In the `/event001` directory you will see the following products appear:
+With this code, we just perform the data pre-processing by the `Reader` module without proceeding to the following steps. In the `/event001` directory you will see the following products appear:
 - a new subfolder called `ini/`. This contains the file `Reader.ini` file, which contains the current options with which `Reader` has been launched;
 - a file named `LCToFit.txt` containing all data points that will be used for modeling after combining all photometry files found in `/Data`;
 - a file named `FilterToData.txt` containing the ordered list of names of the datasets used to build `LCToFit.txt`.
@@ -30,7 +30,7 @@ The `Reader` module performs several operations on the original data to improve 
 - Outliers are removed;
 - Datasets left with less than 4 points are ignored.
 
-For details about the algorithms used in this pre-processing, please refer to the future publication.
+For details about the algorithms used in this pre-processing, please refer to the [RTModel paper](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract).
 
 ## Options for pre-processing
 
@@ -57,7 +57,7 @@ Here we describe the options in detail with their default values:
 - `renormalize = 1`: if non-zero, all datasets are re-normalized based on the scatter assessment.
 - `thresholdoutliers = 10`: threshold in sigmas to remove outliers.
 
-Notice that the options that are not explicitly specified in the call to `config_Reader()` are always reset to their default values.
+Notice that the options that are not explicitly specified in the call to `config_Reader()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
 
 ### How to switch off pre-processing
 
@@ -70,7 +70,7 @@ Re-binning and outliers removal do not intervene if set to very high numbers and
 
 ### Recording the options
 
-In each modeling run, the options for `Reader` are stored in the file `Reader.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
+In each modeling run, the options for `Reader` are stored in the file `Reader.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run. The function `recover_options()` can be used to load the options from a previous run.
 
 ## Forcing error-bar normalization
 

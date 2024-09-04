@@ -79,7 +79,8 @@ class RTModel:
         else:
             print('  OK')
 
-    def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0):
+    def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
+                       , template_library = None):
         self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
         self.InitCond_peakthreshold = peakthreshold # Number of sigmas necessary for a deviation to be identified as a maximum or a minimum.
         self.InitCond_oldmodels = oldmodels # Maximum number of old models to include in new run as initial conditions
@@ -87,8 +88,11 @@ class RTModel:
         self.InitCond_nostatic = nostatic or onlyorbital # No static models will be calculated.
         self.InitCond_onlyorbital = onlyorbital; # Only orbital motion models will be calculated.
         self.InitCond_usesatellite = usesatellite; # Satellite to be used for initial conditions. Ground telescopes by default.
+        self.InitCond_template_library = template_library; # Template library to be used in place of the default one.
         
     def InitCond(self):
+        ''' Establishes initial conditions for fitting by executing the InitCond external module.
+            Options can be assigned through the config_InitCond() method. '''
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
             os.makedirs(self.eventname + '/' + self.inidir)
         with open(self.eventname + '/' + self.inidir + '/InitCond.ini','w') as f:
@@ -102,6 +106,8 @@ class RTModel:
                 f.write('onlyorbital = 1\n')
             if(self.InitCond_override != None):
                 f.write('override = ' + str(self.InitCond_override[0])+ ' ' + str(self.InitCond_override[1]) + '\n')            
+            if(self.InitCond_template_library != None):
+                f.write('templatelibrary = ' + self.InitCond_template_library + '\n')            
         print('- Launching: InitCond')
         print('  Setting initial conditions...')
         completedprocess = subprocess.run([self.bindir+self.initcondexe,self.eventname], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
@@ -127,14 +133,23 @@ class RTModel:
         self.LevMar_timelimit = timelimit # Maximum time in seconds for total execution
         self.LevMar_bumperpower = bumperpower # Repulsion factor of bumpers
     
-    def LevMar(self,strmodel):
+    def LevMar(self,strmodel, parameters_file = None, parameters = None):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
             os.makedirs(self.eventname + '/' + self.inidir)
+        if(parameters != None):
+            parameters_file = self.eventname + '/' + self.inidir + '/parameters.ini'
+            with open(parameters_file,'w') as f:
+                line =''
+                for fl in parameters:
+                    line = line + str(fl) + ' '
+                f.write(line)
         with open(self.eventname + '/' + self.inidir + '/LevMar.ini','w') as f:
             f.write('nfits = ' + str(self.LevMar_nfits) + '\n')
             f.write('maxsteps = ' + str(self.LevMar_maxsteps) + '\n')
             f.write('timelimit = ' + str(self.LevMar_timelimit) + '\n')
             f.write('bumperpower = ' + str(self.LevMar_bumperpower) + '\n')
+            if(parameters_file != None):
+                f.write('parametersfile = ' + parameters_file)
         print('- Launching: LevMar')
         print('  Fitting ' + strmodel + ' ...')
         completedprocess = subprocess.run([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
@@ -168,6 +183,7 @@ class RTModel:
                 ninitconds = int(line[1])   
             processes = []
             procnumbers = []
+            procepochs = []
             iinitcond = 0
             finitcond = 0
             finitcondold = -1       
@@ -175,9 +191,16 @@ class RTModel:
             while(finitcond < ninitconds):
                 i=0
                 while i < len(processes):
+                    if(time.time() - procepochs[i] > self.LevMar_timelimit):
+                        processes[i].kill()
+                        premodfiles = glob.glob(self.eventname +'/PreModels/*.txt')
+                        strmodel =  modelcode + '{:0>4}'.format(str(procnumbers[i]))
+                        with open(self.eventname +'/PreModels/' + strmodel + '/t' + strmodel + '.dat','w') as f:
+                            f.write(f'{len(premodfiles)} {self.LevMar_nfits}')
                     if(processes[i].poll() != None):
                         processes.pop(i)
                         procnumbers.pop(i)
+                        procepochs.pop(i)
                         finitcond += 1
                     else:
                         i += 1
@@ -186,6 +209,7 @@ class RTModel:
                     if(glob.glob(self.eventname +'/PreModels/' + strmodel + '/t' + strmodel + '.dat')==[]):
                         processes.append(subprocess.Popen([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL))
                         procnumbers.append(iinitcond)
+                        procepochs.append(time.time())
                     else:
                         finitcond += 1
                     iinitcond += 1
@@ -308,6 +332,9 @@ class RTModel:
             pathname = run
         else:
             pathname = self.eventname
+        if(not(os.path.exists(pathname))):
+            print("Invalid path!")
+            return
         if(os.path.exists(pathname + '/' + self.inidir + '/Reader.ini')):
             with open(pathname + '/' + self.inidir + '/Reader.ini','r') as f:
                 lines = f.read().splitlines()
@@ -347,6 +374,8 @@ class RTModel:
                         self.InitCond_onlyorbital = (int(chunks[2])!=0)
                     elif(chunks[0]=='override'):
                         self.InitCond_override = (float(chunks[2]),float(chunks[3]))
+                    elif(chunks[0]=='templatelibrary'):
+                        self.InitCond_template_library = chunks[2]
         if(os.path.exists(pathname + '/' + self.inidir + '/LevMar.ini')):        
             with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
                 lines = f.read().splitlines()

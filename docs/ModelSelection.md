@@ -19,8 +19,8 @@ With this code, we first perform the data pre-processing by `Reader`, we set the
 
 In the `/event001` directory you will see the following products appear:
 - A new subdirectory called `Models/` is created. This will contain the best models for each category.
-- One or more files names `PSXXXX-X.txt` containing the details of the selected models. Each model is identified by the label for the model category followed by the number of initial condition and then by the fit number.
-- In addition, in the `/InitCond` subdirectory, some initial conditions files are updated to include more initial conditions obtained by perturbing the best models found in1 this category. For example, after the single-lens-single-source fits, initial conditions for binary lenses starting from best models found with single lens are added. These are particularly useful to model small anomalies due to planets.
+- One or more files named `PSXXXX-X.txt` containing the details of the selected models. Each model is identified by the label for the model category followed by the number of initial condition and then by the fit number. Any model obtained by user-defined initial conditions will carry the same label specified by the user.
+- In addition, in the `/InitCond` subdirectory, some initial conditions files are updated to include more initial conditions obtained by perturbing the best models found in this category. For example, after the single-lens-single-source fits, initial conditions for binary lenses starting from best models found with single lens are added. These are particularly useful to model small anomalies due to planets.
 
 After the execution of `ModelSelector`, you may call the `run()` function to complete the modeling run or continue with other calls to `launch_fits()` and `ModelSelector()`, or going to [final assessment](FinalAssessment.md) with `Finalizer()`, depending on your intentions.
 
@@ -59,10 +59,10 @@ Here we describe the options for `LevMar` in detail indicating their default val
 - `sigmachisquare = 1.0`: Besides the best model, `ModelSelector` retains competing models up to a threshold given by sqrt(2*chisqure), which represents one sigma in the chi square distribution. This threshold can be changed by this option to include less or more competing models in the final selection.
 - `maxmodels = 10`: Maximum number of competing models to report
 
-Notice that the options that are not explicitly specified in the call to `config_LevMar()` are always reset to their default values.
+Notice that the options that are not explicitly specified in the call to `config_LevMar()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
 
 ### Recording the options
 
-In each modeling run, the options for `ModelSelector` are stored in the file `ModelSelector.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run.
+In each modeling run, the options for `ModelSelector` are stored in the file `ModelSelector.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run. The function `recover_options()` can be used to load the options from a previous run.
 
 [Go to **Final assessment**](FinalAssessment.md)
