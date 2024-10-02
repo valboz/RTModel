@@ -12,7 +12,7 @@ The library is in the form of a standard Python package that launches specific s
 
 `RTModel` also includes a subpackage **`RTModel.plotmodel`** that allows an immediate visualization of models and the possibility to review each individual fitting process as an animated gif.
 
-A second package **`RTModel.templates`** helps the user in the visualization and customization of the template library.
+A second subpackage **`RTModel.templates`** helps the user in the visualization and customization of the template library.
 
 ## Attribution
 
