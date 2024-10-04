@@ -709,7 +709,41 @@ int main(int argc, char* argv[])
 			printf("\n%lf %lf %lf %le %lf", p->t, p->tl, p->tr, p->y, p->sig);
 		}
 
+		// Re-Ordering peaks by significance
 
+		printf("\n\n- Re-Ordering peaks by significance \n");
+
+		p = cpeaks->first;
+		while (p) {
+			datapoint* q;
+			pm = p->next;
+			flag = 0;
+			while (pm) {
+				q = pm->next;
+				if (pm->sig > p->sig) {
+					pm->prev->next = pm->next;
+					if (pm->next) {
+						pm->next->prev = pm->prev;
+					}
+					else cpeaks->last = pm->prev;
+					if (p->prev) {
+						p->prev->next = pm;
+					}
+					else cpeaks->first = pm;
+					pm->prev = p->prev;
+					p->prev = pm;
+					pm->next = p;
+					p = pm;
+				}
+				pm = q;
+			}
+			p = p->next;
+		}
+
+		for (p = cpeaks->first; p; p = p->next) {
+			printf("\n%lf %lf %lf %le %lf", p->t, p->tl, p->tr, p->y, p->sig);
+		}
+					
 		newpeaks = cpeaks;
 
 		// Delete used data

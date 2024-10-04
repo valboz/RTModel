@@ -12,6 +12,8 @@ The library is in the form of a standard Python package that launches specific s
 
 `RTModel` also includes a subpackage **`RTModel.plotmodel`** that allows an immediate visualization of models and the possibility to review each individual fitting process as an animated gif.
 
+A second subpackage **`RTModel.templates`** helps the user in the visualization and customization of the template library.
+
 ## Attribution
 
 `RTModel` has been created by Valerio Bozza (University of Salerno) as a product of many years of direct experience on microlensing modeling (see [RTModel webpage](http://www.fisica.unisa.it/GravitationAstrophysics/RTModel.htm)). 
