@@ -1,3 +1,4 @@
+- **v2.2** - 2024/10/? - Added the possibility to constrain fits.
 - **v2.1.1** - 2024/09/11 - Re-ordering peaks in InitCond to promote peaks appearing in more datasets.
 - **v2.1** - 2024/09/04 - recover_options function; noparallax replaced by onlyorbital everywhere; InitCond prints peaks found; All peaks used for single-lens-single-source initial conditions; Templates package to manage template library; Time limit for LevMar now forced by RTModel; Possibility to start fit from user-defined initial conditions through an array or a file; plotmodel: figure, showlightcurve, showcaustics.
 - **v2.0.7** - 2024/07/23 - Corrected a bug in ModelSelector showing up for events with a single dataset; corrected a minor bug in re-using old models for PS category.
