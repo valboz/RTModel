@@ -498,6 +498,7 @@ void LevMar::ReadOptions() {
 			printf("\n\n- Default options:");
 		}
 	}
+	current_path(eventname);
 }
 
 int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim) {
