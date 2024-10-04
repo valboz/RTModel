@@ -5,7 +5,8 @@
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include <VBBinaryLensingLibrary.h>
+#include "..\..\..\Projects\VBBinaryLensing3.0\VBBinaryLensing3.0\VBBinaryLensingLibrary.h"
+//#include <VBBinaryLensingLibrary.h>
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
@@ -27,6 +28,21 @@ double bumperpower = 2.0; // Repulsion factor of bumpers
 double maxbumpcount = 25;
 char parametersfile[256] = ""; // File from which user parameters are read, if any
 
+std::vector<std::vector<std::string>> parnames = { {"u0","tE","t0","rho"},
+					{"u0","tE","t0","rho","piN","piE"},
+					{"tE","FR","u01","u02","t0","t02","rho"},
+					{"u0","t0","tE","rho","xi1","xi2","om","inc","phi","qs"},
+					{"s","q","u0","alpha","rho","tE","t0"},
+					{"s","q","u0","alpha","rho","tE","t0","piN","piE"},
+					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz"} };
+
+std::vector<std::vector<int>> logposs = {{0, 1, 3},
+										{1, 3},
+										{0, 1, 6},
+										{2, 3, 9},
+										{0, 1, 4, 5},
+										{0, 1, 4, 5},
+										{0, 1, 4, 5}};
 
 const double epsilon = 1.e-100;
 
@@ -78,6 +94,13 @@ LevMar::~LevMar() {
 			free(Gr[i]);
 		}
 		free(Gr);
+		if (consnumber > 0) {
+			free(consindex);
+			free(constraints);
+			free(consleft);
+			free(consright);
+			free(consvars);
+		}
 
 
 		bumper* scanbumper = bumperlist, * scanbumper2;
@@ -105,9 +128,7 @@ LevMar::~LevMar() {
 
 void LevMar::ReadFiles(int argc, char* argv[]) {
 	FILE* f;
-	char buffer[3200], initcondfile[256];
-	char command[256];
-	char value[256];
+	char initcondfile[256];
 
 	try {
 
@@ -144,49 +165,10 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		//	nlc = 1;
 		//}
 
-
-	/* Reading coordinates of the model */
-
-		if (exists("ini")) {
-			current_path("ini");
-			f = fopen("LevMar.ini", "r");
-			if (f != 0) {
-				printf("\n\n- Reading options in LevMar.ini");
-				while (!feof(f)) {
-					int red = fscanf(f, "%s %s %s", command, buffer, value);
-					if (red < 1) {
-						command[0] = 0;
-						//if (red != 0) {
-						//	printf("\n\n!!! Bad command in Reader.ini");
-						//	return -1;
-						//};
-					}
-					if (strcmp(command, "nfits") == 0) {
-						sscanf(value, "%d", &nlc);
-					}
-					if (strcmp(command, "maxsteps") == 0) {
-						sscanf(value, "%d", &maxsteps);
-					}
-					if (strcmp(command, "timelimit") == 0) {
-						// sscanf(value, "%lf", &maxtime);
-						maxtime = maxtime;  // No longer controlled within LevMar
-					}
-					if (strcmp(command, "bumperpower") == 0) {
-						sscanf(value, "%lg", &bumperpower);
-					}
-					if (strcmp(command, "parametersfile") == 0) {
-						strcpy(parametersfile, value);
-					}
-				}
-				fclose(f);
-			}
-			else {
-				printf("\n\n- Default options:");
-			}
-		}
-
 		current_path(eventname);
 		current_path("Data");
+
+		/* Reading coordinates */
 
 		auto searchstring = regex(".*\\.coordinates");
 		for (auto const& itr : directory_iterator(".")) {
@@ -205,8 +187,10 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		switch (modelcode[0]) {
 		case 'P':
 			if (modelcode[1] == 'X') {
+				modnumber = 1;
 				model = &VBBinaryLensing::ESPLLightCurveParallax;
 				nps = 6;
+				ReadOptions();
 				double presigmapr[] = { .5,.5,5.,4.6,1,1 };
 				double preleftlim[] = { -13.,-6.9,-10.e100,-11.5,-10.,-10. };
 				double prerightlim[] = { .7,6.9,10.e100,0.0,10.,10. };
@@ -217,8 +201,10 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				PrintFile = &LevMar::PrintFilePX;
 			}
 			else {
+				modnumber = 0;
 				model = &VBBinaryLensing::ESPLLightCurve;
 				nps = 4;
+				ReadOptions();
 				double presigmapr[] = { .5,.5,5.,4.6 };
 				double preleftlim[] = { -13.,-6.9,-10.e100,-11.5 };
 				double prerightlim[] = { .7,6.9,10.e100,0.0 };
@@ -237,8 +223,10 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			break;
 		case 'B':
 			if (modelcode[1] == 'O') {
+				modnumber = 3;
 				model = &VBBinaryLensing::BinSourceSingleLensXallarap;
 				nps = 10;
+				ReadOptions();
 				double presigmapr[] = { 1,1,1,15,3,3,1,3,6,3 };
 				double preleftlim[] = { -3.,-1.e100,-6.9,-11.5,-3.,-3.,0,-3,-6,-4.6 };
 				double prerightlim[] = { 3.,1.e100,6.9,0.,3.,3.,1,3,6,1,+4.6 };
@@ -250,8 +238,10 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				PrintFile = &LevMar::PrintFileBO;
 			}
 			else {
+				modnumber = 2;
 				model = &VBBinaryLensing::BinSourceExtLightCurve;
 				nps = 7;
+				ReadOptions();
 				double presigmapr[] = { .1,.4,1,1,1,1,4.6 };
 				double preleftlim[] = { -6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5 };
 				double prerightlim[] = { 6.9,11.5,3.,3.,10.e100,10.e100,0.0 };
@@ -270,8 +260,10 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			break;
 		case 'L':
 			if (modelcode[1] == 'X') {
+				modnumber = 5;
 				model = &VBBinaryLensing::BinaryLightCurveParallax;
 				nps = 9;
+				ReadOptions();
 				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,1.,1. };
 				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3. };
 				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3. };
@@ -285,8 +277,10 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			}
 			else {
 				if (modelcode[1] == 'O') {
+					modnumber = 6;
 					model = &VBBinaryLensing::BinaryLightCurveOrbital;
 					nps = 12;
+					ReadOptions();
 					double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3. };
 					double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7 };
 					double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1 };
@@ -300,8 +294,10 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				}
 				else {
 					if (modelcode[1] == 'P') {
+						modnumber = 5;
 						model = &VBBinaryLensing::BinaryLightCurveOrbital;
 						nps = 12;
+						ReadOptions();
 						double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,.0001,.0001,1.,1.,3. };
 						double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-.0001,-.0001,-1,-1,1.e-7 };
 						double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,.0001,.0001,1,1,1 };
@@ -319,6 +315,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						if (modelcode[1] == 'K') {
 							model = &VBBinaryLensing::BinaryLightCurveKepler;
 							nps = 14;
+							ReadOptions();
 							double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3., 3., 3. };
 							double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001 };
 							double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,10,10 };
@@ -331,12 +328,14 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 							PrintFile = &LevMar::PrintFileLK;
 						}
 						else {
+							modnumber = 4;
 							model = &VBBinaryLensing::BinaryLightCurve;
 							nps = 7;
+							ReadOptions();
 							double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1. };
 							double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100 };
 							double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100 };
-							error=InitCond(presigmapr, preleftlim, prerightlim);
+							error = InitCond(presigmapr, preleftlim, prerightlim);
 							pr[0] = log(pr[0]);
 							pr[1] = log(pr[1]);
 							pr[4] = log(pr[4]);
@@ -355,12 +354,151 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 	catch (...) {
 		error = 10;
 	}
+	current_path(eventname);
 
 	if (!error) {
 		// Reading Light Curve
 		ReadCurve();
 	}
 
+}
+
+void LevMar::ReadOptions() {
+	char buffer[3200];
+	char command[256];
+	char value[256], value2[256], value3[256];
+
+	consnumber = 0;
+	FILE* f;
+	/* Reading ini files */
+
+	if (exists("ini")) {
+		current_path("ini");
+
+		/* Reading constraints */
+
+		f = fopen("Constraints.ini", "r");
+		if (f != 0) {
+			while (!feof(f)) {
+				fscanf(f, "%[^\n]s", command);
+				fscanf(f, "%s", command);
+				consnumber++;
+			}
+			fclose(f);
+			consindex = (int*)malloc(sizeof(int) * consnumber);
+			constraints = (double*)malloc(sizeof(double) * consnumber);
+			consleft = (double*)malloc(sizeof(double) * consnumber);
+			consright = (double*)malloc(sizeof(double) * consnumber);
+			consvars = (double*)malloc(sizeof(double) * consnumber*(nps+1));
+			printf("\n\n- Reading Constraints.ini");
+			f = fopen("Constraints.ini", "r");
+			int conscurrent = 0;
+			while (!feof(f)) {
+				int red = fscanf(f, "%s %s %s %s %s", command, buffer, value, value2, value3);
+				printf("\n%s %s %s %s %s", command, buffer, value, value2, value3);
+				if (red < 5) {
+					command[0] = 0;
+					//if (red != 0) {
+				}
+				else {
+					consindex[conscurrent] = -1;
+					strcpy(buffer, command);
+					int flaglog = 0,flaglog2 = 0;
+					buffer[4] = 0;
+					for (int i = 0; i < parnames[modnumber].size(); i++) {
+						if (strcmp(buffer, "log_") == 0) { // Log parameter
+							if (strcmp(parnames[modnumber][i].c_str(), &command[4]) == 0) {
+								consindex[conscurrent] = i;							
+								flaglog = 1;
+							}
+						}
+						else {
+							if (strcmp(parnames[modnumber][i].c_str(), command) == 0) {
+								consindex[conscurrent] = i;
+							}
+						}
+					}
+					for (int j = 0; j < logposs[modnumber].size(); j++) {
+						if (logposs[modnumber][j] == consindex[conscurrent]) flaglog2 = 1;
+					}
+
+					if (command[0] == 'g' && command[1] == '_') { // Blending
+						sscanf(&command[2], "%d", &consindex[conscurrent]);
+						consindex[conscurrent] += 10000;
+					}
+					// special combinations
+					if (strcmp(command, "muangle") == 0) {
+						for (int i = 0; i < nps; i++) {
+							if (strcmp(parnames[modnumber][i].c_str(), "piN") == 0) consindex[conscurrent] = 30000;
+						}
+					}
+					if (consindex[conscurrent] >= 0) {
+						sscanf(value, "%lg", &constraints[conscurrent]);
+						sscanf(value2, "%lg", &consleft[conscurrent]);
+						sscanf(value3, "%lg", &consright[conscurrent]);
+						consleft[conscurrent] = fabs(consleft[conscurrent]);
+						consright[conscurrent] = fabs(consright[conscurrent]);
+						if (flaglog == 0 && flaglog2 == 1) {
+							consleft[conscurrent] /= constraints[conscurrent];
+							consright[conscurrent] /= constraints[conscurrent];
+							constraints[conscurrent] = log(constraints[conscurrent]);
+						}
+						if (flaglog == 1 && flaglog2 == 0) {
+							constraints[conscurrent] = exp(constraints[conscurrent] * log(10));
+							consleft[conscurrent] *= constraints[conscurrent] * log(10);
+							consright[conscurrent] *= constraints[conscurrent] * log(10);
+						}
+						if (flaglog == 1 && flaglog2 == 1) {
+							constraints[conscurrent] *= log(10);
+							consleft[conscurrent] *= log(10);
+							consright[conscurrent] *= log(10);
+						}
+						conscurrent++;
+					}
+				}
+			}
+			fclose(f);
+			consnumber = conscurrent;
+			printf("\nConstraints: %d", consnumber);
+		}
+
+		/* Reading options */
+
+		f = fopen("LevMar.ini", "r");
+		if (f != 0) {
+			printf("\n\n- Reading options in LevMar.ini");
+			while (!feof(f)) {
+				int red = fscanf(f, "%s %s %s", command, buffer, value);
+				if (red < 1) {
+					command[0] = 0;
+					//if (red != 0) {
+					//	printf("\n\n!!! Bad command in Reader.ini");
+					//	return -1;
+					//};
+				}
+				if (strcmp(command, "nfits") == 0) {
+					sscanf(value, "%d", &nlc);
+				}
+				if (strcmp(command, "maxsteps") == 0) {
+					sscanf(value, "%d", &maxsteps);
+				}
+				if (strcmp(command, "timelimit") == 0) {
+					// sscanf(value, "%lf", &maxtime);
+					maxtime = maxtime;  // No longer controlled within LevMar
+				}
+				if (strcmp(command, "bumperpower") == 0) {
+					sscanf(value, "%lg", &bumperpower);
+				}
+				if (strcmp(command, "parametersfile") == 0) {
+					strcpy(parametersfile, value);
+				}
+			}
+			fclose(f);
+		}
+		else {
+			printf("\n\n- Default options:");
+		}
+	}
 }
 
 int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim) {
@@ -959,21 +1097,26 @@ double LevMar::ChiSquared(double* pr) {
 	if (chi0 / chi2 > 0.1) Tol *= 0.5;
 	if (chi0 / chi2 < 0.01 && Tol < .99e-2) Tol *= 2;
 
+	// Constraints
+	for (int icons = 0; icons < consnumber; icons++) {
+		consvars[icons] = ComputeConstraint(pr, icons);
+		p1 = consvars[icons] - constraints[icons];
+		p1 /= (p1 > 0) ? consright[icons] : consleft[icons];
+		chi2 += p1 * p1;
+	}
+
 	return chi2;
 }
 
 void LevMar::Grad() {
-	double inc, p1;
+	static double inc = 1.0e-3, p1;
 	int fl;
-
+	for (int i = 0; i < nps + nfil * 2; i++) {
+		prn[i] = pr[i];
+	}
 	for (int j = 0; j < nps; j++) {
 		printf("%d ", j);
-		//if((j<2)||(j>3)){
-		//	inc=pr[j]*1.0e-3;
-		//}else{
-		inc = 1.0e-3;
-		//}
-		pr[j] += inc;
+		prn[j] += inc;
 		fl = 0;
 		sumf[0] = sumfy[0] = sumf2[0] = 0;
 		for (int i = 0; i < np; i++) {
@@ -983,53 +1126,78 @@ void LevMar::Grad() {
 			}
 			VBBL->satellite = satel[i];
 			VBBL->a1 = limbdarks[fl];
-			fb[i + np * (j + 1)] = (VBBL->*model)(pr, t[i]);
+			fb[i + np * (j + 1)] = (VBBL->*model)(prn, t[i]);
 			sumf[fl] += w[i] * w[i] * fb[i + np * (j + 1)];
 			sumf2[fl] += w[i] * w[i] * fb[i + np * (j + 1)] * fb[i + np * (j + 1)];
 			sumfy[fl] += w[i] * w[i] * fb[i + np * (j + 1)] * y[i];
 		}
-		pr[j] -= inc;
 		for (int i = 0; i <= fl; i++) {
-#ifndef NOgOGLE
 			p1 = sumf[i] * sumf[i] - sumf2[i] * sumsigma[i] + epsilon;
-			prn[i * 2] = (sumf[i] * sumfy[i] - sumf2[i] * sumy[i]) / p1;
-			prn[1 + i * 2] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
-#else
-			if (i == OGLE) {
-				prn[i * 2] = 0.;
-				prn[1 + i * 2] = sumfy[i] / sumf2[i];
-			}
-			else {
-				p1 = sumf[i] * sumf[i] - sumf2[i] * sumsigma[i] + epsilon;
-				prn[i * 2] = (sumf[i] * sumfy[i] - sumf2[i] * sumy[i]) / p1;
-				prn[1 + i * 2] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
-			}
-#endif
-			if (prn[1 + i * 2] < 0)  prn[1 + i * 2] = 0;
-			dFdp[(1 + 2 * i) * nps + j] = (prn[i * 2] + prn[1 + i * 2] - pr[nps + i * 2] - pr[nps + 1 + i * 2]) / inc;  // error on baseline FB+FS
-			dFdp[(2 * i) * nps + j] = (prn[i * 2] / prn[1 + i * 2] - pr[nps + i * 2] / pr[nps + 1 + i * 2]) / inc;    // error on blending FB/FS
+			prn[nps + i * 2] = (sumf[i] * sumfy[i] - sumf2[i] * sumy[i]) / p1;
+			prn[nps + 1 + i * 2] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
+
+			if (prn[nps + 1 + i * 2] < 0)  prn[nps + 1 + i * 2] = 0;
+			dFdp[(1 + 2 * i) * nps + j] = (prn[nps + i * 2] + prn[nps + 1 + i * 2] - pr[nps + i * 2] - pr[nps + 1 + i * 2]) / inc;  // error on baseline FB+FS
+			dFdp[(2 * i) * nps + j] = (prn[nps + i * 2] / prn[nps + 1 + i * 2] - pr[nps + i * 2] / pr[nps + 1 + i * 2]) / inc;    // error on blending FB/FS
 		}
+		for (int icons = 0; icons < consnumber; icons++) { // Gradient of constraints
+			consvars[icons + (j+1) * consnumber] = ComputeConstraint(prn, icons);
+			p1 = (consvars[icons] - constraints[icons]);
+			consvars[icons + (j + 1) * consnumber] = (consvars[icons + (j + 1) * consnumber] - consvars[icons]) / (((p1 > 0) ? consright[icons] : consleft[icons]) * inc);
+		}
+		prn[j] -= inc;
 		for (int i = 0; i < np; i++) {
-			Gr[j][i] = w[i] * (prn[filter[i] * 2] + prn[1 + filter[i] * 2] * fb[i + np * (j + 1)] - pr[nps + filter[i] * 2] - pr[nps + 1 + filter[i] * 2] * fb[i]) / inc;
+			Gr[j][i] = w[i] * (prn[nps + filter[i] * 2] + prn[nps + 1 + filter[i] * 2] * fb[i + np * (j + 1)] - pr[nps + filter[i] * 2] - pr[nps + 1 + filter[i] * 2] * fb[i]) / inc;
 		}
 	}
 	printf("OK\n");
-
+	// Curvature matrix
 	for (int j = 0; j < nps; j++) {
 		for (int i = 0; i < nps; i++) {
 			Curv[i * nps + j] = 0;
 			for (int k = 0; k < np; k++) {
 				Curv[i * nps + j] += Gr[i][k] * Gr[j][k];
 			}
+			// Constraints in curvature
+			for (int icons = 0; icons < consnumber; icons++) {
+				Curv[i * nps + j] += consvars[icons + (i+1) * consnumber]* consvars[icons + (j+1) * consnumber];
+			}
 		}
 	}
+
+	// Offset
 	for (int i = 0; i < nps; i++) {
-		inc = 0;
+		p1 = 0;
 		for (int k = 0; k < np; k++) {
-			inc += w[k] * Gr[i][k] * (y[k] - pr[nps + filter[k] * 2] - pr[nps + 1 + filter[k] * 2] * fb[k]);
+			p1 += w[k] * Gr[i][k] * (y[k] - pr[nps + filter[k] * 2] - pr[nps + 1 + filter[k] * 2] * fb[k]);
 		}
-		B0[i] = inc;
+		B0[i] = p1;
+		for (int icons = 0; icons < consnumber; icons++) {
+			p1 = (consvars[icons] - constraints[icons]);
+			p1 /= (p1 > 0) ? consright[icons] : consleft[icons];
+			B0[i] -= p1 * consvars[icons + (i+1)*consnumber];
+		}
 	}
+}
+
+inline double LevMar::ComputeConstraint(double *pr, int ic) {
+	int i = consindex[ic];
+	if (i < 10000) {
+		return pr[i];
+	}
+	if (i < 20000) {
+		return pr[nps + (i - 10000) * 2] / pr[nps + (i - 10000) * 2 + 1];
+	}
+	if (i == 30000) {
+		int posN=-1, posE=-1;
+		for (int i = 0; i < nps; i++) {
+			if (strcmp(parnames[modnumber][i].c_str(), "piN") == 0) posN = i;
+			if (strcmp(parnames[modnumber][i].c_str(), "piE") == 0) posE = i;
+		}
+		return atan2(pr[posE], pr[posN]);
+	}
+	
+	return 0;
 }
 
 void LevMar::Covariance() {
