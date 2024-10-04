@@ -13,8 +13,7 @@ using namespace std::filesystem;
 #define _LevMarFit
 #define __unmanaged
 
-#include "..\..\..\Projects\VBBinaryLensing3.0\VBBinaryLensing3.0\VBBinaryLensingLibrary.h"
-//#include <VBBinaryLensingLibrary.h>
+#include <VBBinaryLensingLibrary.h>
 
 class LevMar {
 
