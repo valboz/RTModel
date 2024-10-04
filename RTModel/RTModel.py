@@ -54,6 +54,14 @@ class RTModel:
     def set_satellite_dir(self, satellitedir):
         self.satellitedir = satellitedir
 
+    def set_constraints(self, constraints = None):
+        self.constraints = constraints
+        if(not os.path.exists(self.eventname + '/' + self.inidir)):
+            os.makedirs(self.eventname + '/' + self.inidir)
+        with open(self.eventname + '/' + self.inidir + '/Constraints.ini','w') as f:
+            for cons in constraints:
+                f.write(cons[0] + ' = '+ str(cons[1]) + ' '+ str(cons[2]) + ' '+ str(cons[3]) + ' ' + '\n')
+
     def config_Reader(self, tau = 0.1, binning = 4000, otherseasons = 1, renormalize = 1, thresholdoutliers = 10):
         self.Reader_tau= tau # conventional correlation time for consecutive points
         self.Reader_binning = binning # maximum number of points left after re-binning
