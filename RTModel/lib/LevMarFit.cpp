@@ -5,8 +5,7 @@
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include "..\..\..\Projects\VBBinaryLensing3.0\VBBinaryLensing3.0\VBBinaryLensingLibrary.h"
-//#include <VBBinaryLensingLibrary.h>
+#include <VBBinaryLensingLibrary.h>
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
