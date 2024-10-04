@@ -343,6 +343,14 @@ class RTModel:
         if(not(os.path.exists(pathname))):
             print("Invalid path!")
             return
+        if(os.path.exists(pathname + '/' + self.inidir + '/Constraints.ini')):
+            with open(pathname + '/' + self.inidir + '/Constraints.ini','r') as f:
+                lines = f.read().splitlines()
+                print('Constraints --- ',lines) 
+                self.constraints =[]
+                for line in lines:
+                    chunks =line.split()
+                    self.constraints.append([chunks[0], float(chunks[2]), float(chunks[3]), float(chunks[4])])
         if(os.path.exists(pathname + '/' + self.inidir + '/Reader.ini')):
             with open(pathname + '/' + self.inidir + '/Reader.ini','r') as f:
                 lines = f.read().splitlines()
