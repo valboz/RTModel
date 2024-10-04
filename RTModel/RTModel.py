@@ -351,6 +351,7 @@ class RTModel:
                 for line in lines:
                     chunks =line.split()
                     self.constraints.append([chunks[0], float(chunks[2]), float(chunks[3]), float(chunks[4])])
+                self.set_constraints(self.constraints)
         if(os.path.exists(pathname + '/' + self.inidir + '/Reader.ini')):
             with open(pathname + '/' + self.inidir + '/Reader.ini','r') as f:
                 lines = f.read().splitlines()
