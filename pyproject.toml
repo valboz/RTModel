@@ -24,7 +24,7 @@ dependencies = [
     "pytest",
     "matplotlib", 
     "tqdm",
-    "VBBinaryLensing>=3.7.0"
+    "VBMicrolensing>=4.1.0"
 ]
 
 [project.urls]
