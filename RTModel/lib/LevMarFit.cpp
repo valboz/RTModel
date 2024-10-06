@@ -5,7 +5,8 @@
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include <VBBinaryLensingLibrary.h>
+#include "..\..\..\Projects\VBMicrolensing4.1\VBMicrolensing4.1\VBMicrolensing-dev\VBMicrolensing\lib\VBMicrolensingLibrary.h"
+//#include <VBMicrolensingLibrary.h>
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
@@ -17,8 +18,6 @@
 
 using namespace std;
 using namespace std::filesystem;
-
-
 
 int nlc = 5; // Number of models to be calculated from the same initial condition using the bumper method
 int maxsteps = 50; // Maximum number of steps in each fit
@@ -53,17 +52,17 @@ LevMar::LevMar(int argc, char* argv[]) {
 	error = 0;
 	// Setting default values
 	Tol = 1.e-2;
-	VBBL = new VBBinaryLensing;
-	VBBL->Tol = Tol;
-	VBBL->RelTol = 0.001;
-	VBBL->parallaxsystem = 1;
+	VBM = new VBMicrolensing;
+	VBM->Tol = Tol;
+	VBM->RelTol = 0.001;
+	VBM->parallaxsystem = 1;
 
 	ReadFiles(argc, argv);
 
 }
 
 LevMar::~LevMar() {
-	delete VBBL;
+	delete VBM;
 	if (error < 9) {
 		free(t);
 		free(y);
@@ -173,7 +172,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		for (auto const& itr : directory_iterator(".")) {
 			string curfile = (itr).path().filename().string();
 			if (regex_match(curfile, searchstring)) {
-				VBBL->SetObjectCoordinates((char*)curfile.c_str(), satellitedir);
+				VBM->SetObjectCoordinates((char*)curfile.c_str(), satellitedir);
 				printf("\n- Coordinates set.");
 				break;
 			}
@@ -187,7 +186,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		case 'P':
 			if (modelcode[1] == 'X') {
 				modnumber = 1;
-				model = &VBBinaryLensing::ESPLLightCurveParallax;
+				model = &VBMicrolensing::ESPLLightCurveParallax;
 				nps = 6;
 				ReadOptions();
 				double presigmapr[] = { .5,.5,5.,4.6,1,1 };
@@ -201,7 +200,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			}
 			else {
 				modnumber = 0;
-				model = &VBBinaryLensing::ESPLLightCurve;
+				model = &VBMicrolensing::ESPLLightCurve;
 				nps = 4;
 				ReadOptions();
 				double presigmapr[] = { .5,.5,5.,4.6 };
@@ -217,13 +216,13 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			current_path(exedir);
 			current_path("..");
 			current_path("data");
-			VBBL->LoadESPLTable("ESPL.tbl");
+			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
 			break;
 		case 'B':
 			if (modelcode[1] == 'O') {
 				modnumber = 3;
-				model = &VBBinaryLensing::BinSourceSingleLensXallarap;
+				model = &VBMicrolensing::BinSourceSingleLensXallarap;
 				nps = 10;
 				ReadOptions();
 				double presigmapr[] = { 1,1,1,15,3,3,1,3,6,3 };
@@ -238,7 +237,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			}
 			else {
 				modnumber = 2;
-				model = &VBBinaryLensing::BinSourceExtLightCurve;
+				model = &VBMicrolensing::BinSourceExtLightCurve;
 				nps = 7;
 				ReadOptions();
 				double presigmapr[] = { .1,.4,1,1,1,1,4.6 };
@@ -254,13 +253,13 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			current_path(exedir);
 			current_path("..");
 			current_path("data");
-			VBBL->LoadESPLTable("ESPL.tbl");
+			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
 			break;
 		case 'L':
 			if (modelcode[1] == 'X') {
 				modnumber = 5;
-				model = &VBBinaryLensing::BinaryLightCurveParallax;
+				model = &VBMicrolensing::BinaryLightCurveParallax;
 				nps = 9;
 				ReadOptions();
 				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,1.,1. };
@@ -277,7 +276,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			else {
 				if (modelcode[1] == 'O') {
 					modnumber = 6;
-					model = &VBBinaryLensing::BinaryLightCurveOrbital;
+					model = &VBMicrolensing::BinaryLightCurveOrbital;
 					nps = 12;
 					ReadOptions();
 					double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3. };
@@ -294,7 +293,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				else {
 					if (modelcode[1] == 'P') {
 						modnumber = 5;
-						model = &VBBinaryLensing::BinaryLightCurveOrbital;
+						model = &VBMicrolensing::BinaryLightCurveOrbital;
 						nps = 12;
 						ReadOptions();
 						double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,.0001,.0001,1.,1.,3. };
@@ -312,7 +311,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					}
 					else {
 						if (modelcode[1] == 'K') {
-							model = &VBBinaryLensing::BinaryLightCurveKepler;
+							model = &VBMicrolensing::BinaryLightCurveKepler;
 							nps = 14;
 							ReadOptions();
 							double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3., 3., 3. };
@@ -328,7 +327,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						}
 						else {
 							modnumber = 4;
-							model = &VBBinaryLensing::BinaryLightCurve;
+							model = &VBMicrolensing::BinaryLightCurve;
 							nps = 7;
 							ReadOptions();
 							double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1. };
@@ -1049,9 +1048,9 @@ double LevMar::ChiSquared(double* pr) {
 			fl++;
 			sumf[fl] = sumfy[fl] = sumf2[fl] = 0;
 		}
-		VBBL->satellite = satel[i];
-		VBBL->a1 = limbdarks[fl];
-		fb[i] = (VBBL->*model)(pr, t[i]);
+		VBM->satellite = satel[i];
+		VBM->a1 = limbdarks[fl];
+		fb[i] = (VBM->*model)(pr, t[i]);
 		sumf[fl] += w[i] * w[i] * fb[i];
 		sumf2[fl] += w[i] * w[i] * fb[i] * fb[i];
 		sumfy[fl] += w[i] * w[i] * fb[i] * y[i];
@@ -1124,9 +1123,9 @@ void LevMar::Grad() {
 				fl++;
 				sumf[fl] = sumfy[fl] = sumf2[fl] = 0;
 			}
-			VBBL->satellite = satel[i];
-			VBBL->a1 = limbdarks[fl];
-			fb[i + np * (j + 1)] = (VBBL->*model)(prn, t[i]);
+			VBM->satellite = satel[i];
+			VBM->a1 = limbdarks[fl];
+			fb[i + np * (j + 1)] = (VBM->*model)(prn, t[i]);
 			sumf[fl] += w[i] * w[i] * fb[i + np * (j + 1)];
 			sumf2[fl] += w[i] * w[i] * fb[i + np * (j + 1)] * fb[i + np * (j + 1)];
 			sumfy[fl] += w[i] * w[i] * fb[i + np * (j + 1)] * y[i];
