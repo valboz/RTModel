@@ -21,7 +21,7 @@ add_executable(InitCond RTModel/lib/InitCond.cpp)
 target_include_directories(InitCond PRIVATE RTModel/include)
 
 add_executable(LevMar RTModel/lib/bumper.cpp RTModel/lib/LevMar.cpp RTModel/lib/LevMarFit.cpp
-        RTModel/lib/VBBinaryLensingLibrary.cpp)
+        RTModel/lib/VBMicrolensingLibrary.cpp)
 target_include_directories(LevMar PRIVATE RTModel/include)
 
 add_executable(ModelSelector RTModel/lib/bumper.cpp RTModel/lib/ModelSelector.cpp)
