@@ -1,4 +1,4 @@
-import VBBinaryLensing
+import VBMicrolensing
 import math
 import matplotlib.pyplot as plt
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
@@ -19,7 +19,7 @@ class plotmodel:
                  modelfile = None, parameters = [], line = 0,printpars = True, animate = False,interval = 1000, satellitedir = '.'):
         self.satellitedir = satellitedir
         self.parameters = parameters
-        filin=inspect.getfile(VBBinaryLensing)
+        filin=inspect.getfile(VBMicrolensing)
         self.filout= os.path.dirname(filin) + '/data/ESPL.tbl'
         self.eventname = eventname
         self.model = model
@@ -39,7 +39,7 @@ class plotmodel:
         if(modelfile == None and parameters == []):
             print('Please specify model parameters')
             return
-        self.vbbl = VBBinaryLensing.VBBinaryLensing()
+        self.vbm = VBMicrolensing.VBMicrolensing()
         # General information on models
         self.modelcodes= ['PS','PX','BS','BO','LS','LX','LO']
         self.npars=[4,6,7,10,7,9,12]
@@ -149,7 +149,7 @@ class plotmodel:
                 lctran=np.transpose(lcarr)
                 lc = np.transpose(lctran)                
                 self.t = lc[0]
-                self.vbbl.satellite = lc0[3]
+                self.vbm.satellite = lc0[3]
                 self.lightcurve()
                 f = np.array(self.results[0])
                 sumf = (f/(lc[2]*lc[2])).sum()
@@ -165,24 +165,24 @@ class plotmodel:
                 
     def lightcurve(self):
         if(self.modnumber < 4):
-            self.vbbl.LoadESPLTable(self.filout)
+            self.vbm.LoadESPLTable(self.filout)
         if(self.modnumber == 1 or self.modnumber > 4):
-            self.vbbl.SetObjectCoordinates(glob.glob('Data/*.coordinates')[0],self.satellitedir)
-            self.vbbl.parallaxsystem = 1
+            self.vbm.SetObjectCoordinates(glob.glob('Data/*.coordinates')[0],self.satellitedir)
+            self.vbm.parallaxsystem = 1
         if(self.modnumber == 0):
-            self.results = self.vbbl.ESPLLightCurve(self.pars,self.t)
+            self.results = self.vbm.ESPLLightCurve(self.pars,self.t)
         elif(self.modnumber == 1):
-            self.results = self.vbbl.ESPLLightCurveParallax(self.pars,self.t)
+            self.results = self.vbm.ESPLLightCurveParallax(self.pars,self.t)
         elif(self.modnumber == 2):
-            self.results = self.vbbl.BinSourceExtLightCurve(self.pars,self.t)
+            self.results = self.vbm.BinSourceExtLightCurve(self.pars,self.t)
         elif(self.modnumber == 3):
-            self.results = self.vbbl.BinSourceSingleLensXallarap(self.pars,self.t)
+            self.results = self.vbm.BinSourceSingleLensXallarap(self.pars,self.t)
         elif(self.modnumber == 4):
-            self.results = self.vbbl.BinaryLightCurve(self.pars,self.t)
+            self.results = self.vbm.BinaryLightCurve(self.pars,self.t)
         elif(self.modnumber == 5):
-            self.results = self.vbbl.BinaryLightCurveParallax(self.pars,self.t)
+            self.results = self.vbm.BinaryLightCurveParallax(self.pars,self.t)
         elif(self.modnumber == 6):
-            self.results = self.vbbl.BinaryLightCurveOrbital(self.pars,self.t)
+            self.results = self.vbm.BinaryLightCurveOrbital(self.pars,self.t)
 
     
     def calculate(self):
@@ -235,7 +235,7 @@ class plotmodel:
                 if(self.satellites[i] == satellite):
                     self.t = np.concatenate((self.t,self.lctimes[i]))                
             self.t = np.sort(self.t)
-            self.vbbl.satellite = satellite
+            self.vbm.satellite = satellite
             self.lightcurve()        
             self.mags = [-2.5*math.log10(self.sources[self.referencephot]*yi+self.blends[self.referencephot]) for yi in self.results[0]]
             self.y1 = self.results[1]
@@ -270,7 +270,7 @@ class plotmodel:
     # Caustic plot preparation   
         self.rancau = max([self.maxy1-self.miny1,self.maxy2 - self.miny2])
         if(self.modnumber>3):
-            self.caus = self.vbbl.Caustics(self.parsprint[0],self.parsprint[1])
+            self.caus = self.vbm.Caustics(self.parsprint[0],self.parsprint[1])
         else:
             self.caus = np.array([[[0,1,0,-1,0],[1,0,-1,0,1]]])*self.rancau*0.001        
         # tE=parsprint[parnames[modnumber].index('tE')]
