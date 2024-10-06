@@ -23,6 +23,7 @@ target_include_directories(InitCond PRIVATE RTModel/include)
 add_executable(LevMar RTModel/lib/bumper.cpp RTModel/lib/LevMar.cpp RTModel/lib/LevMarFit.cpp
         RTModel/lib/VBMicrolensingLibrary.cpp)
 target_include_directories(LevMar PRIVATE RTModel/include)
+target_compile_options(LevMar PRIVATE /Oi /O2 /Ot)
 
 add_executable(ModelSelector RTModel/lib/bumper.cpp RTModel/lib/ModelSelector.cpp)
 target_include_directories(ModelSelector PRIVATE RTModel/include)
