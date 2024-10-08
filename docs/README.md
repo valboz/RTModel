@@ -48,6 +48,8 @@ Additional useful functionalities are discussed in the following pages.
 
 - [Limb darkening](LimbDarkening.md)
 
+- [Constrained fits](Constraints.md)
+
 Advanced users may attempt a deeper understanding of the modeling steps and optimize `RTModel` by numerous options.
 
 - [Data pre-processing](DataPreprocessing.md)
