@@ -1,4 +1,4 @@
-[Back to **Limb darkening**](LimbDarkening.md)
+[Back to **Constrained fits**](Constraints.md)
 
 # Data pre-processing
 
