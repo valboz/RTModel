@@ -10,6 +10,8 @@ The modified $\tilde\chi^2$ including a gaussian constraint on $f$ is then used 
 
 $\tilde\chi^2 =\chi^2 + \left(\frac{f(\mathbf{p})-f_0}{\sigma_l}\right)\Theta(f_0-f(\mathbf{p})) + \left(\frac{f(\mathbf{p})-f_0}{\sigma_r}\right)\Theta(f(\mathbf{p})-f_0)$
 
+## Implementation
+
 The practical implementation in `RTModel` occurs through the function `set_constraints` as in the following example
 
 ```
@@ -20,6 +22,8 @@ myconstraints = [['tE', 23.0, -1.0, +1.0],
                  ['log_rho', -3, -2, +0.1],
                  ['g_1', 0.0, -0.01, 1.e100]]
 rtm.set_constraints(myconstraints)
+
+rtm.run()
 ```
 
 Here we have built a list of constraints on several parameters or functions that will be included in the modified  $\tilde\chi^2$ as above. Each constraint is in the form of a list following the general form `[function_name, f_0, sigma_l, sigma_r]`. The numbers for `f_0, sigma_l, sigma_r` express the asymmetric constraint as explained above. Note that one-sided constraints can be easily obtained if one of the sigmas is set to extremely large values, as in the third constraint in the example above.
@@ -51,5 +55,11 @@ To constrain other functions of the parameters, you may choose from the followin
 $\arctan \frac{\pi_E}{\pi_N} ='muangle'$
 
 This direction can be obtained from high-resolution observations which have been able to resolve the lens and the source individually. The constraint on the magnitude of the proper motion becomes a constraint on $t_E$ when combined with constraints on $\theta_E$ coming from the source study and the finite source effect.
+
+## Recovering previous constraints
+
+The constraints used in a given modeling run are stored in the file `Constraints.ini` in the subdirectory `/ini` in the event directory.
+
+The function `recover_options()` illustrated in [Archiving and updating models](Archive.md) recovers previously used constraints for a given event. These can be modified by manipulating the `rtm.constraints` object and will be used in the next modeling run. 
 
 [Go to **Data pre-processing**](DataPreprocessing.md)
