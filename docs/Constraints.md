@@ -22,7 +22,7 @@ myconstraints = [['tE', 23.0, -1.0, +1.0],
 rtm.set_constraints(myconstraints)
 ```
 
-Here we have built a list of constraints on several parameters or functions that will be included in the modified  $\tilde\chi^2$ as above. Each constraint is a list in the general form `[function_name, $f_0$, $\sigma_l$, $\sigma_r$]`. The following sections explain the syntax in detail.
+Here we have built a list of constraints on several parameters or functions that will be included in the modified  $\tilde\chi^2$ as above. Each constraint is in the form of a list following the general form `[function_name, f_0, sigma_l, sigma_r]`. The following sections explain the syntax in detail.
 
 ## Constrained functions
 
@@ -42,7 +42,10 @@ The third constraint in the example shows how to constrain the blending paramete
 
 ### Other functions
 
-Other functions can be 
+To constrain other functions of the parameter, you may choose from the following list, to be updated on demand by users:
+
+- 'muangle': The angle in radians of the relative lens-source proper motion from the North direction taken counterclockwise. This angle affects the parallax parameters according to
+$\arctan \frac{\pi_E}{\pi_N} ='muangle'$
 
 
 
