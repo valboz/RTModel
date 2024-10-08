@@ -50,7 +50,7 @@ The third constraint in the example above shows how to constrain the blending pa
 
 To constrain other functions of the parameters, you may choose from the following list, to be updated on demand by users:
 
-- 'muangle': The angle $\psi_\mu$in radians of the relative lens-source proper motion from the North direction taken counterclockwise. This angle affects the parallax parameters according to
+- 'muangle': The angle $\psi_\mu$ in radians of the relative lens-source proper motion from the North direction taken counterclockwise. This angle affects the parallax parameters according to
 
 $\arctan \frac{\pi_E}{\pi_N} =\psi_\mu$
 
