@@ -6,9 +6,45 @@ It is possible to impose constraints on the fit parameters or some pre-defined c
 
 $\tilde\chi^2 =\chi^2 + \left(\frac{f(\mathbf{p})-f_0}{\sigma}\right)$
 
-The modified $\tilde\chi^2$ including a gaussian constraint on $f$ is then used in minimization. In `RTModel` it is also possible to consider asymmetric constraints of the form 
+The modified $\tilde\chi^2$ including a gaussian constraint on $f$ is then used in minimization. In `RTModel` it is also possible to consider asymmetric constraints with difference tolerances on either side of $f_0$ following he form 
 
 $\tilde\chi^2 =\chi^2 + \left(\frac{f(\mathbf{p})-f_0}{\sigma_l}\right)\Theta(f_0-f(\mathbf{p})) + \left(\frac{f(\mathbf{p})-f_0}{\sigma_r}\right)\Theta(f(\mathbf{p})-f_0)$
+
+The practical implementation in `RTModel` occurs through the function `set_constraints` as in the following example
+
+```
+import RTModel
+rtm = RTModel.RTModel('/event001')
+
+myconstraints = [['tE', 23.0, -1.0, +1.0],
+                 ['log_rho', -3, -2, +0.1],
+                 ['g_1', 0.0, -0.01, 1.e100]]
+rtm.set_constraints(myconstraints)
+```
+
+Here we have built a list of constraints on several parameters or functions that will be included in the modified  $\tilde\chi^2$ as above. Each constraint is a list in the general form `[function_name, $f_0$, $\sigma_l$, $\sigma_r$]`. The following sections explain the syntax in detail.
+
+## Constrained functions
+
+Each entry in the list of constraints is a list starting with the name of the parameter or the function that is going to be constrained. We have four possibilities available to the user. 
+
+### Constraining a parameter
+
+A single fit parameter can be just indicated as constrained function. For the names of the parameters, refer to [Model Categories](ModelCategories.md). Note that if the constraint is defined on a parameter that is not relevant for a given model category, the constraint will just be ignored for that specific model category.
+
+### Constraining the logarithm of a parameter
+
+In the second constraint we see how to constrain the logarithm (base 10) of a given parameter. The name of the parameter should just be preceded by the prefix `'log_'`.
+
+### Constraining blending
+
+The third constraint in the example shows how to constrain the blending parameter for telescope number 1 (the telescope list starts from 0). We remind that in `RTModel` the blending parameter is defined as the ratio of the background flux to the source flux: $g_1 = F_{background,1}/F_{source,1}$.
+
+### Other functions
+
+Other functions can be 
+
+
 
 
 [Go to **Data pre-processing**](DataPreprocessing.md)
