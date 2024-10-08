@@ -84,7 +84,7 @@ Here we also include circular orbital motion of the two sources around a common 
 | 9 | phi | Phase of the orbit from the passage on the line of nodes | |
 | 10 | qs | Mass ratio of the secondary to the primary | X |
 
-The position of the secondary source is calculated from the position of the primary at any time. See [VBMicrolensing Binary Sources](https://github.com/valboz/VBMicrolensing/blob/master/docs/BinarySources.md) for a detailed explanation.
+The position of the secondary source is calculated from the position of the primary at any time. See [VBMicrolensing Binary Sources](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/BinarySources.md) for a detailed explanation.
 
 Annual parallax is not considered in this model because it can be mimicked by xallarap, as well known and would only induce bad degeneracies in a higher dimensional parameter space. However, satellite observations may distinguish between parallax and xallarap.
 
@@ -104,7 +104,7 @@ This is the "static" binary-lens model:
 | 6 | tE | Einstein time in days | X |
 | 7 | t0 | Closest approach time in HJD to the barycenter |  |
 
-For details about the source trajectory parameterization, please check [VBMicrolensing Light Curves](https://github.com/valboz/VBMicrolensing/blob/master/docs/LightCurves.md).
+For details about the source trajectory parameterization, please check [VBMicrolensing Light Curves](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/LightCurves.md).
 
 ## Binary-lens-single-source with parallax (LX)
 
@@ -146,7 +146,7 @@ The three components of the orbital motion are expressed at time t0 in units of 
 
 The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt. The third component gammaz is generally poorly constrained, but is required to move along a physical circular orbit.
 
-More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/OrbitalMotion.md).
+More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/OrbitalMotion.md).
 
 [Go to **Plotting models**](PlotModel.md)
 
