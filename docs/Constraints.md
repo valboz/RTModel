@@ -8,7 +8,7 @@ $\tilde\chi^2 =\chi^2 + \left(\frac{f(\mathbf{p})-f_0}{\sigma}\right)$
 
 The modified $\tilde\chi^2$ including a gaussian constraint on $f$ is then used in minimization. In `RTModel` it is also possible to consider asymmetric constraints of the form 
 
-$\tilde\chi^2 =\chi^2 + \left(\frac{f(\mathbf{p})-f_0}{\sigma_l}\right)\Theta(f_0-f(\mathbf{p})) + \left(\frac{f(\mathbf{p})-f_0}{\sigma_r}\right)$\Theta(f(\mathbf{p})-f_0)$
+$\tilde\chi^2 =\chi^2 + \left(\frac{f(\mathbf{p})-f_0}{\sigma_l}\right)\Theta(f_0-f(\mathbf{p})) + \left(\frac{f(\mathbf{p})-f_0}{\sigma_r}\right)\Theta(f(\mathbf{p})-f_0)$
 
 
 [Go to **Data pre-processing**](DataPreprocessing.md)
