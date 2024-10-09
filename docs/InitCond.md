@@ -61,7 +61,7 @@ Here we describe the options for `InitCond` in detail indicating their default v
 - `usesatellite = 0`: Initial conditions are set only considering peaks in the indicated satellite. If zero, ground datasets are used for initial conditions.
 - `oldmodels = 4`: If previous runs have been archived, the chosen number of best models from the last previous run are included as initial conditions. This can be useful for refining old models with new data or options.
 - `override = None`: If a t-uple is specified here (e.g `(8760.1, 8793.1)`), the elements of the t-uple are taken as peak positions in the data and directly used to define the initial conditions. The whole spline and peak identification procedure is then skipped.
-- `template_library = None`: Alternative user-defined template library file to be used to build initial conditions for binary-lens fits. You may learn more about the customization of template libraries in [Template libraries](TemplateLibraries.md).  
+- `templatelibrary = None`: Alternative user-defined template library file to be used to build initial conditions for binary-lens fits. You may learn more about the customization of template libraries in [Template libraries](TemplateLibraries.md).  
 
 All options are also accessible separately as properties of the `RTModel` class. The user may thus modify the value of each option one by one. The names of the properties are the same as the options in `config_InitCond()` with the prefix `InitCond_`, as shown in the example below:
 
