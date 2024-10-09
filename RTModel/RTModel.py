@@ -88,7 +88,7 @@ class RTModel:
             print('  OK')
 
     def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
-                       , template_library = None):
+                       , templatelibrary = None):
         self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
         self.InitCond_peakthreshold = peakthreshold # Number of sigmas necessary for a deviation to be identified as a maximum or a minimum.
         self.InitCond_oldmodels = oldmodels # Maximum number of old models to include in new run as initial conditions
@@ -96,7 +96,7 @@ class RTModel:
         self.InitCond_nostatic = nostatic or onlyorbital # No static models will be calculated.
         self.InitCond_onlyorbital = onlyorbital; # Only orbital motion models will be calculated.
         self.InitCond_usesatellite = usesatellite; # Satellite to be used for initial conditions. Ground telescopes by default.
-        self.InitCond_template_library = template_library; # Template library to be used in place of the default one.
+        self.InitCond_templatelibrary = templatelibrary; # Template library to be used in place of the default one.
         
     def InitCond(self):
         ''' Establishes initial conditions for fitting by executing the InitCond external module.
@@ -114,8 +114,8 @@ class RTModel:
                 f.write('onlyorbital = 1\n')
             if(self.InitCond_override != None):
                 f.write('override = ' + str(self.InitCond_override[0])+ ' ' + str(self.InitCond_override[1]) + '\n')            
-            if(self.InitCond_template_library != None):
-                f.write('templatelibrary = ' + self.InitCond_template_library + '\n')            
+            if(self.InitCond_templatelibrary != None):
+                f.write('templatelibrary = ' + self.InitCond_templatelibrary + '\n')            
         print('- Launching: InitCond')
         print('  Setting initial conditions...')
         completedprocess = subprocess.run([self.bindir+self.initcondexe,self.eventname], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
@@ -392,7 +392,7 @@ class RTModel:
                     elif(chunks[0]=='override'):
                         self.InitCond_override = (float(chunks[2]),float(chunks[3]))
                     elif(chunks[0]=='templatelibrary'):
-                        self.InitCond_template_library = chunks[2]
+                        self.InitCond_templatelibrary = chunks[2]
         if(os.path.exists(pathname + '/' + self.inidir + '/LevMar.ini')):        
             with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
                 lines = f.read().splitlines()
