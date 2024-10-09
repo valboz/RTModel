@@ -27,7 +27,7 @@ The first line in the library indicates the number of templates, while the follo
 `RTModel` offers the possibility to use a different template library, which can be constructed by hand or using the tools offered by the subpackage `RTModel.templates`. In order to change the template library, you should include the corresponding option in `config_InitCond()`:
 
 ```
-rtm.config_InitCond(template_library = 'MyLibrary.txt')
+rtm.config_InitCond(templatelibrary = 'MyLibrary.txt')
 ```
 
 By providing the full path to your library, `InitCond` will use it to determine the initial seeds for binary-lens fitting. A valid library should conform to the same format of the default library, with the first line containing the number of templates and the following lines with the parameters and peak times as explained above.
