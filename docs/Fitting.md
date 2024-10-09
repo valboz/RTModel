@@ -94,7 +94,14 @@ Here we describe the options for `LevMar` in detail indicating their default val
 - `timelimit = 600.0`: Maximum time in seconds allowed for the execution of `LevMar`. If the limit is reached, the execution is stopped and the last step is saved as a preliminary model.
 - `bumperpower = 2.0`: Size of the bumper in the parameter space expressed in sigmas. The bumper is created with the shape determined by the local covariance matrix. and the size given by this parameter.
 
-Notice that the options that are not explicitly specified in the call to `config_LevMar()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
+All options are also accessible separately as properties of the `RTModel` class. The user may thus modify the value of each option one by one. The names of the properties are the same as the options in `config_LevMar()` with the prefix `LevMar_`, as shown in the example below:
+
+```
+rtm.LevMar_nfits = 1
+rtm.LevMar_timelimit = 1200.0
+```
+
+An empty call to `config_LevMar()` with no parameters will reset all variables to the default values. Notice that the options that are not explicitly specified in the call to `config_LevMar()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
 
 ### Recording the options
 
