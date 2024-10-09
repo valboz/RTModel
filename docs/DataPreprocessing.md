@@ -57,7 +57,14 @@ Here we describe the options in detail with their default values:
 - `renormalize = 1`: if non-zero, all datasets are re-normalized based on the scatter assessment.
 - `thresholdoutliers = 10`: threshold in sigmas to remove outliers.
 
-Notice that the options that are not explicitly specified in the call to `config_Reader()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
+All options are also accessible separately as properties of the `RTModel` class. The user may thus modify the value of each option one by one. The names of the properties are the same as the options in `config_Reader()` with the prefix `Reader_`, as shown in the example below:
+
+```
+rtm.Reader_binning = 2000
+rtm.Reader_otherseasons = 0
+```
+
+An empty call to `config_Reader()` with no parameters will reset all variables to the defauls parameters. Notice that the options that are not explicitly specified in the call to `config_Reader()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
 
 ### How to switch off pre-processing
 
