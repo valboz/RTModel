@@ -63,7 +63,14 @@ Here we describe the options for `InitCond` in detail indicating their default v
 - `override = None`: If a t-uple is specified here (e.g `(8760.1, 8793.1)`), the elements of the t-uple are taken as peak positions in the data and directly used to define the initial conditions. The whole spline and peak identification procedure is then skipped.
 - `template_library = None`: Alternative user-defined template library file to be used to build initial conditions for binary-lens fits. You may learn more about the customization of template libraries in [Template libraries](TemplateLibraries.md).  
 
-Notice that the options that are not explicitly specified in the call to `config_InitCond()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
+All options are also accessible separately as properties of the `RTModel` class. The user may thus modify the value of each option one by one. The names of the properties are the same as the options in `config_InitCond()` with the prefix `InitCond_`, as shown in the example below:
+
+```
+rtm.InitCond_peakthreshold = 20.0
+rtm.InitCond_nostatic = True
+```
+
+An empty call to `config_InitCond()` with no parameters will reset all variables to the default values. Notice that the options that are not explicitly specified in the call to `config_InitCond()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
 
 ### Recording the options
 
