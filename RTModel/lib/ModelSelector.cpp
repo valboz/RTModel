@@ -10,7 +10,8 @@
 #include <cstdlib>
 #include <filesystem>
 #include <regex>
-#include "bumper.h"
+#include "..\\..\\LevMar\LevMar\bumper.h"
+//#include "bumper.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -515,10 +516,9 @@ int main(int argc, char* argv[]) {
 		if (modelcode[1] == 'S') {
 			// Preparation of initial conditions for parallax
 			printf("\n- Preparing initial conditions for parallax");
-			strcpy(filename, "PreInitCondLX.txt");
-			if (f = fopen("PreInitCondLX.txt", "r")) {
+			if (f = fopen("InitCondLX.txt", "r")) {
 				int npeaks = 0;
-				g = fopen("InitCondLX.txt", "w");
+				g = fopen("InitCondLX-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + 2 * nmod);
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
@@ -543,13 +543,15 @@ int main(int argc, char* argv[]) {
 					scanbumper = scanbumper->next;
 				}
 				fclose(g);
+				std::filesystem::remove("InitCondLX.txt");
+				std::filesystem::copy_file("InitCondLX-temp.txt", "InitCondLX.txt");
 			}
 		}
 		if (modelcode[1] == 'X') {
 			printf("\n- Preparing initial conditions for orbital motion");
-			if (f = fopen("PreInitCondLO.txt", "r")) {
+			if (f = fopen("InitCondLO.txt", "r")) {
 				int npeaks = 0;
-				g = fopen("InitCondLO.txt", "w");
+				g = fopen("InitCondLO-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n",npeaks, np + nmod);
 				printf("\nNumber of initial conditions: %d", np + nmod);
@@ -571,6 +573,8 @@ int main(int argc, char* argv[]) {
 					scanbumper = scanbumper->next;
 				}
 				fclose(g);
+				std::filesystem::remove("InitCondLO.txt");
+				std::filesystem::copy_file("InitCondLO-temp.txt", "InitCondLO.txt");
 			}
 		}
 		break;
@@ -578,9 +582,9 @@ int main(int argc, char* argv[]) {
 		if (modelcode[1] == 'S') {
 			// Preparation of initial conditions for parallax
 			printf("\n- Preparing initial conditions for parallax");
-			if (f = fopen("PreInitCondPX.txt", "r")) {
+			if (f = fopen("InitCondPX.txt", "r")) {
 				int npeaks = 0;
-				g = fopen("InitCondPX.txt", "w");
+				g = fopen("InitCondPX-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + 2 * nmod);
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
@@ -604,12 +608,14 @@ int main(int argc, char* argv[]) {
 					scanbumper = scanbumper->next;
 				}
 				fclose(g);
+				std::filesystem::remove("InitCondPX.txt");
+				std::filesystem::copy_file("InitCondPX-temp.txt", "InitCondPX.txt");
 			}
 			printf("\n- Adding initial conditions for planets");
-			if (f = fopen("PreInitCondLS.txt", "r")) {
+			if (f = fopen("InitCondLS.txt", "r")) {
 				int npeaks = 0;
 				double* peaks;
-				g = fopen("InitCondLS.txt", "w");
+				g = fopen("InitCondLS-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + 4 * nmod);
 				peaks = (double*)malloc(sizeof(double) * npeaks);
@@ -677,14 +683,16 @@ int main(int argc, char* argv[]) {
 				}
 				fclose(g);
 				free(peaks);
+				std::filesystem::remove("InitCondLS.txt");
+				std::filesystem::copy_file("InitCondLS-temp.txt", "InitCondLS.txt");
 			}
 		}
 		else {
 			printf("\n- Adding initial conditions for planets");
-			if (f = fopen("PreInitCondLX.txt", "r")) {
+			if (f = fopen("InitCondLX.txt", "r")) {
 				int npeaks = 0;
 				double* peaks;
-				g = fopen("InitCondLX-2.txt", "w");
+				g = fopen("InitCondLX-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + ((npeaks>0)? 4 * nmod : 0));
 				peaks = (double*)malloc(sizeof(double) * npeaks);
@@ -763,20 +771,14 @@ int main(int argc, char* argv[]) {
 				fclose(g);
 				free(peaks);
 
-				if (g = fopen("InitCondLS.txt", "r")) {
-					fclose(g);
-					remove("PreInitCondLX.txt");
-					rename("InitCondLX-2.txt", "PreInitCondLX.txt");
-				}
-				else {
-					rename("InitCondLX-2.txt", "InitCondLX.txt");
-				}
+				std::filesystem::remove("InitCondLX.txt");
+				std::filesystem::copy_file("InitCondLX-temp.txt", "InitCondLX.txt");
 			}
 			else {
-				if (f = fopen("PreInitCondLO.txt", "r")) {
+				if (f = fopen("InitCondLO.txt", "r")) {
 					int npeaks = 0;
 					double* peaks;
-					g = fopen("InitCondLO-2.txt", "w");
+					g = fopen("InitCondLO-temp.txt", "w");
 					fscanf(f, "%d %d", &npeaks, &np);
 					fprintf(g, "%d %d\n", npeaks, np + ((npeaks > 0) ? 4 * nmod : 0));
 					peaks = (double*)malloc(sizeof(double) * npeaks);
@@ -855,7 +857,8 @@ int main(int argc, char* argv[]) {
 					fclose(g);
 					free(peaks);
 
-					rename("InitCondLO-2.txt", "InitCondLO.txt");
+					std::filesystem::remove("InitCondLO.txt");
+					std::filesystem::copy_file("InitCondLO-temp.txt", "InitCondLO.txt");
 				}
 			}
 		}
@@ -864,9 +867,9 @@ int main(int argc, char* argv[]) {
 		if (modelcode[1] == 'S') {
 			// Preparation of initial conditions for xallarap
 			printf("\n- Preparing initial conditions for xallarap");
-			if (f = fopen("PreInitCondBO.txt", "r")) {
+			if (f = fopen("InitCondBO.txt", "r")) {
 				int npeaks = 0;
-				g = fopen("InitCondBO.txt", "w");
+				g = fopen("InitCondBO-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "0 %d\n", np + 2 * nmod);
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
@@ -894,6 +897,8 @@ int main(int argc, char* argv[]) {
 					scanbumper = scanbumper->next;
 				}
 				fclose(g);
+				std::filesystem::remove("InitCondBO.txt");
+				std::filesystem::copy_file("InitCondBO-temp.txt", "InitCondBO.txt");
 			}
 		}
 		break;
