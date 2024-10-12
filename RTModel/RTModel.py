@@ -88,15 +88,17 @@ class RTModel:
             print('  OK')
 
     def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
-                       , templatelibrary = None):
+                       , templatelibrary = None, modelcategories = None, onlyupdate =False):
         self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
         self.InitCond_peakthreshold = peakthreshold # Number of sigmas necessary for a deviation to be identified as a maximum or a minimum.
         self.InitCond_oldmodels = oldmodels # Maximum number of old models to include in new run as initial conditions
         self.InitCond_override = override # Override peak identification and manually set peak times
         self.InitCond_nostatic = nostatic or onlyorbital # No static models will be calculated.
-        self.InitCond_onlyorbital = onlyorbital; # Only orbital motion models will be calculated.
-        self.InitCond_usesatellite = usesatellite; # Satellite to be used for initial conditions. Ground telescopes by default.
-        self.InitCond_templatelibrary = templatelibrary; # Template library to be used in place of the default one.
+        self.InitCond_onlyorbital = onlyorbital # Only orbital motion models will be calculated.
+        self.InitCond_usesatellite = usesatellite # Satellite to be used for initial conditions. Ground telescopes by default.
+        self.InitCond_templatelibrary = templatelibrary # Template library to be used in place of the default one.
+        self.InitCond_modelcategories = modelcategories # Model categories to be fit
+        self.InitCond_onlyupdate = onlyupdate # No search but only update of previously found best models
         
     def InitCond(self):
         ''' Establishes initial conditions for fitting by executing the InitCond external module.
@@ -116,6 +118,10 @@ class RTModel:
                 f.write('override = ' + str(self.InitCond_override[0])+ ' ' + str(self.InitCond_override[1]) + '\n')            
             if(self.InitCond_templatelibrary != None):
                 f.write('templatelibrary = ' + self.InitCond_templatelibrary + '\n')            
+            if(self.InitCond_modelcategories != None):
+                f.write('modelcategories = '+ ''.join(self.InitCond_modelcategories) + '\n')
+            if(self.InitCond_onlyupdate):            
+                f.write('onlyupdate = 1\n')
         print('- Launching: InitCond')
         print('  Setting initial conditions...')
         completedprocess = subprocess.run([self.bindir+self.initcondexe,self.eventname], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
@@ -228,7 +234,7 @@ class RTModel:
                 time.sleep(0.1)
             pbar.close()
         else:
-            print('- No initial conditions for this class')
+            print('- No initial conditions for this category')
  
     def config_ModelSelector(self, sigmasoverlap = 3.0, sigmachisquare = 1.0, maxmodels = 10):
         self.ModelSelector_sigmasoverlap = sigmasoverlap # factor multiplying the inverse covariance in search for superpositions (models are incompatible if farther than sigmasoverlap*sigma)
@@ -375,6 +381,7 @@ class RTModel:
                 self.InitCond_nostatic = False
                 self.InitCond_onlyorbital = False
                 self.InitCond_override = None
+                self.InitCond_onlyupdate = False
                 for line in lines:
                     chunks = line.split()
                     if(chunks[0]=='npeaks'):
@@ -389,6 +396,8 @@ class RTModel:
                         self.InitCond_nostatic = (int(chunks[2])!=0)
                     elif(chunks[0]=='onlyorbital'):
                         self.InitCond_onlyorbital = (int(chunks[2])!=0)
+                    elif(chunks[0]=='onlyupdate'):
+                        self.InitCond_onlyupdate = (int(chunks[2])!=0)
                     elif(chunks[0]=='override'):
                         self.InitCond_override = (float(chunks[2]),float(chunks[3]))
                     elif(chunks[0]=='templatelibrary'):
