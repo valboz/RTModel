@@ -883,8 +883,8 @@ int main(int argc, char* argv[])
 		strcpy(fileinit, "InitCondPS.txt");
 		nps = 4;
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
-		if (exists(runstring + "\\Models")) {
-			current_path(runstring + "\\Models");
+		if (exists(runstring + "/Models")) {
+			current_path(runstring + "/Models");
 			for (auto const& itr : directory_iterator(".")) {
 				if (dn >= maxoldmodels) break;
 				string curfile = (itr).path().filename().string();
@@ -943,9 +943,8 @@ int main(int argc, char* argv[])
 		nps = 6;
 
 		tt = (double*)malloc(sizeof(double) * 6 * maxoldmodels);
-		filebest = regex("PX.*\\.txt");
-		if (exists(runstring + "\\Models")) {
-			current_path(runstring + "\\Models");
+		if (exists(runstring + "/Models")) {
+			current_path(runstring + "/Models");
 			for (auto const& itr : directory_iterator(".")) {
 				if (dn >= maxoldmodels) break;
 				string curfile = (itr).path().filename().string();
@@ -1012,8 +1011,8 @@ int main(int argc, char* argv[])
 		strcpy(fileinit, "InitCondBS.txt");
 		nps = 7;
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
-		if (exists(runstring + "\\Models")) {
-			current_path(runstring + "\\Models");
+		if (exists(runstring + "/Models")) {
+			current_path(runstring + "/Models");
 			for (auto const& itr : directory_iterator(".")) {
 				if (dn >= maxoldmodels) break;
 				string curfile = (itr).path().filename().string();
@@ -1075,8 +1074,8 @@ int main(int argc, char* argv[])
 		strcpy(fileinit, "InitCondBO.txt");
 		nps = 10;
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
-		if (exists(runstring + "\\Models")) {
-			current_path(runstring + "\\Models");
+		if (exists(runstring + "/Models")) {
+			current_path(runstring + "/Models");
 			for (auto const& itr : directory_iterator(".")) {
 				if (dn >= maxoldmodels) break;
 				string curfile = (itr).path().filename().string();
@@ -1175,8 +1174,8 @@ int main(int argc, char* argv[])
 		strcpy(fileinit, "InitCondLS.txt");
 		nps = 7;
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
-		if (exists(runstring + "\\Models")) {
-			current_path(runstring + "\\Models");
+		if (exists(runstring + "/Models")) {
+			current_path(runstring + "/Models");
 			for (auto const& itr : directory_iterator(".")) {
 				if (dn >= maxoldmodels) break;
 				string curfile = (itr).path().filename().string();
@@ -1251,8 +1250,8 @@ int main(int argc, char* argv[])
 		nps = 9;
 
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
-		if (exists(runstring + "\\Models")) {
-			current_path(runstring + "\\Models");
+		if (exists(runstring + "/Models")) {
+			current_path(runstring + "/Models");
 			for (auto const& itr : directory_iterator(".")) {
 				if (dn >= maxoldmodels) break;
 				string curfile = (itr).path().filename().string();
@@ -1361,8 +1360,8 @@ int main(int argc, char* argv[])
 		nps = 12;
 
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
-		if (exists(runstring + "\\Models")) {
-			current_path(runstring + "\\Models");
+		if (exists(runstring + "/Models")) {
+			current_path(runstring + "/Models");
 			for (auto const& itr : directory_iterator(".")) {
 				if (dn >= maxoldmodels) break;
 				string curfile = (itr).path().filename().string();
