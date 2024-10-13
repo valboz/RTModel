@@ -126,6 +126,11 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	printf("\n\n%s", runstring);
+	printf("\n\n%s", path(runstring) / path("Models"));
+	if (exists(path(runstring) / path("Models"))) printf("\n\nYes");
+
+
 	// Reading InitCond.ini and set parameters accordingly
 
 	if (exists("ini")) {
