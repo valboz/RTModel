@@ -10,7 +10,8 @@
 #include <cstdlib>
 #include <filesystem>
 #include <regex>
-#include "bumper.h"
+#include "..\\..\\LevMar\LevMar\bumper.h"
+//#include "bumper.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -542,8 +543,8 @@ int main(int argc, char* argv[]) {
 					scanbumper = scanbumper->next;
 				}
 				fclose(g);
-				std::filesystem::remove("InitCondLX.txt");
-				std::filesystem::copy_file("InitCondLX-temp.txt", "InitCondLX.txt");
+				remove("InitCondLX.txt");
+				rename("InitCondLX-temp.txt", "InitCondLX.txt");
 			}
 		}
 		if (modelcode[1] == 'X') {
@@ -572,8 +573,8 @@ int main(int argc, char* argv[]) {
 					scanbumper = scanbumper->next;
 				}
 				fclose(g);
-				std::filesystem::remove("InitCondLO.txt");
-				std::filesystem::copy_file("InitCondLO-temp.txt", "InitCondLO.txt");
+				remove("InitCondLO.txt");
+				rename("InitCondLO-temp.txt", "InitCondLO.txt");
 			}
 		}
 		break;
@@ -607,8 +608,8 @@ int main(int argc, char* argv[]) {
 					scanbumper = scanbumper->next;
 				}
 				fclose(g);
-				std::filesystem::remove("InitCondPX.txt");
-				std::filesystem::copy_file("InitCondPX-temp.txt", "InitCondPX.txt");
+				remove("InitCondPX.txt");
+				rename("InitCondPX-temp.txt", "InitCondPX.txt");
 			}
 			printf("\n- Adding initial conditions for planets");
 			if (f = fopen("InitCondLS.txt", "r")) {
@@ -682,8 +683,8 @@ int main(int argc, char* argv[]) {
 				}
 				fclose(g);
 				free(peaks);
-				std::filesystem::remove("InitCondLS.txt");
-				std::filesystem::copy_file("InitCondLS-temp.txt", "InitCondLS.txt");
+				remove("InitCondLS.txt");
+				rename("InitCondLS-temp.txt", "InitCondLS.txt");
 			}
 		}
 		else {
@@ -770,8 +771,8 @@ int main(int argc, char* argv[]) {
 				fclose(g);
 				free(peaks);
 
-				std::filesystem::remove("InitCondLX.txt");
-				std::filesystem::copy_file("InitCondLX-temp.txt", "InitCondLX.txt");
+				remove("InitCondLX.txt");
+				rename("InitCondLX-temp.txt", "InitCondLX.txt");
 			}
 			else {
 				if (f = fopen("InitCondLO.txt", "r")) {
@@ -856,8 +857,8 @@ int main(int argc, char* argv[]) {
 					fclose(g);
 					free(peaks);
 
-					std::filesystem::remove("InitCondLO.txt");
-					std::filesystem::copy_file("InitCondLO-temp.txt", "InitCondLO.txt");
+					remove("InitCondLO.txt");
+					rename("InitCondLO-temp.txt", "InitCondLO.txt");
 				}
 			}
 		}
@@ -896,8 +897,8 @@ int main(int argc, char* argv[]) {
 					scanbumper = scanbumper->next;
 				}
 				fclose(g);
-				std::filesystem::remove("InitCondBO.txt");
-				std::filesystem::copy_file("InitCondBO-temp.txt", "InitCondBO.txt");
+				remove("InitCondBO.txt");
+				rename("InitCondBO-temp.txt", "InitCondBO.txt");
 			}
 		}
 		break;
