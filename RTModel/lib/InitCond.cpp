@@ -117,6 +117,7 @@ int main(int argc, char* argv[])
 	string runstring = "";
 	for (auto const& itr : directory_iterator(".")) {
 		string curfile = (itr).path().filename().string();
+		printf("\n\ncurfile: %s", curfile);
 		if (regex_match(curfile, searchstring)) {
 			int currun = atoi(curfile.c_str() + 4);
 			if (currun > lastrun) {
@@ -126,7 +127,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	printf("\n\n%s", runstring);
+	printf("\n\nRunstring: %s", runstring);
 	printf("\n\n%s", path(runstring) / path("Models"));
 	if (exists(path(runstring) / path("Models"))) printf("\n\nYes");
 
