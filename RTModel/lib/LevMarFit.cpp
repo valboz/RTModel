@@ -5,7 +5,8 @@
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include <VBMicrolensingLibrary.h>
+#include "..\..\..\Projects\VBMicrolensing4.1\VBMicrolensing4.1\VBMicrolensing-dev\VBMicrolensing\lib\VBMicrolensingLibrary.h"
+//#include <VBMicrolensingLibrary.h>
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
@@ -333,7 +334,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		case 'T':
 			if (modelcode[1] == 'X') {
 				modnumber = 9;
-				model = &VBMicrolensing::TripleLightCurve;// Parallax;
+				model = &VBMicrolensing::TripleLightCurveParallax;
 				nps = 12;
 				ReadOptions();
 				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,.1,.4,.1, 1.,1. };
@@ -346,8 +347,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[5] = log(pr[5]);
 				pr[7] = log(pr[7]);
 				pr[8] = log(pr[8]);
-				PrintOut = &LevMar::PrintOutTS; //TX
-				PrintFile = &LevMar::PrintFileTS; //TX
+				PrintOut = &LevMar::PrintOutTX;
+				PrintFile = &LevMar::PrintFileTX;
 			}
 			else {
 				modnumber = 8;
@@ -1290,6 +1291,10 @@ void LevMar::PrintOutTS(double* pr) {
 	printf("\na=%lf q=%lf uc=%lf th=%lf RS=%lf\ntE=%lf tc=%lf s2=%lf q2=%lf beta=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], exp(pr[7]), exp(pr[8]), pr[9]);
 }
 
+void LevMar::PrintOutTX(double* pr) {
+	printf("\na=%lf q=%lf uc=%lf th=%lf RS=%lf\ntE=%lf tc=%lf s2=%lf q2=%lf beta=%lf pai1=%lf pai2=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], exp(pr[7]), exp(pr[8]), pr[9], pr[10], pr[11]);
+}
+
 
 void LevMar::PrintFilePS(FILE* f, double c0, bool printerrors) {
 	fprintf(f, "%.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], exp(pr[3]));
@@ -1525,6 +1530,36 @@ void LevMar::PrintFileTS(FILE* f, double c0, bool printerrors) {
 	fprintf(f, " %.16le", c0);
 	if (printerrors) {
 		fprintf(f, "\n%le %le %le %le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6], errs[7] * exp(pr[7]), errs[8] * exp(pr[8]), errs[9]);
+		for (int i = nps; i < nps + 2 * nfil; i++) {
+			fprintf(f, " %le", errs[i]);
+		}
+	}
+}
+
+
+void LevMar::PrintFileTX(FILE* f, double c0, bool printerrors) {
+	if (pr[1] > 0) {
+		pr[3] = pr[3] - M_PI;
+		pr[1] = -pr[1];
+		for (int k = 0; k < nps; k++) {
+			Cov[1 + nps * k] = -Cov[1 + nps * k];
+			Cov[k + nps * 1] = -Cov[k + nps * 1];
+		}
+	}
+	while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
+	while (pr[3] < 0) pr[3] += 2 * M_PI;
+
+	while (pr[9] > 2 * M_PI) pr[9] -= 2 * M_PI;
+	while (pr[9] < 0) pr[9] += 2 * M_PI;
+
+	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], exp(pr[7]), exp(pr[8]), pr[9], pr[10], pr[11]);
+	for (int i = nps; i < nps + 2 * nfil; i++) {
+		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
+		fprintf(f, " %le", pr[i]);
+	}
+	fprintf(f, " %.16le", c0);
+	if (printerrors) {
+		fprintf(f, "\n%le %le %le %le %le %le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6], errs[7] * exp(pr[7]), errs[8] * exp(pr[8]), errs[9], errs[10], errs[11]);
 		for (int i = nps; i < nps + 2 * nfil; i++) {
 			fprintf(f, " %le", errs[i]);
 		}

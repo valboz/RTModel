@@ -4805,6 +4805,58 @@ double VBMicrolensing::TripleLightCurve(double* pr, double t) {
 	}
 }
 
+double VBMicrolensing::TripleLightCurveParallax(double* pr, double t) {
+	double rho = exp(pr[4]), tn, tE_inv = exp(-pr[5]), di, mindi, u, u0 = pr[2], t0 = pr[6], pai1 = pr[10], pai2 = pr[11];
+	double q[3] = { 1, exp(pr[1]), exp(pr[8]) };
+	static complex s[3];
+	static double prold[] = { 0,0,0,0,0 };
+	static Method oldmethod = Method::Nopoly;
+	double salpha = sin(pr[3]), calpha = cos(pr[3]), sbeta = sin(pr[9]), cbeta = cos(pr[9]);
+	static double Et[2];
+	int inew = 0;
+	bool changed = false;
+	for (int i = 0; i < 5; i++) {
+		if (pr[inew] != prold[i]) {
+			changed = true;
+			prold[i] = pr[inew];
+		}
+		inew += (i == 1) ? 6 : 1;
+	}
+	if (SelectedMethod != oldmethod) {
+		changed = true;
+		oldmethod = SelectedMethod;
+	}
+	if (changed) {
+		q[0] = 1;
+		q[1] = exp(pr[1]);
+		q[2] = exp(pr[8]);
+		s[0] = exp(pr[0]) / (q[0] + q[1]);
+		s[1] = s[0] * q[0];
+		s[0] = -q[1] * s[0];
+		s[2] = exp(pr[7]) * complex(cbeta, sbeta) + s[0];
+		SetLensGeometry(3, q, s);
+	}
+
+	ComputeParallax(t, t0, Et);
+	tn = (t - t0) * tE_inv + pai1 * Et[0] + pai2 * Et[1];
+	u = u0 + pai1 * Et[1] - pai2 * Et[0];
+	y_1 = u * salpha - tn * calpha;
+	y_2 = -u * calpha - tn * salpha;
+	mindi = 1.e100;
+	for (int i = 0; i < n; i++) {
+		di = fabs(y_1 - s[i].re) + fabs(y_2 - s[i].im);
+		di /= sqrt(q[i]);
+		if (di < mindi) mindi = di;
+	}
+	if (mindi >= 10.) {
+
+		return 1.;
+	}
+	else {
+		return MultiMag(complex(y_1, y_2), rho, Tol);
+	}
+}
+
 double VBMicrolensing::BinaryLightCurveW(double* pr, double t) {
 	double s = exp(pr[0]), q = exp(pr[1]), rho = exp(pr[4]), tn, tE_inv = exp(-pr[5]), t0, u0;
 	double salpha = sin(pr[3]), calpha = cos(pr[3]), xc;
