@@ -5,7 +5,8 @@
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include <VBMicrolensingLibrary.h>
+#include "..\..\..\Projects\VBMicrolensing4.1\VBMicrolensing4.1\VBMicrolensing-dev\VBMicrolensing\lib\VBMicrolensingLibrary.h"
+//#include <VBMicrolensingLibrary.h>
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
@@ -31,7 +32,9 @@ std::vector<std::vector<std::string>> parnames = { {"u0","tE","t0","rho"},
 					{"u0","t0","tE","rho","xi1","xi2","om","inc","phi","qs"},
 					{"s","q","u0","alpha","rho","tE","t0"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE"},
-					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz"} };
+					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz"},
+					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz","sz_s","a_s3d"},
+					{"s","q","u0","alpha","rho","tE","t0","s2","q2","beta"}};
 
 std::vector<std::vector<int>> logposs = {{0, 1, 3},
 										{1, 3},
@@ -39,7 +42,9 @@ std::vector<std::vector<int>> logposs = {{0, 1, 3},
 										{2, 3, 9},
 										{0, 1, 4, 5},
 										{0, 1, 4, 5},
-										{0, 1, 4, 5}};
+										{0, 1, 4, 5},
+										{0, 1, 4, 5},
+										{0, 1, 4, 5, 7, 8} };
 
 const double epsilon = 1.e-100;
 
@@ -55,6 +60,7 @@ LevMar::LevMar(int argc, char* argv[]) {
 	VBM->Tol = Tol;
 	VBM->RelTol = 0.001;
 	VBM->parallaxsystem = 1;
+	VBM->SetMethod(VBMicrolensing::Method::Multipoly);
 
 	ReadFiles(argc, argv);
 
@@ -290,58 +296,77 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					PrintFile = &LevMar::PrintFileLO;
 				}
 				else {
-					if (modelcode[1] == 'P') {
-						modnumber = 5;
-						model = &VBMicrolensing::BinaryLightCurveOrbital;
-						nps = 12;
+					if (modelcode[1] == 'K') {
+						modnumber = 7;
+						model = &VBMicrolensing::BinaryLightCurveKepler;
+						nps = 14;
 						ReadOptions();
-						double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,.0001,.0001,1.,1.,3. };
-						double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-.0001,-.0001,-1,-1,1.e-7 };
-						double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,.0001,.0001,1,1,1 };
+						double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3., 3., 3. };
+						double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001 };
+						double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,10,10 };
 						error = InitCond(presigmapr, preleftlim, prerightlim);
 						pr[0] = log(pr[0]);
 						pr[1] = log(pr[1]);
 						pr[4] = log(pr[4]);
 						pr[5] = log(pr[5]);
-						pr[7] = 0.;
-						pr[8] = 0.;
-						PrintOut = &LevMar::PrintOutLO;
-						PrintFile = &LevMar::PrintFileLO;
+						PrintOut = &LevMar::PrintOutLK;
+						PrintFile = &LevMar::PrintFileLK;
 					}
 					else {
-						if (modelcode[1] == 'K') {
-							model = &VBMicrolensing::BinaryLightCurveKepler;
-							nps = 14;
-							ReadOptions();
-							double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3., 3., 3. };
-							double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001 };
-							double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,10,10 };
-							error = InitCond(presigmapr, preleftlim, prerightlim);
-							pr[0] = log(pr[0]);
-							pr[1] = log(pr[1]);
-							pr[4] = log(pr[4]);
-							pr[5] = log(pr[5]);
-							PrintOut = &LevMar::PrintOutLK;
-							PrintFile = &LevMar::PrintFileLK;
-						}
-						else {
-							modnumber = 4;
-							model = &VBMicrolensing::BinaryLightCurve;
-							nps = 7;
-							ReadOptions();
-							double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1. };
-							double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100 };
-							double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100 };
-							error = InitCond(presigmapr, preleftlim, prerightlim);
-							pr[0] = log(pr[0]);
-							pr[1] = log(pr[1]);
-							pr[4] = log(pr[4]);
-							pr[5] = log(pr[5]);
-							PrintOut = &LevMar::PrintOutLS;
-							PrintFile = &LevMar::PrintFileLS;
-						}
+						modnumber = 4;
+						model = &VBMicrolensing::BinaryLightCurve;
+						nps = 7;
+						ReadOptions();
+						double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1. };
+						double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100 };
+						double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100 };
+						error = InitCond(presigmapr, preleftlim, prerightlim);
+						pr[0] = log(pr[0]);
+						pr[1] = log(pr[1]);
+						pr[4] = log(pr[4]);
+						pr[5] = log(pr[5]);
+						PrintOut = &LevMar::PrintOutLS;
+						PrintFile = &LevMar::PrintFileLS;
 					}
 				}
+			}
+			break;
+		case 'T':
+			if (modelcode[1] == 'X') {
+				modnumber = 9;
+				model = &VBMicrolensing::TripleLightCurve;// Parallax;
+				nps = 12;
+				ReadOptions();
+				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,.1,.4,.1, 1.,1. };
+				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56, -3.,-3. };
+				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.0, 11.5, 12.56, 3.,3. };
+				error = InitCond(presigmapr, preleftlim, prerightlim);
+				pr[0] = log(pr[0]);
+				pr[1] = log(pr[1]);
+				pr[4] = log(pr[4]);
+				pr[5] = log(pr[5]);
+				pr[7] = log(pr[7]);
+				pr[8] = log(pr[8]);
+				PrintOut = &LevMar::PrintOutTS; //TX
+				PrintFile = &LevMar::PrintFileTS; //TX
+			}
+			else {
+				modnumber = 8;
+				model = &VBMicrolensing::TripleLightCurve;
+				nps = 10;
+				ReadOptions();
+				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,.1,.4,.1};
+				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56};
+				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.0, 11.5, 12.56 };
+				error = InitCond(presigmapr, preleftlim, prerightlim);
+				pr[0] = log(pr[0]);
+				pr[1] = log(pr[1]);
+				pr[4] = log(pr[4]);
+				pr[5] = log(pr[5]);
+				pr[7] = log(pr[7]);
+				pr[8] = log(pr[8]);
+				PrintOut = &LevMar::PrintOutTS;
+				PrintFile = &LevMar::PrintFileTS;
 			}
 			break;
 		}
@@ -771,8 +796,8 @@ void LevMar::Run() {
 						for (int i = 0; i < nps; i++) {
 							for (int j = 0; j < nps; j++) {
 								A[i * nps + j] = Curv[i * nps + j];
-								if (i == j) {
-									A[i * nps + j] += lambda * Curv[i * nps + i];
+								if (i == j) { 
+									A[i * nps + j] += lambda *Curv[i * nps + i]; 
 								}
 							}
 							B[i] = B0[i];
@@ -872,7 +897,7 @@ void LevMar::Run() {
 					// Saving to file
 					sprintf(filename, "%s-stepchain%d.dat", modelcode, il);
 					f = fopen(filename, "a");
-					(this->*PrintFile)(f, c0, false);
+					(this->*PrintFile)(f, c1, false);
 					fprintf(f, "\n");
 					fclose(f);
 
@@ -1259,7 +1284,11 @@ void LevMar::PrintOutLO(double* pr) {
 }
 
 void LevMar::PrintOutLK(double* pr) {
-	printf("\na=%lf q=%lf u0=%lf th=%lf RS=%lf\ntE=%lf t0=%lf pai1=%lf pai2=%lf\ndsdt=%lf dthdt=%lf w3=%lf szs=%lf ar=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11], pr[12], pr[13]);
+	printf("\na=%lf q=%lf u0=%lf th=%lf RS=%lf\ntE=%lf t0=%lf pai1=%lf pai2=%lf\ndsdt=%lf dthdt=%lf w3=%lf sz_s=%lf a_s3d=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11], pr[12], pr[13]);
+}
+
+void LevMar::PrintOutTS(double* pr) {
+	printf("\na=%lf q=%lf uc=%lf th=%lf RS=%lf\ntE=%lf tc=%lf s2=%lf q2=%lf beta=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], exp(pr[7]), exp(pr[8]), pr[9]);
 }
 
 
@@ -1458,6 +1487,45 @@ void LevMar::PrintFileLK(FILE* f, double c0, bool printerrors) {
 	fprintf(f, " %.16le", c0);
 	if (printerrors) {
 		fprintf(f, "\n%le %le %le %le %le %le %le %le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6], errs[7], errs[8], errs[9], errs[10], errs[11], errs[12], errs[13]);
+		for (int i = nps; i < nps + 2 * nfil; i++) {
+			fprintf(f, " %le", errs[i]);
+		}
+	}
+}
+
+void LevMar::PrintFileTS(FILE* f, double c0, bool printerrors) {
+	if (pr[1] > 0) {
+		pr[3] = pr[3] - M_PI;
+		pr[1] = -pr[1];
+		for (int k = 0; k < nps; k++) {
+			Cov[1 + nps * k] = -Cov[1 + nps * k];
+			Cov[k + nps * 1] = -Cov[k + nps * 1];
+		}
+	}
+	while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
+	while (pr[3] < 0) pr[3] += 2 * M_PI;
+	if (pr[2] < 0) {
+		pr[3] = 2 * M_PI - pr[3];
+		pr[2] = -pr[2];
+		for (int k = 0; k < nps; k++) {
+			Cov[2 + nps * k] = -Cov[2 + nps * k];
+			Cov[k + nps * 2] = -Cov[k + nps * 2];
+			Cov[3 + nps * k] = -Cov[3 + nps * k];
+			Cov[k + nps * 3] = -Cov[k + nps * 3];
+		}
+	}
+
+	while (pr[9] > 2 * M_PI) pr[9] -= 2 * M_PI;
+	while (pr[9] < 0) pr[9] += 2 * M_PI;
+
+	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], exp(pr[7]), exp(pr[8]), pr[9]);
+	for (int i = nps; i < nps + 2 * nfil; i++) {
+		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
+		fprintf(f, " %le", pr[i]);
+	}
+	fprintf(f, " %.16le", c0);
+	if (printerrors) {
+		fprintf(f, "\n%le %le %le %le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6], errs[7] * exp(pr[7]), errs[8] * exp(pr[8]), errs[9]);
 		for (int i = nps; i < nps + 2 * nfil; i++) {
 			fprintf(f, " %le", errs[i]);
 		}
