@@ -131,7 +131,7 @@ class RTModel:
         else:
             peaksearch = True
             i=0
-            while(peaksearch)
+            while(peaksearch):
                 initfils=glob.glob(self.eventname + '/InitCond/InitCond'+ self.modelcodes[i] + '*')
                 if(len(initfils)!=0):
                     peaksearch = False
