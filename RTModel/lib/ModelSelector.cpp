@@ -10,7 +10,8 @@
 #include <cstdlib>
 #include <filesystem>
 #include <regex>
-#include "bumper.h"
+#include "..\\..\\LevMar\LevMar\bumper.h"
+//#include "bumper.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -123,7 +124,12 @@ int main(int argc, char* argv[]) {
 		if (modelcode[1] == 'O') {
 			nps += 5;
 		}
+		if (modelcode[1] == 'K') {
+			nps += 7;
+		}
 		break;
+	case 'T':
+		nps = 10;
 	default:
 		printf("\n\n - Invalid model code!!!");
 		return -1;
@@ -413,6 +419,25 @@ int main(int argc, char* argv[]) {
 				scanbumper->signCovariance(1);
 				break;
 				// Binary source
+			case 'T':
+				// Check with no reflections
+				pr[1] = scanbumper->p0[1];
+				pr[2] = scanbumper->p0[2];
+				pr[3] = scanbumper->p0[3];
+				pr[9] = scanbumper->p0[9];
+				while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+				while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
+				while (pr[9] - scanbumper2->p0[9] > M_PI) pr[9] -= 2 * M_PI;
+				while (pr[9] - scanbumper2->p0[9] < -M_PI) pr[9] += 2 * M_PI;
+				facr = 0.;
+				for (int i = 0; i < nps; i++) {
+					for (int j = 0; j < nps; j++) {
+						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+					}
+				}
+				fac = facr;
+				// Need to implement all mass permutations (and reflections for static model)
+				break;
 			case 'B':
 				// Check with no reflections
 				pr[1] = scanbumper->p0[1];
@@ -507,13 +532,13 @@ int main(int argc, char* argv[]) {
 		scanbumper = scanbumper->next;
 	}
 
+	// Update of initial conditions for following model categories
 
 	current_path("InitCond");
 
 	switch (modelcode[0]) {
 	case 'L':
 		if (modelcode[1] == 'S') {
-			// Preparation of initial conditions for parallax
 			printf("\n- Preparing initial conditions for parallax");
 			if (f = fopen("InitCondLX.txt", "r")) {
 				int npeaks = 0;
@@ -545,6 +570,64 @@ int main(int argc, char* argv[]) {
 				remove("InitCondLX.txt");
 				rename("InitCondLX-temp.txt", "InitCondLX.txt");
 			}
+			else {
+				if (f = fopen("InitCondLO.txt", "r")) {
+					int npeaks = 0;
+					g = fopen("InitCondLO-temp.txt", "w");
+					fscanf(f, "%d %d", &npeaks, &np);
+					fprintf(g, "%d %d\n", npeaks, np + nmod);
+					printf("\nNumber of initial conditions: %d", np + nmod);
+					for (int i = 0; i < np; i++) {
+						for (int j = 0; j < 12; j++) {
+							fscanf(f, "%lg", &pr[j]);
+							fprintf(g, "%.10le ", pr[j]);
+						}
+						fprintf(g, "\n");
+					}
+					fclose(f);
+
+					scanbumper = bumperlist;
+					for (il = 1; il <= nmod; il++) {
+						for (int i = 0; i < nps; i++) {
+							pr[i] = scanbumper->p0[i];
+						}
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0e-006 0.0e-006 1.0e-006\n", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6]);
+						scanbumper = scanbumper->next;
+					}
+					fclose(g);
+					remove("InitCondLO.txt");
+					rename("InitCondLO-temp.txt", "InitCondLO.txt");
+				}
+				else {
+					if (f = fopen("InitCondLK.txt", "r")) {
+						int npeaks = 0;
+						g = fopen("InitCondLK-temp.txt", "w");
+						fscanf(f, "%d %d", &npeaks, &np);
+						fprintf(g, "%d %d\n", npeaks, np + nmod);
+						printf("\nNumber of initial conditions: %d", np + nmod);
+						for (int i = 0; i < np; i++) {
+							for (int j = 0; j < 14; j++) {
+								fscanf(f, "%lg", &pr[j]);
+								fprintf(g, "%.10le ", pr[j]);
+							}
+							fprintf(g, "\n");
+						}
+						fclose(f);
+
+						scanbumper = bumperlist;
+						for (il = 1; il <= nmod; il++) {
+							for (int i = 0; i < nps; i++) {
+								pr[i] = scanbumper->p0[i];
+							}
+							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0e-006 0.0e-006 1.0e-006 1.0 1.0\n", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6]);
+							scanbumper = scanbumper->next;
+						}
+						fclose(g);
+						remove("InitCondLK.txt");
+						rename("InitCondLK-temp.txt", "InitCondLK.txt");
+					}
+				}
+			}
 		}
 		if (modelcode[1] == 'X') {
 			printf("\n- Preparing initial conditions for orbital motion");
@@ -552,7 +635,7 @@ int main(int argc, char* argv[]) {
 				int npeaks = 0;
 				g = fopen("InitCondLO-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "%d %d\n",npeaks, np + nmod);
+				fprintf(g, "%d %d\n", npeaks, np + nmod);
 				printf("\nNumber of initial conditions: %d", np + nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < 12; j++) {
@@ -574,6 +657,65 @@ int main(int argc, char* argv[]) {
 				fclose(g);
 				remove("InitCondLO.txt");
 				rename("InitCondLO-temp.txt", "InitCondLO.txt");
+			}
+			else {
+				if (f = fopen("InitCondLK.txt", "r")) {
+					int npeaks = 0;
+					g = fopen("InitCondLK-temp.txt", "w");
+					fscanf(f, "%d %d", &npeaks, &np);
+					fprintf(g, "%d %d\n", npeaks, np + nmod);
+					printf("\nNumber of initial conditions: %d", np + nmod);
+					for (int i = 0; i < np; i++) {
+						for (int j = 0; j < 14; j++) {
+							fscanf(f, "%lg", &pr[j]);
+							fprintf(g, "%.10le ", pr[j]);
+						}
+						fprintf(g, "\n");
+					}
+					fclose(f);
+
+					scanbumper = bumperlist;
+					for (il = 1; il <= nmod; il++) {
+						for (int i = 0; i < nps; i++) {
+							pr[i] = scanbumper->p0[i];
+						}
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0e-006 0.0e-006 1.0e-006 1.0 1.0\n", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8]);
+						scanbumper = scanbumper->next;
+					}
+					fclose(g);
+					remove("InitCondLK.txt");
+					rename("InitCondLK-temp.txt", "InitCondLK.txt");
+				}
+			}
+		}
+		if (modelcode[1] == 'O') {
+			printf("\n- Preparing initial conditions for Keplerian orbital motion");
+			if (f = fopen("InitCondLK.txt", "r")) {
+				int npeaks = 0;
+				g = fopen("InitCondLK-temp.txt", "w");
+				fscanf(f, "%d %d", &npeaks, &np);
+				fprintf(g, "%d %d\n", npeaks, np + nmod);
+				printf("\nNumber of initial conditions: %d", np + nmod);
+				for (int i = 0; i < np; i++) {
+					for (int j = 0; j < 14; j++) {
+						fscanf(f, "%lg", &pr[j]);
+						fprintf(g, "%.10le ", pr[j]);
+					}
+					fprintf(g, "\n");
+				}
+				fclose(f);
+
+				scanbumper = bumperlist;
+				for (il = 1; il <= nmod; il++) {
+					for (int i = 0; i < nps; i++) {
+						pr[i] = scanbumper->p0[i];
+					}
+					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 1.0\n", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11],-pr[9]/pr[11]);
+					scanbumper = scanbumper->next;
+				}
+				fclose(g);
+				remove("InitCondLK.txt");
+				rename("InitCondLK-temp.txt", "InitCondLK.txt");
 			}
 		}
 		break;
