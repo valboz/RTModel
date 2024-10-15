@@ -34,7 +34,7 @@ class RTModel:
             self.eventname = os.path.realpath(event)
             print("Event name: " + self.eventname)
         self.inidir = "ini"
-        self.modelcodes = ['PS', 'PX', 'BS', 'BO', 'LS', 'LX', 'LO']
+        self.modelcodes = ['PS', 'PX', 'BS', 'BO', 'LS', 'LX', 'LO', 'LK', 'TS', 'TX']
         self.endphase =  len(self.modelcodes)*2+3
         self.eventinifile = 'event.ini'        
         self.nprocessors = os.cpu_count()
@@ -129,16 +129,17 @@ class RTModel:
             print('! Error in setting initial conditions!')
             self.done = True
         else:
-            initfils=glob.glob(self.eventname + '/InitCond/*LS*')
-            if(len(initfils)==0):
-                initfils=glob.glob(self.eventname + '/InitCond/*LX*')
-                if(len(initfils)==0):
-                    initfils=glob.glob(self.eventname + '/InitCond/*LO*')
-            with open(initfils[0], 'r') as f:
-                npeaks = int(f.readline().split()[0])
-                print('Peaks:  ',end ='')
-                for i in range(0,npeaks):
-                    print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
+            peaksearch = True
+            i=0
+            while(peaksearch)
+                initfils=glob.glob(self.eventname + '/InitCond/InitCond'+ self.modelcodes[i] + '*')
+                if(len(initfils)!=0):
+                    peaksearch = False
+                    with open(initfils[0], 'r') as f:
+                        npeaks = int(f.readline().split()[0])
+                        print('Peaks:  ',end ='')
+                        for i in range(0,npeaks):
+                            print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
             print('\n  OK')
 
     def config_LevMar(self, nfits = 5, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0):
@@ -309,11 +310,13 @@ class RTModel:
                 self.done = True
             # Launch LevMar for next class
             elif phase%2 == 1:
-                self.launch_fits(self.modelcodes[phase//2-1]) 
+                if(self.InitCond_modelcategories == None or self.modelcodes[phase//2-1] in self.InitCond_modelcategories):
+                    self.launch_fits(self.modelcodes[phase//2-1]) 
                 phase += 1            
             # Launch ModelSelector for this class
             else:
-                self.ModelSelector(self.modelcodes[phase//2-2])
+                if(self.InitCond_modelcategories == None or self.modelcodes[phase//2-2] in self.InitCond_modelcategories):
+                    self.ModelSelector(self.modelcodes[phase//2-2])
                 phase += 1     
                 
     def archive_run(self, destination = None):
