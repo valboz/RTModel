@@ -9,8 +9,7 @@
 #include <cstdlib>
 #include <regex>
 #include <filesystem>
-#include "..\\..\\LevMar\LevMar\bumper.h"
-//#include "bumper.h"
+#include "bumper.h"
 
 using namespace std;
 using namespace std::filesystem;
