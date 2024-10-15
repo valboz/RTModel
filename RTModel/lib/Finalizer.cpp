@@ -25,8 +25,10 @@ int main(int argc, char* argv[]) {
 	double value;
 	int nfil, * satel;
 	double* t, * y, * w, * pr, * sigmapr, thsigma;
-	double thrs[10] = { 0,36.,40.0872,43.4518,46.4625,49.2497,51.878 ,54.3854 ,56.7964 ,59.1282 }; // thresholds at 6 sigma for n more parameters
-	string modelcodes[ncategories] = { "PS","PX","BS","BO","LS","LX","LO", "LK", "TS", "TX"};
+	double thrs[20] = { 36., 40.0872, 43.4518, 46.4625, 49.2497, 51.878, 54.3854, 56.7964, \
+						59.1282, 61.3932, 63.601, 65.7588, 67.8725, 69.9471, 71.9863, \
+						73.9937, 75.9719, 77.9236, 79.8506 }; // thresholds at 6 sigma for n more parameters
+	string modelcodes[ncategories] = { "PS","PX","BS","BO","LS","LX","LO","LK","TS","TX"};
 	string modelnames[ncategories] = { "Single-Lens-Single-Source","Single-Lens-Single-Source with parallax",\
 									"Binary source","Binary source with xallarap",\
 									""," with parallax"," with orbital motion", "with eccentric orbital motion",\
@@ -124,8 +126,8 @@ int main(int argc, char* argv[]) {
 	fclose(f);
 
 
-	pr = (double*)malloc(sizeof(double) * (12 + 2 * nfil));
-	sigmapr = (double*)malloc(sizeof(double) * (12 + 2 * nfil));
+	pr = (double*)malloc(sizeof(double) * (14 + 2 * nfil));
+	sigmapr = (double*)malloc(sizeof(double) * (14 + 2 * nfil));
 
 	// Calculate flat chi square
 
