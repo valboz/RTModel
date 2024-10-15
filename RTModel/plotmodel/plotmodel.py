@@ -40,23 +40,28 @@ class plotmodel:
             print('Please specify model parameters')
             return
         self.vbm = VBMicrolensing.VBMicrolensing()
+        self.vbm.SetMethod(vbm.Multipoly)
         # General information on models
-        self.modelcodes= ['PS','PX','BS','BO','LS','LX','LO']
-        self.npars=[4,6,7,10,7,9,12]
+        self.modelcodes= ['PS','PX','BS','BO','LS','LX','LO','LK','TS','TX']
+        self.npars=[4,6,7,10,7,9,12,14,10,12]
         self.logposs=[[0,1,3],
                  [1,3],
                  [0,1,6],
                  [2,3,9],
                  [0,1,4,5],
                  [0,1,4,5],
-                 [0,1,4,5]]
+                 [0,1,4,5],
+                 [0,1,4,5],
+                 [0,1,4,5,7,8],
+                 [0,1,4,5,7,8]]
         self.parnames = [['u0','tE','t0','rho'],
                     ['u0','tE','t0','rho','piN','piE'],
                     ['tE','FR','u01','u02','t0','t02','rho'],
                     ['u0','t0','tE','rho','xi1','xi2','om','inc','phi','qs'],
                     ['s','q','u0','alpha','rho','tE','t0'],
                     ['s','q','u0','alpha','rho','tE','t0','piN','piE'],
-                    ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz']]
+                    ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz'],
+                    ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz','sz_s','a_s3d']]
         self.colors = ['blue','red','green','darkorange','magenta','cyan','gray','teal','maroon','gold','lime','darkviolet']
         self.sourcecolor = 'pink'
         self.causticcolor = (0.5,0.5,0.5)
@@ -183,7 +188,12 @@ class plotmodel:
             self.results = self.vbm.BinaryLightCurveParallax(self.pars,self.t)
         elif(self.modnumber == 6):
             self.results = self.vbm.BinaryLightCurveOrbital(self.pars,self.t)
-
+        elif(self.modnumber == 7):
+            self.results = self.vbm.BinaryLightCurveKepler(self.pars,self.t)
+        elif(self.modnumber == 8):
+            self.results = self.vbm.TripleLightCurve(self.pars,self.t)
+        elif(self.modnumber == 9):
+            self.results = self.vbm.TripleLightCurveParallax(self.pars,self.t)
     
     def calculate(self):
         # Light curve calculation
@@ -475,8 +485,3 @@ def plotchain(eventname, model, par1, par2):
         ax.plot(x,y,color = colors[i])
         ax.scatter(x[-1], y[-1],s=20,color = colors[i])
     
-
-
-
-
-
