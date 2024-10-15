@@ -188,7 +188,10 @@ class RTModel:
                       'BO' : '- Single-lens-Binary-source fits with xallarap',
                       'LS' : '- Binary-lens-Single-source fits',
                       'LX' : '- Binary-lens-Single-source fits with parallax',
-                      'LO' : '- Binary-lens-Single-source fits with orbital motion'}       
+                      'LO' : '- Binary-lens-Single-source fits with orbital motion',
+                      'LK' : '- Binary-lens-Single-source fits with eccentric orbital motion',
+                      'TS' : '- Triple-lens-Single-source fits',
+                      'TX' : '- Triple-lens-Single-source fits with parallax'}       
         print(stringfits[modelcode])
         initcondfile = self.eventname + '/InitCond/' + 'InitCond'+ modelcode + '.txt'
         if(os.path.exists(initcondfile)):
@@ -255,7 +258,10 @@ class RTModel:
                         'BO' : '- Selecting models for Single-lens-Binary-source fits with xallarap',
                         'LS' : '- Selecting models for Binary-lens-Single-source fits',
                         'LX' : '- Selecting models for Binary-lens-Single-source fits with parallax',
-                        'LO' : '- Selecting models for Binary-lens-Single-source fits with orbital motion'}
+                        'LO' : '- Selecting models for Binary-lens-Single-source fits with orbital motion',
+                        'LK' : '- Selecting models for Binary-lens-Single-source fits with eccentric orbital motion',
+                        'TS' : '- Selecting models for Triple-lens-Single-source fits',
+                        'TX' : '- Selecting models for Triple-lens-Single-source fits with parallax'}   
         print(stringmodels[modelcode])
         completedprocess = subprocess.run([self.bindir+self.modelselectorexe,self.eventname, modelcode], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
         if(completedprocess.returncode != 0):
