@@ -288,8 +288,8 @@ class RTModel:
         if(event!= None):
             self.eventname = os.path.realpath(event)
         self.done = False        
+        print("o " + time.asctime())
         while not(self.done):
-            print("o " + time.asctime())
             # Check that event directory exists
             if phase == 0:
                 if(os.path.exists(self.eventname + '/Data')):
@@ -301,14 +301,17 @@ class RTModel:
             # Launch Reader
             elif phase == 1:
                 self.Reader()
+                print("o " + time.asctime())
                 phase = 2
             # Launch InitCond
             elif phase == 2:
                 self.InitCond()
+                print("o " + time.asctime())
                 phase = 3
             # Launch Finalizer
             elif phase == self.endphase:
                 self.Finalizer()
+                print("o " + time.asctime())
                 phase += 1
             # Conclude analysis
             elif phase > self.endphase:
@@ -318,11 +321,13 @@ class RTModel:
             elif phase%2 == 1:
                 if(self.InitCond_modelcategories == None or self.modelcodes[phase//2-1] in self.InitCond_modelcategories):
                     self.launch_fits(self.modelcodes[phase//2-1]) 
+                    print("o " + time.asctime())
                 phase += 1            
             # Launch ModelSelector for this class
             else:
                 if(self.InitCond_modelcategories == None or self.modelcodes[phase//2-2] in self.InitCond_modelcategories):
                     self.ModelSelector(self.modelcodes[phase//2-2])
+                    print("o " + time.asctime())
                 phase += 1     
                 
     def archive_run(self, destination = None):
