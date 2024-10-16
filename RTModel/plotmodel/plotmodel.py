@@ -40,7 +40,7 @@ class plotmodel:
             print('Please specify model parameters')
             return
         self.vbm = VBMicrolensing.VBMicrolensing()
-        self.vbm.SetMethod(vbm.Multipoly)
+        self.vbm.SetMethod(VBMicrolensing.VBMicrolensing.Multipoly)
         # General information on models
         self.modelcodes= ['PS','PX','BS','BO','LS','LX','LO','LK','TS','TX']
         self.npars=[4,6,7,10,7,9,12,14,10,12]
@@ -61,7 +61,9 @@ class plotmodel:
                     ['s','q','u0','alpha','rho','tE','t0'],
                     ['s','q','u0','alpha','rho','tE','t0','piN','piE'],
                     ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz'],
-                    ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz','sz_s','a_s3d']]
+                    ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz','sz_s','a_s3d'],
+                    ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta'],
+                    ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta','piN','piE']]
         self.colors = ['blue','red','green','darkorange','magenta','cyan','gray','teal','maroon','gold','lime','darkviolet']
         self.sourcecolor = 'pink'
         self.causticcolor = (0.5,0.5,0.5)
@@ -279,7 +281,9 @@ class plotmodel:
 
     # Caustic plot preparation   
         self.rancau = max([self.maxy1-self.miny1,self.maxy2 - self.miny2])
-        if(self.modnumber>3):
+        if(self.modnumber>7):
+            self.caus = self.vbm.Multicaustics()
+        elif(self.modnumber>3):
             self.caus = self.vbm.Caustics(self.parsprint[0],self.parsprint[1])
         else:
             self.caus = np.array([[[0,1,0,-1,0],[1,0,-1,0,1]]])*self.rancau*0.001        
