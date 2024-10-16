@@ -129,6 +129,7 @@ int main(int argc, char* argv[]) {
 		break;
 	case 'T':
 		nps = 10;
+		break;
 	default:
 		printf("\n\n - Invalid model code!!!");
 		return -1;
