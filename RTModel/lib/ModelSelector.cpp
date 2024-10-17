@@ -323,165 +323,168 @@ int main(int argc, char* argv[]) {
 
 	nmod = 0;
 	for (scanbumper = bumperlist; scanbumper; scanbumper = scanbumper->next) {
-		// Use these parameters as reference parameters for comparison with other models
-		for (int i = 0; i < nps; i++) {
-			pr[i] = scanbumper->p0[i];
-		}
-		// Check for overlap with all other models
-		for (scanbumper2 = bumperlist; scanbumper2 != scanbumper; scanbumper2 = scanbumper2->next) {
-			// Build inverse covariance as the inverse of the sum of covariances
-			CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
-
-			switch (modelcode[0]) {
-				// Single lens
-			case 'P':
-				facr = 0.;
-				for (int i = 0; i < nps; i++) {
-					for (int j = 0; j < nps; j++) {
-						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-					}
-				}
-				fac = facr;
-				break;
-				// Binary lens
-			case 'L':
-				// Check with no reflections
-				pr[1] = scanbumper->p0[1];
-				pr[2] = scanbumper->p0[2];
-				pr[3] = scanbumper->p0[3];
-				while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
-				while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
-				facr = 0.;
-				for (int i = 0; i < nps; i++) {
-					for (int j = 0; j < nps; j++) {
-						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-					}
-				}
-				fac = facr;
-				if (modelcode[1] == 'S') {
-					// Repeat with reflection along x1 axis
-					pr[3] = 2 * M_PI - scanbumper->p0[3];
-					pr[2] = -scanbumper->p0[2];
-					while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
-					while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
-
-					scanbumper->signCovariance(2);
-					scanbumper->signCovariance(3);
-					CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
-
-					facr = 0.;
-					for (int i = 0; i < nps; i++) {
-						for (int j = 0; j < nps; j++) {
-							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-						}
-					}
-					if (facr < fac) fac = facr;
-					scanbumper->signCovariance(2);
-					scanbumper->signCovariance(3);
-
-					// Repeat with reflection between the two masses
-					pr[1] = -scanbumper->p0[1];
-					pr[3] = M_PI - scanbumper->p0[3];
-					pr[2] = -scanbumper->p0[2];
-					while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
-					while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
-					scanbumper->signCovariance(1);
-					scanbumper->signCovariance(2);
-					scanbumper->signCovariance(3);
-					CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
-					facr = 0.;
-					for (int i = 0; i < nps; i++) {
-						for (int j = 0; j < nps; j++) {
-							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-						}
-					}
-					if (facr < fac) fac = facr;
-					scanbumper->signCovariance(1);
-					scanbumper->signCovariance(2);
-					scanbumper->signCovariance(3);
-				}
-
-				// Repeat with both reflections
-				pr[3] = scanbumper->p0[3] - M_PI;
-				pr[2] = scanbumper->p0[2];
-				pr[1] = -scanbumper->p0[1];
-				while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
-				while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
-				scanbumper->signCovariance(1);
-				CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
-				facr = 0.;
-				for (int i = 0; i < nps; i++) {
-					for (int j = 0; j < nps; j++) {
-						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-					}
-				}
-				if (facr < fac) fac = facr;
-				scanbumper->signCovariance(1);
-				break;
-				// Binary source
-			case 'T':
-				// Check with no reflections
-				pr[1] = scanbumper->p0[1];
-				pr[2] = scanbumper->p0[2];
-				pr[3] = scanbumper->p0[3];
-				pr[9] = scanbumper->p0[9];
-				while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
-				while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
-				while (pr[9] - scanbumper2->p0[9] > M_PI) pr[9] -= 2 * M_PI;
-				while (pr[9] - scanbumper2->p0[9] < -M_PI) pr[9] += 2 * M_PI;
-				facr = 0.;
-				for (int i = 0; i < nps; i++) {
-					for (int j = 0; j < nps; j++) {
-						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-					}
-				}
-				fac = facr;
-				// Need to implement all mass permutations (and reflections for static model)
-				break;
-			case 'B':
-				// Check with no reflections
-				pr[1] = scanbumper->p0[1];
-				pr[2] = scanbumper->p0[2];
-				pr[3] = scanbumper->p0[3];
-				pr[4] = scanbumper->p0[4];
-				pr[5] = scanbumper->p0[5];
-				facr = 0.;
-				for (int i = 0; i < nps; i++) {
-					for (int j = 0; j < nps; j++) {
-						facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-					}
-				}
-				fac = facr;
-				if (modelcode[1] == 'S') {
-					// Exchange two sources
-					pr[1] = -scanbumper->p0[1];
-					pr[2] = scanbumper->p0[3];
-					pr[3] = scanbumper->p0[2];
-					pr[4] = scanbumper->p0[5];
-					pr[5] = scanbumper->p0[4];
-					scanbumper->signCovariance(1);
-					scanbumper->flipCovariance(2, 3);
-					scanbumper->flipCovariance(4, 5);
-					CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
-					facr = 0.;
-					for (int i = 0; i < nps; i++) {
-						for (int j = 0; j < nps; j++) {
-							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
-						}
-					}
-					if (facr < fac) fac = facr;
-					scanbumper->signCovariance(1);
-					scanbumper->flipCovariance(2, 3);
-					scanbumper->flipCovariance(4, 5);
-				}
+		if (scanbumper->Amp < 2 * chithr) { // Exclude from check models with very high chi square
+			// Use these parameters as reference parameters for comparison with other models
+			for (int i = 0; i < nps; i++) {
+				pr[i] = scanbumper->p0[i];
 			}
-			// If models are closer than threshold, the higher chi square model is set beyond acceptance threshold
-			if (fac < supfac) {
-				if (scanbumper->Amp < scanbumper2->Amp) {
-					scanbumper2->Amp = chithr + 1;
+			// Check for overlap with all other models
+			for (scanbumper2 = bumperlist; scanbumper2 != scanbumper; scanbumper2 = scanbumper2->next) {
+				if (scanbumper2->Amp > 2 * chithr) continue;
+				// Build inverse covariance as the inverse of the sum of covariances
+				CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
+
+				switch (modelcode[0]) {
+					// Single lens
+				case 'P':
+					facr = 0.;
+					for (int i = 0; i < nps; i++) {
+						for (int j = 0; j < nps; j++) {
+							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+						}
+					}
+					fac = facr;
+					break;
+					// Binary lens
+				case 'L':
+					// Check with no reflections
+					pr[1] = scanbumper->p0[1];
+					pr[2] = scanbumper->p0[2];
+					pr[3] = scanbumper->p0[3];
+					while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+					while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
+					facr = 0.;
+					for (int i = 0; i < nps; i++) {
+						for (int j = 0; j < nps; j++) {
+							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+						}
+					}
+					fac = facr;
+					if (modelcode[1] == 'S') {
+						// Repeat with reflection along x1 axis
+						pr[3] = 2 * M_PI - scanbumper->p0[3];
+						pr[2] = -scanbumper->p0[2];
+						while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+						while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
+
+						scanbumper->signCovariance(2);
+						scanbumper->signCovariance(3);
+						CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
+
+						facr = 0.;
+						for (int i = 0; i < nps; i++) {
+							for (int j = 0; j < nps; j++) {
+								facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+							}
+						}
+						if (facr < fac) fac = facr;
+						scanbumper->signCovariance(2);
+						scanbumper->signCovariance(3);
+
+						// Repeat with reflection between the two masses
+						pr[1] = -scanbumper->p0[1];
+						pr[3] = M_PI - scanbumper->p0[3];
+						pr[2] = -scanbumper->p0[2];
+						while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+						while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
+						scanbumper->signCovariance(1);
+						scanbumper->signCovariance(2);
+						scanbumper->signCovariance(3);
+						CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
+						facr = 0.;
+						for (int i = 0; i < nps; i++) {
+							for (int j = 0; j < nps; j++) {
+								facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+							}
+						}
+						if (facr < fac) fac = facr;
+						scanbumper->signCovariance(1);
+						scanbumper->signCovariance(2);
+						scanbumper->signCovariance(3);
+					}
+
+					// Repeat with both reflections
+					pr[3] = scanbumper->p0[3] - M_PI;
+					pr[2] = scanbumper->p0[2];
+					pr[1] = -scanbumper->p0[1];
+					while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+					while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
+					scanbumper->signCovariance(1);
+					CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
+					facr = 0.;
+					for (int i = 0; i < nps; i++) {
+						for (int j = 0; j < nps; j++) {
+							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+						}
+					}
+					if (facr < fac) fac = facr;
+					scanbumper->signCovariance(1);
+					break;
+					// Binary source
+				case 'T':
+					// Check with no reflections
+					pr[1] = scanbumper->p0[1];
+					pr[2] = scanbumper->p0[2];
+					pr[3] = scanbumper->p0[3];
+					pr[9] = scanbumper->p0[9];
+					while (pr[3] - scanbumper2->p0[3] > M_PI) pr[3] -= 2 * M_PI;
+					while (pr[3] - scanbumper2->p0[3] < -M_PI) pr[3] += 2 * M_PI;
+					while (pr[9] - scanbumper2->p0[9] > M_PI) pr[9] -= 2 * M_PI;
+					while (pr[9] - scanbumper2->p0[9] < -M_PI) pr[9] += 2 * M_PI;
+					facr = 0.;
+					for (int i = 0; i < nps; i++) {
+						for (int j = 0; j < nps; j++) {
+							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+						}
+					}
+					fac = facr;
+					// Need to implement all mass permutations (and reflections for static model)
+					break;
+				case 'B':
+					// Check with no reflections
+					pr[1] = scanbumper->p0[1];
+					pr[2] = scanbumper->p0[2];
+					pr[3] = scanbumper->p0[3];
+					pr[4] = scanbumper->p0[4];
+					pr[5] = scanbumper->p0[5];
+					facr = 0.;
+					for (int i = 0; i < nps; i++) {
+						for (int j = 0; j < nps; j++) {
+							facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+						}
+					}
+					fac = facr;
+					if (modelcode[1] == 'S') {
+						// Exchange two sources
+						pr[1] = -scanbumper->p0[1];
+						pr[2] = scanbumper->p0[3];
+						pr[3] = scanbumper->p0[2];
+						pr[4] = scanbumper->p0[5];
+						pr[5] = scanbumper->p0[4];
+						scanbumper->signCovariance(1);
+						scanbumper->flipCovariance(2, 3);
+						scanbumper->flipCovariance(4, 5);
+						CombineCovariances(scanbumper, scanbumper2, Cov, Curv, nps);
+						facr = 0.;
+						for (int i = 0; i < nps; i++) {
+							for (int j = 0; j < nps; j++) {
+								facr += (pr[i] - (scanbumper2->p0)[i]) * (pr[j] - (scanbumper2->p0)[j]) * Curv[i * nps + j];
+							}
+						}
+						if (facr < fac) fac = facr;
+						scanbumper->signCovariance(1);
+						scanbumper->flipCovariance(2, 3);
+						scanbumper->flipCovariance(4, 5);
+					}
 				}
-				else {
-					scanbumper->Amp = chithr + 1;
+				// If models are closer than threshold, the higher chi square model is set beyond acceptance threshold
+				if (fac < supfac) {
+					if (scanbumper->Amp < scanbumper2->Amp) {
+						scanbumper2->Amp = chithr + 1;
+					}
+					else {
+						scanbumper->Amp = chithr + 1;
+					}
 				}
 			}
 		}
