@@ -88,7 +88,7 @@ class RTModel:
             print('  OK')
 
     def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
-                       , templatelibrary = None, modelcategories = None, onlyupdate =False):
+                       , templatelibrary = None, modelcategories = ['PS','PX','BS','BO','LS','LX','LO'], onlyupdate =False):
         self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
         self.InitCond_peakthreshold = peakthreshold # Number of sigmas necessary for a deviation to be identified as a maximum or a minimum.
         self.InitCond_oldmodels = oldmodels # Maximum number of old models to include in new run as initial conditions
@@ -336,7 +336,7 @@ class RTModel:
 
     def cleanup_preliminary_models(self):
         os.chdir(self.eventname)
-        if(os.path.exists('PreModels')):
+        if(os.path.exists('PreModels'):
             shutil.rmtree('PreModels')
             
     def archive_run(self, destination = None):
