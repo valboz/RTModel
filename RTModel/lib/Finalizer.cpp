@@ -222,16 +222,18 @@ int main(int argc, char* argv[]) {
 				nmod++;
 			}
 		}
-		printf("%s: ", modelcodes[icat].c_str());
-		fprintf(g, "%s: ", modelcodes[icat].c_str());
+		//printf("%s: ", modelcodes[icat].c_str());
+		//fprintf(g, "%s: ", modelcodes[icat].c_str());
 		if (chis[icat] < 1.e99) {
+			printf("%s: ", modelcodes[icat].c_str());
+			fprintf(g, "%s: ", modelcodes[icat].c_str());
 			printf("%lf\n", chis[icat]);
 			fprintf(g, "%lf\n", chis[icat]);
 		}
-		else {
-			printf("N/A\n");
-			fprintf(g, "N/A\n");
-		}
+		//else {
+		//	printf("N/A\n");
+		//	fprintf(g, "N/A\n");
+		//}
 	}
 
 
