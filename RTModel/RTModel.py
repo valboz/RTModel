@@ -336,7 +336,7 @@ class RTModel:
 
     def cleanup_preliminary_models(self):
         os.chdir(self.eventname)
-        if(os.path.exists('PreModels'):
+        if(os.path.exists('PreModels')):
             shutil.rmtree('PreModels')
             
     def archive_run(self, destination = None):
