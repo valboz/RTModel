@@ -283,7 +283,7 @@ class RTModel:
                     print("  " + line,end='')
                 print("  OK")  
 
-    def run(self, event = None):
+    def run(self, event = None, cleanup = False):
         phase =0
         if(event!= None):
             self.eventname = os.path.realpath(event)
@@ -315,7 +315,11 @@ class RTModel:
                 phase += 1
             # Conclude analysis
             elif phase > self.endphase:
+                if(cleanup):
+                    print('- Cleaning up preliminary models')
+                    cleanup_preliminary_models()
                 print("- Analysis of " + self.eventname + " successfully completed!")
+                print("o " + time.asctime())
                 self.done = True
             # Launch LevMar for next class
             elif phase%2 == 1:
@@ -328,8 +332,13 @@ class RTModel:
                 if(self.InitCond_modelcategories == None or self.modelcodes[phase//2-2] in self.InitCond_modelcategories):
                     self.ModelSelector(self.modelcodes[phase//2-2])
                     print("o " + time.asctime())
-                phase += 1     
-                
+                phase += 1
+
+    def cleanup_preliminary_models(self):
+        os.chdir(self.eventname)
+        if(os.path.exists('PreModels'):
+            shutil.rmtree('PreModels')
+            
     def archive_run(self, destination = None):
         olddir = os.getcwd()
         os.chdir(self.eventname)
