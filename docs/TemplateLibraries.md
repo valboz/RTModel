@@ -62,6 +62,8 @@ print(mytemplates)
 [[0.7, 0.5, 0.15, 3.5, 0.01, -0.183, 0.016], [0.7, 0.5, 0.15, 3.5, 0.01, -0.183, 0.086], [0.7, 0.5, 0.15, 3.5, 0.01, 0.016, 0.086], ...
 ```
 
+A call to `mytemplates = tmpl.load_library()` without arguments will load the default template library.
+
 At this point, you are free to manipulate the list with standard Python tools. 
 
 When you are happy with your new list of templates, you can save it with the function
