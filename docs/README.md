@@ -64,7 +64,7 @@ Advanced users may attempt a deeper understanding of the modeling steps and opti
 
 - [Animating fits](Animation.md)
 
-- [Template library customization](TemplateLibrary.md)
+- [Template library customization](TemplateLibraries.md)
 
 ## Success rate
 
