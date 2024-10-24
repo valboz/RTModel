@@ -114,6 +114,19 @@ nature.txt               # Text file containing the final assessment on the even
 
 These files will be explained in the following chapters in due time. They can be useful for careful diagnostics of the modeling process. You may vision an event with a completed run among the provided examples: [event001done.zip](/events/event001done.zip).
 
+### Saving disk space
+
+The preliminary models calculated by `RTModel` may occupy 30MB of disk space in nearly 10000 files. Unless you need some specific debugging or some deeper investigation, we suggest to cleanup the event directory from the directory `/PreModels`, thus saving 99% disk space. You may do it after the modeling run by executing the following line:
+
+```
+rtm.cleanup_preliminary_models()
+```
+
+In alternative, you may call the `run()` function including the `cleanup = True` option:
+```
+rtm.run('/event002', cleanup = True)
+```
+
 ## Structure of a modeling run
 
 The `run()` function performs a precise sequence of operations on the selected event. The individual operations are performed by external pre-compiled modules called by the function. Here we summarize the individual steps:
