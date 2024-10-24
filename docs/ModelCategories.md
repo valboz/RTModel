@@ -150,7 +150,7 @@ More details are available at [VBMicrolensing Orbital Motion](https://github.com
 
 # Including or excluding model categories
 
-By default, `RTModel` fits all the listed model categories to the data, providing models for all of them and comparing their chi square to make its final assessment. However, the user may specify which model categories to fit and even include additional models not proposed in the default modeling run by specifying the corresponding option, as described in [Initial conditions](InitCond.md). 
+By default, `RTModel` fits all the model categories listed above to the data, providing models for all of them and comparing their chi square to make its final assessment. However, the user may specify which model categories to fit and even include additional models not proposed in the default modeling run by specifying the corresponding option, as described in [Initial conditions](InitCond.md). 
 
 # Additional model categories
 
