@@ -122,7 +122,7 @@ The preliminary models calculated by `RTModel` may occupy 30MB of disk space in 
 rtm.cleanup_preliminary_models()
 ```
 
-In alternative, you may call the `run()` function including the `cleanup = True` option:
+In alternative, you may including the `cleanup = True` option when you call the `run()` function in order to request a cleanup at the end of the modeling run:
 ```
 rtm.run('/event002', cleanup = True)
 ```
