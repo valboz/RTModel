@@ -123,7 +123,7 @@ Here we also include parallax as we did before for the single-lens case:
 | 9 | piE | Parallax component along East |  |
 
 
-## Binary-lens-single-source with orbital motion (LO)
+## Binary-lens-single-source with circular orbital motion (LO)
 
 Finally, we also explore circular orbital motion for our binary lens:
 
@@ -147,6 +147,31 @@ The three components of the orbital motion are expressed at time t0 in units of 
 The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt. The third component gammaz is generally poorly constrained, but is required to move along a physical circular orbit.
 
 More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/OrbitalMotion.md).
+
+# Including or excluding model categories
+
+By default, `RTModel` fits all the listed model categories to the data, providing models for all of them and comparing their chi square to make its final assessment. However, the user may specify which model categories to fit and even include additional models not proposed in the default modeling run by specifying the corresponding option, as described in [Initial conditions](InitCond.md). 
+
+# Additional model categories
+
+Some additional model categories are available but not included in the default modeling run. They can be included by specifying the model categories as detailed in [Initial conditions](InitCond.md).
+
+## Binary-lens-single-source with eccentric orbital motion (LK)
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | s | Separation between the lenses in Einstein radii | X |
+| 2 | q | Mass ratio of the secondary to the primary lens | X |
+| 3 | u0 | Impact parameter normalized to Einstein angle |  |
+| 4 | alpha | Angle between the source velocity and the vector pointing from the secondary to the primary lens |  |
+| 5 | rho | Source radius normalized to Einstein angle | X |
+| 6 | tE | Einstein time in days | X |
+| 7 | t0 | Closest approach time in HJD to the barycenter |  |
+| 8 | piN| Parallax component along North |  |
+| 9 | piE | Parallax component along East |  |
+| 10 | gamma1 | Angular velocity parallel to the lens axis |  |
+| 11 | gamma2 | Angulr velocity perpendicular to the lens axis |  |
+| 12 | gammaz | Angular velocity along the line of sight |  |
 
 [Go to **Plotting models**](PlotModel.md)
 
