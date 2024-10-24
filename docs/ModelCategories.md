@@ -148,15 +148,15 @@ The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt
 
 More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/OrbitalMotion.md).
 
-# Including or excluding model categories
+## Including or excluding model categories
 
 By default, `RTModel` fits all the model categories listed above to the data, providing models for all of them and comparing their chi square to make its final assessment. However, the user may specify which model categories to fit and even include additional models not proposed in the default modeling run by specifying the corresponding option, as described in [Initial conditions](InitCond.md). 
 
-# Additional model categories
+## Additional model categories
 
 Some additional model categories are available but not included in the default modeling run. They can be included by specifying the model categories as detailed in [Initial conditions](InitCond.md).
 
-## Binary-lens-single-source with eccentric orbital motion (LK)
+### Binary-lens-single-source with eccentric orbital motion (LK)
 
 | Number | Parameter | Meaning | ln |
 | --- | --- | --- | --- |
@@ -172,6 +172,10 @@ Some additional model categories are available but not included in the default m
 | 10 | gamma1 | Angular velocity parallel to the lens axis |  |
 | 11 | gamma2 | Angulr velocity perpendicular to the lens axis |  |
 | 12 | gammaz | Angular velocity along the line of sight |  |
+| 13 | sz_s | Separation along the line of sight over projected separation |  |
+| 14 | a_s3d | Semimajor axis over total separation |  |
+
+The two additional parameters are sufficient to completely define an eccentric orbit. More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/OrbitalMotion.md).
 
 [Go to **Plotting models**](PlotModel.md)
 
