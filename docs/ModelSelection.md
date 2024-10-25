@@ -17,7 +17,7 @@ rtm.ModelSelector('PS')
 
 With this code, we first perform the data pre-processing by `Reader`, we set the initial conditions by `InitCond`, we launch all fits of the single-lens-single-source model with `launch_fits` and then we select the best models within this category with `ModelSelector`.
 
-In the `/event001` directory you will see the following products appear:
+In the `/event001` directory you will see that the following products appear:
 - A new subdirectory called `Models/` is created. This will contain the best models for each category.
 - One or more files named `PSXXXX-X.txt` containing the details of the selected models. Each model is identified by the label for the model category followed by the number of initial condition and then by the fit number. Any model obtained by user-defined initial conditions will carry the same label specified by the user.
 - In addition, in the `/InitCond` subdirectory, some initial conditions files are updated to include more initial conditions obtained by perturbing the best models found in this category. For example, after the single-lens-single-source fits, initial conditions for binary lenses starting from best models found with single lens are added. These are particularly useful to model small anomalies due to planets.
