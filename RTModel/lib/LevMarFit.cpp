@@ -453,6 +453,9 @@ void LevMar::ReadOptions() {
 							if (strcmp(parnames[modnumber][i].c_str(), "piN") == 0) consindex[conscurrent] = 30000;
 						}
 					}
+					if (strcmp(command, "t*") == 0) {
+						consindex[conscurrent] = 30001;
+					}
 					if (consindex[conscurrent] >= 0) {
 						sscanf(value, "%lg", &constraints[conscurrent]);
 						sscanf(value2, "%lg", &consleft[conscurrent]);
@@ -1217,6 +1220,14 @@ inline double LevMar::ComputeConstraint(double *pr, int ic) {
 			if (strcmp(parnames[modnumber][i].c_str(), "piE") == 0) posE = i;
 		}
 		return atan2(pr[posE], pr[posN]);
+	}
+	if (i == 30001) {
+		int postE = -1, posrho = -1;
+		for (int i = 0; i < nps; i++) {
+			if (strcmp(parnames[modnumber][i].c_str(), "tE") == 0) postE = i;
+			if (strcmp(parnames[modnumber][i].c_str(), "rho") == 0) posrho = i;
+		}
+		return exp(pr[postE]+pr[posrho]);
 	}
 	
 	return 0;
