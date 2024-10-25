@@ -20,7 +20,7 @@ By default, `RTModel` fits all the model categories listed above to the data, pr
 
 ## Additional model categories
 
-Some additional model categories are available but not included in the default modeling run. They can be included by specifying the model categories as detailed in [Initial conditions](InitCond.md). At the moment, we have only one, but more are on their ways.
+Some additional model categories are available but not included in the default modeling run. They can be included by adding their label to the list of model categories as detailed in [Initial conditions](InitCond.md). At the moment, we have only one additional category, but more are on their ways.
 
 | Label | Model | Number of parameters |
 | --- | --- | --- |
