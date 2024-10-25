@@ -57,6 +57,7 @@ Here we describe the options for `InitCond` in detail indicating their default v
 - `npeaks = 2`: Number of peaks in the observed light curve to be considered for setting initial conditions. If you choose to use more than 2 peaks you will have many more fits to be run, with greater chances of success but longer computational time.
 - `nostatic = False`: If `True`, static models will not be calculated. This is useful if higher orders are significant and cannot be treated as a simple perturbation of static models. Furthermore, this option is recommended if you have observations from a satellite spaced by a distance of the order of au.
 - `onlyorbital = False`: If `True`, only orbital motion models will be calculated.
+- `onlyupdate = False`: If `True`, the modeling run will be limited to a quick update of old models found in the last [archived run](Archive.md).
 - `usesatellite = 0`: Initial conditions are set only considering peaks in the indicated satellite. If zero, ground datasets are used for initial conditions.
 - `oldmodels = 4`: If previous runs have been archived, the chosen number of best models from the last previous run are included as initial conditions. This can be useful for refining old models with new data or options.
 - `override = None`: If a t-uple is specified here (e.g `(8760.1, 8793.1)`), the elements of the t-uple are taken as peak positions in the data and directly used to define the initial conditions. The whole spline and peak identification procedure is then skipped.
