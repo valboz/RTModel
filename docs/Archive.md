@@ -19,7 +19,7 @@ All consecutive archived runs are stored in directories with increasing number. 
 
 We note that if you have not cleaned up your event directory from the preliminary models, you will rapidly exhaust your disk space if you archive runs still including them. We suggest to clean up the directory before archiving 
 ```
-rtm.clean_preliminary_models()
+rtm.cleanup_preliminary_models()
 rtm.archive_run()
 ```
 
