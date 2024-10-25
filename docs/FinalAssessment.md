@@ -19,7 +19,7 @@ rtm.Finalizer()
 
 With this code, we first perform all steps as detailed in the previous sections and then we make the final assessment through `Finalizer()`.
 
-In the `/event001` directory you will see the following products appear:
+In the `/event001` directory you will see that the following products appear:
 - A new subdirectory called `FinalModels/` is created. This will contain the final proposed models for the microlensing event, which are just copies of those appearing in the directory `Models/` that have passed all critieria.
 - A file `nature.txt` containing a summary of the chi square achieved in each model category, a final assessment, and the list of the competing models that have passed all criteria and copied to the directory `FinalModels/`.
 
