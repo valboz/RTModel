@@ -2,7 +2,7 @@
 
 # Model categories
 
-In the current version, `RTModel` fits 7 different model categories by defaulr. Each of them has a speficic label with two characters. This table summarizes the main information
+In the current version, `RTModel` fits 7 different model categories by default. Each of them has a speficic label with two characters. This table summarizes the main information
 
 | Label | Model | Number of parameters |
 | --- | --- | --- |
