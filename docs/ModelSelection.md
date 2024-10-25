@@ -24,6 +24,8 @@ In the `/event001` directory you will see that the following products appear:
 
 After the execution of `ModelSelector`, you may call the `run()` function to complete the modeling run or continue with other calls to `launch_fits()` and `ModelSelector()`, or going to [final assessment](FinalAssessment.md) with `Finalizer()`, depending on your intentions.
 
+After the model selection, the preliminary models calculated by `launch_fits` will no longer be used. If you do not need to perform any additional fits for the same model category, it is wise to clean up the preliminary models by `rtm.cleanup_preliminary_models()`.
+
 ## Model files
 
 Each model file contains:
