@@ -43,7 +43,7 @@ In this code, the `launch_fits()` will launch all fits of the `'PS'` [model cate
 
 At the end of the execution of the `launch_fits()` function, the `PreModels/` directory will be populated by all subdirectories corresponding to fits from all initial conditions in `InitCondPS.txt`. The file `minchi.dat` will contain the minimum chi square found so far, with the name of the subdirectory containing the best model.
 
-The following step would be the [Model selection](ModelSelection.md) within the fitted model category.
+The following step would be the [Model selection](ModelSelection.md) within the fitted model category. After that, the preliminary models in `/PreModels` will no longer be used and can be deleted to save disk space by a call to `rtm.cleanup_preliminary_models()`
 
 ## Launching a fit from a user-defined initial condition
 
