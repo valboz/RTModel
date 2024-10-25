@@ -2,7 +2,7 @@
 
 # Model categories
 
-In the current version, `RTModel` offers 7 different model categories. Each of them has a speficic label with two characters. This table summarizes the main information
+In the current version, `RTModel` fits 7 different model categories by default. Each of them has a speficic label with two characters. This table summarizes the main information
 
 | Label | Model | Number of parameters |
 | --- | --- | --- |
@@ -12,9 +12,21 @@ In the current version, `RTModel` offers 7 different model categories. Each of t
 | BO | Single-lens-binary-source with xallarap | 10 |
 | LS | Binary-lens-single-source | 7 |
 | LX | Binary-lens-single-source with parallax | 9 |
-| LO | Binary-lens-single-source with orbital motion | 12 |
+| LO | Binary-lens-single-source with circular orbital motion | 12 |
 
-The following sections provide details about parameters and conventions.
+## Including or excluding model categories
+
+By default, `RTModel` fits all the model categories listed above to the data, providing models for all of them and comparing their chi square to make its final assessment. However, the user may specify which model categories to fit and even include additional models not proposed in the default modeling run by specifying the corresponding option, as described in [Initial conditions](InitCond.md). 
+
+## Additional model categories
+
+Some additional model categories are available but not included in the default modeling run. They can be included by adding their label to the list of model categories as detailed in [Initial conditions](InitCond.md). At the moment, we have only one additional category, but more are on their ways.
+
+| Label | Model | Number of parameters |
+| --- | --- | --- |
+| LK | Binary-lens-single-source with eccentric orbital motion | 14 |
+
+The following sections provide details about parameters and conventions of all categories listed above.
 
 Note that some parameters are fit in logarithmic scale by `RTModel` for better performance. The only consequence for users is that the covariance matrix contained in model files is written for the ln parameters.
 
@@ -84,7 +96,7 @@ Here we also include circular orbital motion of the two sources around a common 
 | 9 | phi | Phase of the orbit from the passage on the line of nodes | |
 | 10 | qs | Mass ratio of the secondary to the primary | X |
 
-The position of the secondary source is calculated from the position of the primary at any time. See [VBBinaryLensing Binary Sources](https://github.com/valboz/VBBinaryLensing/blob/master/docs/BinarySources.md) for a detailed explanation.
+The position of the secondary source is calculated from the position of the primary at any time. See [VBMicrolensing Binary Sources](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/BinarySources.md) for a detailed explanation.
 
 Annual parallax is not considered in this model because it can be mimicked by xallarap, as well known and would only induce bad degeneracies in a higher dimensional parameter space. However, satellite observations may distinguish between parallax and xallarap.
 
@@ -104,7 +116,7 @@ This is the "static" binary-lens model:
 | 6 | tE | Einstein time in days | X |
 | 7 | t0 | Closest approach time in HJD to the barycenter |  |
 
-For details about the source trajectory parameterization, please check [VBBinaryLensing Light Curves](https://github.com/valboz/VBBinaryLensing/blob/master/docs/LightCurves.md).
+For details about the source trajectory parameterization, please check [VBMicrolensing Light Curves](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/LightCurves.md).
 
 ## Binary-lens-single-source with parallax (LX)
 
@@ -123,7 +135,7 @@ Here we also include parallax as we did before for the single-lens case:
 | 9 | piE | Parallax component along East |  |
 
 
-## Binary-lens-single-source with orbital motion (LO)
+## Binary-lens-single-source with circular orbital motion (LO)
 
 Finally, we also explore circular orbital motion for our binary lens:
 
@@ -146,7 +158,30 @@ The three components of the orbital motion are expressed at time t0 in units of 
 
 The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt. The third component gammaz is generally poorly constrained, but is required to move along a physical circular orbit.
 
-More details are available at [VBBinaryLensing Orbital Motion](https://github.com/valboz/VBBinaryLensing/blob/master/docs/OrbitalMotion.md).
+More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/OrbitalMotion.md).
+
+## Binary-lens-single-source with eccentric orbital motion (LK)
+
+Eccentric orbital motion is not fit by default, but can be requested by setting the corresponding option in the [Initial Conditions](InitCond.md).
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | s | Separation between the lenses in Einstein radii | X |
+| 2 | q | Mass ratio of the secondary to the primary lens | X |
+| 3 | u0 | Impact parameter normalized to Einstein angle |  |
+| 4 | alpha | Angle between the source velocity and the vector pointing from the secondary to the primary lens |  |
+| 5 | rho | Source radius normalized to Einstein angle | X |
+| 6 | tE | Einstein time in days | X |
+| 7 | t0 | Closest approach time in HJD to the barycenter |  |
+| 8 | piN| Parallax component along North |  |
+| 9 | piE | Parallax component along East |  |
+| 10 | gamma1 | Angular velocity parallel to the lens axis |  |
+| 11 | gamma2 | Angulr velocity perpendicular to the lens axis |  |
+| 12 | gammaz | Angular velocity along the line of sight |  |
+| 13 | sz_s | Separation along the line of sight over projected separation |  |
+| 14 | a_s3d | Semimajor axis over total separation |  |
+
+The two additional parameters are sufficient to completely define an eccentric orbit. More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/OrbitalMotion.md).
 
 [Go to **Plotting models**](PlotModel.md)
 

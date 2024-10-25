@@ -17,12 +17,14 @@ rtm.ModelSelector('PS')
 
 With this code, we first perform the data pre-processing by `Reader`, we set the initial conditions by `InitCond`, we launch all fits of the single-lens-single-source model with `launch_fits` and then we select the best models within this category with `ModelSelector`.
 
-In the `/event001` directory you will see the following products appear:
+In the `/event001` directory you will see that the following products appear:
 - A new subdirectory called `Models/` is created. This will contain the best models for each category.
 - One or more files named `PSXXXX-X.txt` containing the details of the selected models. Each model is identified by the label for the model category followed by the number of initial condition and then by the fit number. Any model obtained by user-defined initial conditions will carry the same label specified by the user.
-- In addition, in the `/InitCond` subdirectory, some initial conditions files are updated to include more initial conditions obtained by perturbing the best models found in this category. For example, after the single-lens-single-source fits, initial conditions for binary lenses starting from best models found with single lens are added. These are particularly useful to model small anomalies due to planets.
+- In addition, in the `InitCond/` subdirectory, some initial conditions files are updated to include more initial conditions obtained by perturbing the best models found in this category. For example, after the single-lens-single-source fits, initial conditions for binary lenses starting from best models found with single lens are added. These are particularly useful to model small anomalies due to planets.
 
 After the execution of `ModelSelector`, you may call the `run()` function to complete the modeling run or continue with other calls to `launch_fits()` and `ModelSelector()`, or going to [final assessment](FinalAssessment.md) with `Finalizer()`, depending on your intentions.
+
+After the model selection, the preliminary models calculated by `launch_fits` will no longer be used. If you do not need to perform any additional fits for the same model category, it is wise to clean up the preliminary models by `rtm.cleanup_preliminary_models()`.
 
 ## Model files
 
@@ -59,7 +61,14 @@ Here we describe the options for `LevMar` in detail indicating their default val
 - `sigmachisquare = 1.0`: Besides the best model, `ModelSelector` retains competing models up to a threshold given by sqrt(2*chisqure), which represents one sigma in the chi square distribution. This threshold can be changed by this option to include less or more competing models in the final selection.
 - `maxmodels = 10`: Maximum number of competing models to report
 
-Notice that the options that are not explicitly specified in the call to `config_LevMar()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
+All options are also accessible separately as properties of the `RTModel` class. The user may thus modify the value of each option one by one. The names of the properties are the same as the options in `config_ModelSelector()` with the prefix `ModelSelector_`, as shown in the example below:
+
+```
+rtm.ModelSelector_sigmasoverlap = 5.0
+rtm.ModelSelector_maxmodels = 2
+```
+
+An empty call to `config_ModelSelector()` with no parameters will reset all variables to the default values. Notice that the options that are not explicitly specified in the call to `config_ModelSelector()` are always reset to their default values. This is also true if you previously used the `recover_options()` function to inherit the options from a previous run (see [Archiving and updating](Archive.md)).
 
 ### Recording the options
 

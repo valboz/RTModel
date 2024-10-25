@@ -14,8 +14,8 @@
 using namespace std;
 using namespace std::filesystem;
 
-const double failthr = 20000000.0; // threshold for chisquare/dof for declaring failure
-const int ncategories = 7;
+const double failthr = 1.0e100; // threshold for chisquare/dof for declaring failure
+const int ncategories = 10;
 
 int main(int argc, char* argv[]) {
 
@@ -25,12 +25,15 @@ int main(int argc, char* argv[]) {
 	double value;
 	int nfil, * satel;
 	double* t, * y, * w, * pr, * sigmapr, thsigma;
-	double thrs[10] = { 0,36.,40.0872,43.4518,46.4625,49.2497,51.878 ,54.3854 ,56.7964 ,59.1282 }; // thresholds at 6 sigma for n more parameters
-	string modelcodes[ncategories] = { "PS","PX","BS","BO","LS","LX","LO" };
+	double thrs[20] = { 36., 40.0872, 43.4518, 46.4625, 49.2497, 51.878, 54.3854, 56.7964, \
+						59.1282, 61.3932, 63.601, 65.7588, 67.8725, 69.9471, 71.9863, \
+						73.9937, 75.9719, 77.9236, 79.8506 }; // thresholds at 6 sigma for n more parameters
+	string modelcodes[ncategories] = { "PS","PX","BS","BO","LS","LX","LO","LK","TS","TX"};
 	string modelnames[ncategories] = { "Single-Lens-Single-Source","Single-Lens-Single-Source with parallax",\
 									"Binary source","Binary source with xallarap",\
-									""," with parallax"," with orbital motion" };
-	int npss[ncategories] = { 4,6,7,10,7,9,12 };
+									""," with parallax"," with orbital motion", "with eccentric orbital motion",\
+									"Triplelens", "Triple lens with parallax"};
+	int npss[ncategories] = { 4,6,7,10,7,9,12, 14, 10, 12};
 	double chis[ncategories];
 	double cmin, c0, c1, c2, cflat;
 	double chiblp = 1.e100, chiblb = 1.e100;
@@ -123,8 +126,8 @@ int main(int argc, char* argv[]) {
 	fclose(f);
 
 
-	pr = (double*)malloc(sizeof(double) * (12 + 2 * nfil));
-	sigmapr = (double*)malloc(sizeof(double) * (12 + 2 * nfil));
+	pr = (double*)malloc(sizeof(double) * (14 + 2 * nfil));
+	sigmapr = (double*)malloc(sizeof(double) * (14 + 2 * nfil));
 
 	// Calculate flat chi square
 
@@ -219,16 +222,18 @@ int main(int argc, char* argv[]) {
 				nmod++;
 			}
 		}
-		printf("%s: ", modelcodes[icat].c_str());
-		fprintf(g, "%s: ", modelcodes[icat].c_str());
+		//printf("%s: ", modelcodes[icat].c_str());
+		//fprintf(g, "%s: ", modelcodes[icat].c_str());
 		if (chis[icat] < 1.e99) {
+			printf("%s: ", modelcodes[icat].c_str());
+			fprintf(g, "%s: ", modelcodes[icat].c_str());
 			printf("%lf\n", chis[icat]);
 			fprintf(g, "%lf\n", chis[icat]);
 		}
-		else {
-			printf("N/A\n");
-			fprintf(g, "N/A\n");
-		}
+		//else {
+		//	printf("N/A\n");
+		//	fprintf(g, "N/A\n");
+		//}
 	}
 
 
@@ -299,9 +304,27 @@ int main(int argc, char* argv[]) {
 	if (chis[6] > chis[0] - thrs[npss[6] - npss[0]] || chis[6] > chis[1] - thrs[npss[6] - npss[1]] || chis[6] > chis[4] - thrs[npss[6] - npss[4]] || chis[6] > chis[5] - thrs[npss[6] - npss[5]]) {
 		chis[6] = 1.e100;
 	}
+	if (chis[7] > chis[0] - thrs[npss[7] - npss[0]] || chis[7] > chis[1] - thrs[npss[7] - npss[1]] || chis[7] > chis[4] - thrs[npss[7] - npss[4]] || chis[7] > chis[5] - thrs[npss[7] - npss[5]] || chis[7] > chis[6] - thrs[npss[7] - npss[6]]) {
+		chis[7] = 1.e100;
+	}
+	if (chis[8] > chis[0] - thrs[npss[8] - npss[0]] || chis[8] > chis[4] - thrs[npss[8] - npss[4]]) {
+		chis[8] = 1.e100;
+	}
+	if (chis[9] > chis[0] - thrs[npss[9] - npss[0]] || chis[9] > chis[1] - thrs[npss[9] - npss[1]] || chis[9] > chis[4] - thrs[npss[9] - npss[4]] || chis[9] > chis[5] - thrs[npss[9] - npss[5]]) {
+		chis[9] = 1.e100;
+	}
 
 	// If more complicated category has survived, all nested categories are removed
 
+	if (chis[9] < 1.e99) {
+		chis[5] = chis[4] = chis[1] = chis[0] = 1.e100;
+	}
+	if (chis[8] < 1.e99) {
+		chis[4] = chis[0] = 1.e100;
+	}
+	if (chis[7] < 1.e99) {
+		chis[6] = chis[5] = chis[4] = chis[1] = chis[0] = 1.e100;
+	}
 	if (chis[6] < 1.e99) {
 		chis[5] = chis[4] = chis[1] = chis[0] = 1.e100;
 	}

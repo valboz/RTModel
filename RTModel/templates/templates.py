@@ -1,6 +1,6 @@
 import site
 from pathlib import Path
-import VBBinaryLensing
+import VBMicrolensing
 import matplotlib.pyplot as plt
 import shutil
 import math
@@ -51,9 +51,9 @@ def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.
     print('s: ' + str(parameters[0]) + '  q: ' + str(parameters[1]) + '  u0: ' + str(parameters[2]) + '  alpha: ' + str(parameters[3]) + '  rho: '+ str(parameters[4]))
     times = np.arange(tmin, tmax, tstep)
     fig, ax = plt.subplots()
-    vbbl = VBBinaryLensing.VBBinaryLensing()
-    vbbl.Tol = accuracy
-    results = vbbl.BinaryLightCurve([logs, logq, u0, alpha, logrho, logtE, t0], times)
+    vbm = VBMicrolensing.VBMicrolensing()
+    vbm.Tol = accuracy
+    results = vbm.BinaryLightCurve([logs, logq, u0, alpha, logrho, logtE, t0], times)
     mags = results[0]
     ax.plot(times, mags)
     ax.set_xlabel('t/tE')
@@ -69,14 +69,14 @@ def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.
         if(derivative == -1):
             if(mags[i]<mags[i-1]):
                 lastmin = mags[i]
-            elif(mags[i]>lastmin + 5*vbbl.Tol):
+            elif(mags[i]>lastmin + 5*vbm.Tol):
                 derivative = +1
                 lastmax = mags[i]
         else:
             if(mags[i]>mags[i-1]):
                 lastmax = mags[i]
                 timmax = times[i]
-            elif(mags[i]<lastmax - 5*vbbl.Tol):
+            elif(mags[i]<lastmax - 5*vbm.Tol):
                 derivative = -1
                 lastmin = mags[i]
                 peaks.append(timmax)

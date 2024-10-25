@@ -34,7 +34,7 @@ class RTModel:
             self.eventname = os.path.realpath(event)
             print("Event name: " + self.eventname)
         self.inidir = "ini"
-        self.modelcodes = ['PS', 'PX', 'BS', 'BO', 'LS', 'LX', 'LO']
+        self.modelcodes = ['PS', 'PX', 'BS', 'BO', 'LS', 'LX', 'LO', 'LK', 'TS', 'TX']
         self.endphase =  len(self.modelcodes)*2+3
         self.eventinifile = 'event.ini'        
         self.nprocessors = os.cpu_count()
@@ -53,6 +53,14 @@ class RTModel:
 
     def set_satellite_dir(self, satellitedir):
         self.satellitedir = satellitedir
+
+    def set_constraints(self, constraints = None):
+        self.constraints = constraints
+        if(not os.path.exists(self.eventname + '/' + self.inidir)):
+            os.makedirs(self.eventname + '/' + self.inidir)
+        with open(self.eventname + '/' + self.inidir + '/Constraints.ini','w') as f:
+            for cons in constraints:
+                f.write(cons[0] + ' = '+ str(cons[1]) + ' '+ str(cons[2]) + ' '+ str(cons[3]) + ' ' + '\n')
 
     def config_Reader(self, tau = 0.1, binning = 4000, otherseasons = 1, renormalize = 1, thresholdoutliers = 10):
         self.Reader_tau= tau # conventional correlation time for consecutive points
@@ -80,15 +88,17 @@ class RTModel:
             print('  OK')
 
     def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
-                       , template_library = None):
+                       , templatelibrary = None, modelcategories = ['PS','PX','BS','BO','LS','LX','LO'], onlyupdate =False):
         self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
         self.InitCond_peakthreshold = peakthreshold # Number of sigmas necessary for a deviation to be identified as a maximum or a minimum.
         self.InitCond_oldmodels = oldmodels # Maximum number of old models to include in new run as initial conditions
         self.InitCond_override = override # Override peak identification and manually set peak times
         self.InitCond_nostatic = nostatic or onlyorbital # No static models will be calculated.
-        self.InitCond_onlyorbital = onlyorbital; # Only orbital motion models will be calculated.
-        self.InitCond_usesatellite = usesatellite; # Satellite to be used for initial conditions. Ground telescopes by default.
-        self.InitCond_template_library = template_library; # Template library to be used in place of the default one.
+        self.InitCond_onlyorbital = onlyorbital # Only orbital motion models will be calculated.
+        self.InitCond_usesatellite = usesatellite # Satellite to be used for initial conditions. Ground telescopes by default.
+        self.InitCond_templatelibrary = templatelibrary # Template library to be used in place of the default one.
+        self.InitCond_modelcategories = modelcategories # Model categories to be fit
+        self.InitCond_onlyupdate = onlyupdate # No search but only update of previously found best models
         
     def InitCond(self):
         ''' Establishes initial conditions for fitting by executing the InitCond external module.
@@ -106,8 +116,12 @@ class RTModel:
                 f.write('onlyorbital = 1\n')
             if(self.InitCond_override != None):
                 f.write('override = ' + str(self.InitCond_override[0])+ ' ' + str(self.InitCond_override[1]) + '\n')            
-            if(self.InitCond_template_library != None):
-                f.write('templatelibrary = ' + self.InitCond_template_library + '\n')            
+            if(self.InitCond_templatelibrary != None):
+                f.write('templatelibrary = ' + self.InitCond_templatelibrary + '\n')            
+            if(self.InitCond_modelcategories != None):
+                f.write('modelcategories = '+ ''.join(self.InitCond_modelcategories) + '\n')
+            if(self.InitCond_onlyupdate):            
+                f.write('onlyupdate = 1\n')
         print('- Launching: InitCond')
         print('  Setting initial conditions...')
         completedprocess = subprocess.run([self.bindir+self.initcondexe,self.eventname], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
@@ -115,16 +129,17 @@ class RTModel:
             print('! Error in setting initial conditions!')
             self.done = True
         else:
-            initfils=glob.glob(self.eventname + '/InitCond/*LS*')
-            if(len(initfils)==0):
-                initfils=glob.glob(self.eventname + '/InitCond/*LX*')
-                if(len(initfils)==0):
-                    initfils=glob.glob(self.eventname + '/InitCond/*LO*')
-            with open(initfils[0], 'r') as f:
-                npeaks = int(f.readline().split()[0])
-                print('Peaks:  ',end ='')
-                for i in range(0,npeaks):
-                    print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
+            peaksearch = True
+            i=0
+            while(peaksearch):
+                initfils=glob.glob(self.eventname + '/InitCond/InitCond'+ self.modelcodes[i] + '*')
+                if(len(initfils)!=0):
+                    peaksearch = False
+                    with open(initfils[0], 'r') as f:
+                        npeaks = int(f.readline().split()[0])
+                        print('Peaks:  ',end ='')
+                        for i in range(0,npeaks):
+                            print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
             print('\n  OK')
 
     def config_LevMar(self, nfits = 5, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0):
@@ -173,7 +188,10 @@ class RTModel:
                       'BO' : '- Single-lens-Binary-source fits with xallarap',
                       'LS' : '- Binary-lens-Single-source fits',
                       'LX' : '- Binary-lens-Single-source fits with parallax',
-                      'LO' : '- Binary-lens-Single-source fits with orbital motion'}       
+                      'LO' : '- Binary-lens-Single-source fits with orbital motion',
+                      'LK' : '- Binary-lens-Single-source fits with eccentric orbital motion',
+                      'TS' : '- Triple-lens-Single-source fits',
+                      'TX' : '- Triple-lens-Single-source fits with parallax'}       
         print(stringfits[modelcode])
         initcondfile = self.eventname + '/InitCond/' + 'InitCond'+ modelcode + '.txt'
         if(os.path.exists(initcondfile)):
@@ -220,7 +238,7 @@ class RTModel:
                 time.sleep(0.1)
             pbar.close()
         else:
-            print('- No initial conditions for this class')
+            print('- No initial conditions for this category')
  
     def config_ModelSelector(self, sigmasoverlap = 3.0, sigmachisquare = 1.0, maxmodels = 10):
         self.ModelSelector_sigmasoverlap = sigmasoverlap # factor multiplying the inverse covariance in search for superpositions (models are incompatible if farther than sigmasoverlap*sigma)
@@ -240,7 +258,10 @@ class RTModel:
                         'BO' : '- Selecting models for Single-lens-Binary-source fits with xallarap',
                         'LS' : '- Selecting models for Binary-lens-Single-source fits',
                         'LX' : '- Selecting models for Binary-lens-Single-source fits with parallax',
-                        'LO' : '- Selecting models for Binary-lens-Single-source fits with orbital motion'}
+                        'LO' : '- Selecting models for Binary-lens-Single-source fits with orbital motion',
+                        'LK' : '- Selecting models for Binary-lens-Single-source fits with eccentric orbital motion',
+                        'TS' : '- Selecting models for Triple-lens-Single-source fits',
+                        'TX' : '- Selecting models for Triple-lens-Single-source fits with parallax'}   
         print(stringmodels[modelcode])
         completedprocess = subprocess.run([self.bindir+self.modelselectorexe,self.eventname, modelcode], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
         if(completedprocess.returncode != 0):
@@ -262,13 +283,13 @@ class RTModel:
                     print("  " + line,end='')
                 print("  OK")  
 
-    def run(self, event = None):
+    def run(self, event = None, cleanup = False):
         phase =0
         if(event!= None):
             self.eventname = os.path.realpath(event)
         self.done = False        
+        print("o " + time.asctime())
         while not(self.done):
-            print("o " + time.asctime())
             # Check that event directory exists
             if phase == 0:
                 if(os.path.exists(self.eventname + '/Data')):
@@ -280,28 +301,44 @@ class RTModel:
             # Launch Reader
             elif phase == 1:
                 self.Reader()
+                print("o " + time.asctime())
                 phase = 2
             # Launch InitCond
             elif phase == 2:
                 self.InitCond()
+                print("o " + time.asctime())
                 phase = 3
             # Launch Finalizer
             elif phase == self.endphase:
                 self.Finalizer()
+                print("o " + time.asctime())
                 phase += 1
             # Conclude analysis
             elif phase > self.endphase:
+                if(cleanup):
+                    print('- Cleaning up preliminary models')
+                    cleanup_preliminary_models()
                 print("- Analysis of " + self.eventname + " successfully completed!")
+                print("o " + time.asctime())
                 self.done = True
             # Launch LevMar for next class
             elif phase%2 == 1:
-                self.launch_fits(self.modelcodes[phase//2-1]) 
+                if(self.InitCond_modelcategories == None or self.modelcodes[phase//2-1] in self.InitCond_modelcategories):
+                    self.launch_fits(self.modelcodes[phase//2-1]) 
+                    print("o " + time.asctime())
                 phase += 1            
             # Launch ModelSelector for this class
             else:
-                self.ModelSelector(self.modelcodes[phase//2-2])
-                phase += 1     
-                
+                if(self.InitCond_modelcategories == None or self.modelcodes[phase//2-2] in self.InitCond_modelcategories):
+                    self.ModelSelector(self.modelcodes[phase//2-2])
+                    print("o " + time.asctime())
+                phase += 1
+
+    def cleanup_preliminary_models(self):
+        os.chdir(self.eventname)
+        if(os.path.exists('PreModels')):
+            shutil.rmtree('PreModels')
+            
     def archive_run(self, destination = None):
         olddir = os.getcwd()
         os.chdir(self.eventname)
@@ -335,6 +372,15 @@ class RTModel:
         if(not(os.path.exists(pathname))):
             print("Invalid path!")
             return
+        if(os.path.exists(pathname + '/' + self.inidir + '/Constraints.ini')):
+            with open(pathname + '/' + self.inidir + '/Constraints.ini','r') as f:
+                lines = f.read().splitlines()
+                print('Constraints --- ',lines) 
+                self.constraints =[]
+                for line in lines:
+                    chunks =line.split()
+                    self.constraints.append([chunks[0], float(chunks[2]), float(chunks[3]), float(chunks[4])])
+                self.set_constraints(self.constraints)
         if(os.path.exists(pathname + '/' + self.inidir + '/Reader.ini')):
             with open(pathname + '/' + self.inidir + '/Reader.ini','r') as f:
                 lines = f.read().splitlines()
@@ -358,6 +404,7 @@ class RTModel:
                 self.InitCond_nostatic = False
                 self.InitCond_onlyorbital = False
                 self.InitCond_override = None
+                self.InitCond_onlyupdate = False
                 for line in lines:
                     chunks = line.split()
                     if(chunks[0]=='npeaks'):
@@ -372,10 +419,14 @@ class RTModel:
                         self.InitCond_nostatic = (int(chunks[2])!=0)
                     elif(chunks[0]=='onlyorbital'):
                         self.InitCond_onlyorbital = (int(chunks[2])!=0)
+                    elif(chunks[0]=='onlyupdate'):
+                        self.InitCond_onlyupdate = (int(chunks[2])!=0)
                     elif(chunks[0]=='override'):
                         self.InitCond_override = (float(chunks[2]),float(chunks[3]))
                     elif(chunks[0]=='templatelibrary'):
-                        self.InitCond_template_library = chunks[2]
+                        self.InitCond_templatelibrary = chunks[2]
+                    elif(chunks[0]=='modelcategories'):
+                        self.InitCond_modelcategories = [chunks[2][i:i+2] for i in range(0, len(chunks[2]), 2)]
         if(os.path.exists(pathname + '/' + self.inidir + '/LevMar.ini')):        
             with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
                 lines = f.read().splitlines()

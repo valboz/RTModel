@@ -19,7 +19,7 @@ rtm.Finalizer()
 
 With this code, we first perform all steps as detailed in the previous sections and then we make the final assessment through `Finalizer()`.
 
-In the `/event001` directory you will see the following products appear:
+In the `/event001` directory you will see that the following products appear:
 - A new subdirectory called `FinalModels/` is created. This will contain the final proposed models for the microlensing event, which are just copies of those appearing in the directory `Models/` that have passed all critieria.
 - A file `nature.txt` containing a summary of the chi square achieved in each model category, a final assessment, and the list of the competing models that have passed all criteria and copied to the directory `FinalModels/`.
 
@@ -27,7 +27,7 @@ The execution of `Finalizer` closes the modeling run. You may then proceed to [p
 
 ## Making the final assessment
 
-The `Finalizer` module compares models of different categories according to Wilks' theorem, which states that the level at which a model with p additional parameters is preferred can be assessed by the chi square distribution with p degrees of freedom. More details will be given in our future publication. Models that are not nested one within the other are compared with the softer threshold given by the 1-sigma level in the chi square distribution.
+The `Finalizer` module compares models of different categories according to Wilks' theorem, which states that the level at which a model with p additional parameters is preferred can be assessed by the chi square distribution with p degrees of freedom. More details can be read in the [RTModel paper](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract). Models that are not nested one within the other are compared with the softer threshold given by the 1-sigma level in the chi square distribution.
 
 There are no available options for `Finalizer()` since an unsatisfied user may easily vet the models in the directory `Models/` according to his/her own criteria.
 

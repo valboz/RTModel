@@ -4,6 +4,8 @@
 
 It is sometimes useful to analyze the fitting process by simple visualization tools. This is possible by the `RTModel.plotmodel` subpackage, which also includes the possibility to show an animation of the fitting process.
 
+Note that the functions in this section access the `PreModels/` directory. It is not possible to see the animation of the fit if you have already deleted the directory with `cleanup_preliminary_models()` function. 
+
 ## Visualizing the step chain in the parameter space
 
 Suppose you want to see how the binary-lens fit from the initial condition 190 works for the event `/event001`. The following code will visualize the step chain of the Levenberg-Marquardt fits in the `(s,q)` plane:

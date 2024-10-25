@@ -4,11 +4,11 @@
 
 Observations from satellites, if available, are identified through their photometry filename ending with a number, e.g. `Spitzer1.dat`. Each satellite is identified by a different number that is used to select the correct ephemerides table. All other files ending by anything that is not a number is considered as taken from a ground telescope.
 
-In all models without parallax ('PS', 'BS', 'BO', 'LS' (see [Model categories](ModelCategories.md))), satellite datasets are treated in the same way as ground datasets. For models including parallax ('PX', 'LX', 'LO'), the position of the satellite in space is taken into account through its respective ephemerides table. This leads to a different source trajectory with respect to the caustics for the event as seen from the satellite. Therefore, the light curve model for the satellite data can be profoundly different. This difference is extremely useful to fix the parallax parameters and retrieve physical information on the lens distance.
+In all models without parallax ('PS', 'BS', 'BO', 'LS' (see [Model categories](ModelCategories.md))), satellite datasets are treated in the same way as ground datasets. For models including parallax ('PX', 'LX', 'LO', 'LK'), the position of the satellite in space is taken into account through its respective ephemerides table. This leads to a different source trajectory with respect to the caustics for the event as seen from the satellite. Therefore, the light curve model for the satellite data can be profoundly different. This difference is extremely useful to fix the parallax parameters and retrieve physical information on the lens distance.
 
 ## Ephemerides tables
 
-In order to exploit satellite observations, we need satellite ephemerides covering the observation period. `RTModel` conforms to `VBBinaryLensing` standard, using ephemerides of the satellite in the format given by the [NASA Horizons system](http://ssd.jpl.nasa.gov/horizons.cgi).
+In order to exploit satellite observations, we need satellite ephemerides covering the observation period. `RTModel` conforms to `VBMicrolensing` standard, using ephemerides of the satellite in the format given by the [NASA Horizons system](http://ssd.jpl.nasa.gov/horizons.cgi).
 
 In particular, we assume five columns:
 - JD
@@ -48,7 +48,15 @@ rtm.config_InitCond(nostatic = True)
 rtm.run()
 ```
 
-This is thus the recommended sequence of instructions for modeling an event including satellite data. Further discussion and details are provided in the [Initial conditions](InitCond.md) page.
+Another important note is that if you have no ground data and only satellites, initial conditions must be set using satellite data. This is achieved by the line
+
+```
+rtm.config_InitCond(nostatic = True, usesatellite = 1)
+```
+
+Without the `usesatellite` option set to the chosen satellite, `RTModel` will look for ground datasets for setting initial conditions and will fail if no ground datasets are present.
+
+Further discussion and details are provided in the [Initial conditions](InitCond.md) page.
 
 ## Plotting satellite observations
 
