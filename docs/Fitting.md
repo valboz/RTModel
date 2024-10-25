@@ -66,7 +66,9 @@ The order of parameters for each model category is specified in [Model categorie
 
 ## The Levenberg-Marquardt fit
 
-The `LevMar` module executes a number of Levenberg-Marquardt fits from the specified initial condition. Every time a minimum is found, it is filled with a 'bumper'. Any subsequent run hitting the bumper will be bounced off in a different direction in the parameter space. In this way, new minima can be found from the same initial condition.
+The `LevMar` module executes a number of Levenberg-Marquardt fits from the specified initial condition in order to minimize the chi square. Every time a minimum is found, it is filled with a 'bumper'. Any subsequent run hitting the bumper will be bounced off in a different direction in the parameter space. In this way, new minima can be found from the same initial condition.
+
+If any [constraints](Constraints.md) have been specified by the `set_constraints()` function, they will be taken into account at this stage.
 
 The details of this fitting strategy are illustrated in the [RTModel paper](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract). 
 
