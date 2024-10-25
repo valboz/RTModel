@@ -425,6 +425,8 @@ class RTModel:
                         self.InitCond_override = (float(chunks[2]),float(chunks[3]))
                     elif(chunks[0]=='templatelibrary'):
                         self.InitCond_templatelibrary = chunks[2]
+                    elif(chunks[0]=='modelcategories'):
+                        self.InitCond_modelcategories = [chunks[2][i:i+2] for i in range(0, len(chunks[2]), 2)]
         if(os.path.exists(pathname + '/' + self.inidir + '/LevMar.ini')):        
             with open(pathname + '/' + self.inidir + '/LevMar.ini','r') as f:
                 lines = f.read().splitlines()
