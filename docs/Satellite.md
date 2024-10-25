@@ -8,7 +8,7 @@ In all models without parallax ('PS', 'BS', 'BO', 'LS' (see [Model categories](M
 
 ## Ephemerides tables
 
-In order to exploit satellite observations, we need satellite ephemerides covering the observation period. `RTModel` conforms to `VBBinaryLensing` standard, using ephemerides of the satellite in the format given by the [NASA Horizons system](http://ssd.jpl.nasa.gov/horizons.cgi).
+In order to exploit satellite observations, we need satellite ephemerides covering the observation period. `RTModel` conforms to `VBMicrolensing` standard, using ephemerides of the satellite in the format given by the [NASA Horizons system](http://ssd.jpl.nasa.gov/horizons.cgi).
 
 In particular, we assume five columns:
 - JD
