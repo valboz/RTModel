@@ -2,7 +2,7 @@
 
 # Model categories
 
-In the current version, `RTModel` offers 7 different model categories. Each of them has a speficic label with two characters. This table summarizes the main information
+In the current version, `RTModel` fits 7 different model categories by defaulr. Each of them has a speficic label with two characters. This table summarizes the main information
 
 | Label | Model | Number of parameters |
 | --- | --- | --- |
@@ -12,9 +12,21 @@ In the current version, `RTModel` offers 7 different model categories. Each of t
 | BO | Single-lens-binary-source with xallarap | 10 |
 | LS | Binary-lens-single-source | 7 |
 | LX | Binary-lens-single-source with parallax | 9 |
-| LO | Binary-lens-single-source with orbital motion | 12 |
+| LO | Binary-lens-single-source with circular orbital motion | 12 |
 
-The following sections provide details about parameters and conventions.
+## Including or excluding model categories
+
+By default, `RTModel` fits all the model categories listed above to the data, providing models for all of them and comparing their chi square to make its final assessment. However, the user may specify which model categories to fit and even include additional models not proposed in the default modeling run by specifying the corresponding option, as described in [Initial conditions](InitCond.md). 
+
+## Additional model categories
+
+Some additional model categories are available but not included in the default modeling run. They can be included by specifying the model categories as detailed in [Initial conditions](InitCond.md). At the moment, we have only one, but more are on their ways.
+
+| Label | Model | Number of parameters |
+| --- | --- | --- |
+| LK | Binary-lens-single-source with eccentric orbital motion | 14 |
+
+The following sections provide details about parameters and conventions of all categories listed above.
 
 Note that some parameters are fit in logarithmic scale by `RTModel` for better performance. The only consequence for users is that the covariance matrix contained in model files is written for the ln parameters.
 
@@ -148,15 +160,9 @@ The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt
 
 More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/OrbitalMotion.md).
 
-## Including or excluding model categories
+## Binary-lens-single-source with eccentric orbital motion (LK)
 
-By default, `RTModel` fits all the model categories listed above to the data, providing models for all of them and comparing their chi square to make its final assessment. However, the user may specify which model categories to fit and even include additional models not proposed in the default modeling run by specifying the corresponding option, as described in [Initial conditions](InitCond.md). 
-
-## Additional model categories
-
-Some additional model categories are available but not included in the default modeling run. They can be included by specifying the model categories as detailed in [Initial conditions](InitCond.md).
-
-### Binary-lens-single-source with eccentric orbital motion (LK)
+Eccentric orbital motion is not fit by default, but can be requested by setting the corresponding option in the [Initial Conditions](InitCond.md).
 
 | Number | Parameter | Meaning | ln |
 | --- | --- | --- | --- |
