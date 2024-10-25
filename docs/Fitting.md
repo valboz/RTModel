@@ -93,7 +93,7 @@ Here we describe the options for `LevMar` in detail indicating their default val
 
 - `nfits = 5`: Number of fits executed from the same initial condition.
 - `maxsteps = 50`: Maximum number of steps for each fit.
-- `timelimit = 600.0`: Maximum time in seconds allowed for the execution of `LevMar`. If the limit is reached, the execution is stopped and the last step is saved as a preliminary model.
+- `timelimit = 600.0`: Maximum time in seconds allowed for the execution of `LevMar`. If the limit is reached, the execution of the individual fitting is stopped and only the minima found so far will be saved.
 - `bumperpower = 2.0`: Size of the bumper in the parameter space expressed in sigmas. The bumper is created with the shape determined by the local covariance matrix. and the size given by this parameter.
 
 All options are also accessible separately as properties of the `RTModel` class. The user may thus modify the value of each option one by one. The names of the properties are the same as the options in `config_LevMar()` with the prefix `LevMar_`, as shown in the example below:
