@@ -17,7 +17,6 @@ With this code, we first perform the data pre-processing by `Reader` and then we
 - In the subfolder `ini/`, the file `InitCond.ini` appears, which contains the current options with which `InitCond` has been launched.
 - A new subdirectory called `InitCond/` is created. In this subdirectory there are several text files named `InitCondXX.txt` and some `PreInitCondXX.txt`, with XX replaced by the label of the corresponding [model category](ModelCategories.md).
 - Each `InitCondXX.txt` contains the number of initial conditions and the parameters of each initial conditions line by line.
-- Each `PreInitCondXX.txt` contains a partial list of initial conditions to be complemeted by more initial conditions to be determined along the way after [model selection](ModelSelection.md) on the previous model categories.
 - A file `spline.txt` in the base event folder containing the points of the spline models built by `InitCond` for each dataset.
 
 After the execution of `InitCond`, you may call the `run()` function to complete the modeling run or the `launch_fits()` function for the fits you are interested in, as described in [Fitting](Fitting.md).
