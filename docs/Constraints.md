@@ -44,7 +44,7 @@ In the second constraint in the example above we see how to constrain the logari
 
 ### Constraining blending
 
-The third constraint in the example above shows how to constrain the blending parameter for telescope number 1 (the telescope list starts from 0). We remind that in `RTModel` the blending parameter is defined as the ratio of the background flux to the source flux: $g_1 = F_{background,1}/F_{source,1}$. Note that in the specific case, non-negative blending has been required.
+The third constraint in the example above shows how to constrain the blending parameter for telescope number 1 (the telescope list starts from 0). We remind that in `RTModel` the blending parameter is defined as the ratio of the background flux to the source flux: $g_1 = F_{background,1}/F_{source,1}$. Note that in the specific case, non-negative blending has been requested.
 
 ### Other functions
 
