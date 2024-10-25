@@ -48,7 +48,15 @@ rtm.config_InitCond(nostatic = True)
 rtm.run()
 ```
 
-This is thus the recommended sequence of instructions for modeling an event including satellite data. Further discussion and details are provided in the [Initial conditions](InitCond.md) page.
+Another important note is that if you have no ground data and only satellites, initial conditions must be set using satellite data. This is achieved by the line
+
+```
+rtm.config_InitCond(nostatic = True, usesatellite = 1)
+```
+
+Without the `usesatellite` option set to the chosen satellite, `RTModel` will look for ground datasets for setting initial conditions and will fail if no ground datasets are present.
+
+Further discussion and details are provided in the [Initial conditions](InitCond.md) page.
 
 ## Plotting satellite observations
 
