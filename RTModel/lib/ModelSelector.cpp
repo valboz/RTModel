@@ -902,24 +902,37 @@ int main(int argc, char* argv[]) {
 						if (ipeak == idpeak) continue;
 						double q = 0.001;
 						double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
-						double xc = sqrt(u0 * u0 + dt * dt);
+						double xc0 = sqrt(u0 * u0 + dt * dt), xc;
 						double alpha0 = atan2(u0, -dt), alpha;
 						double rho = 0.001; // exp(pr[3] - sqrt(scanbumper->cov[3 * nps + 3]));
 
+						xc = xc0;
+
 						s0 = 0.5 * (sqrt(4 + xc * xc) + xc);
 						while (xc < 4 * sqrt(q) / (s0 * s0)) q *= 0.1;
-						s = s0 + 4 * sqrt(q) / (s0 * s0);
+						xc = xc0 + 4 * sqrt(q) / (s0 * s0);
+						s = 0.5 * (sqrt(4 + xc * xc) + xc);
 						alpha = alpha0;
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						s = s0 - 4 * sqrt(q) / (s0 * s0);
+						xc = xc0 - 4 * sqrt(q) / (s0 * s0);
+						s = 0.5 * (sqrt(4 + xc * xc) + xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
 
+						xc = xc0;
+						s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
+						q = 0.001;
+						while (xc < 3 * sqrt(3 * q) * s0 * s0 * s0) q *= 0.1;
+						xc = xc0 - 3 * sqrt(3 * q) * s0 * s0 * s0;
 						s = 0.5 * (sqrt(4 + xc * xc) - xc);
-
-						while (xc < 2 * sqrt(q) / s) q *= 0.1;
-						alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q) / s) / xc);
+						alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q) / s) / xc);
+						alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+						xc = xc0 + 3 * sqrt(3 * q) * s0 * s0 * s0;
+						s = 0.5 * (sqrt(4 + xc * xc) - xc);
+						alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+						alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
 					}
 					scanbumper = scanbumper->next;
@@ -988,24 +1001,37 @@ int main(int argc, char* argv[]) {
 							if (ipeak == idpeak) continue;
 							double q = 0.001;
 							double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
-							double xc = sqrt(u0 * u0 + dt * dt);
+							double xc0 = sqrt(u0 * u0 + dt * dt), xc;
 							double alpha0 = atan2(u0, -dt), alpha;
 							double rho = 0.001; // exp(pr[3] - sqrt(scanbumper->cov[3 * nps + 3]));
 
+							xc = xc0;
+
 							s0 = 0.5 * (sqrt(4 + xc * xc) + xc);
 							while (xc < 4 * sqrt(q) / (s0 * s0)) q *= 0.1;
-							s = s0 + 4 * sqrt(q) / (s0 * s0);
+							xc = xc0 + 4 * sqrt(q) / (s0 * s0);
+							s = 0.5 * (sqrt(4 + xc * xc) + xc);
 							alpha = alpha0;
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							s = s0 - 4 * sqrt(q) / (s0 * s0);
+							xc = xc0 - 4 * sqrt(q) / (s0 * s0);
+							s = 0.5 * (sqrt(4 + xc * xc) + xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
 
+							xc = xc0;
+							s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
+							q = 0.001;
+							while (xc < 3 * sqrt(3 * q) * s0 * s0 * s0) q *= 0.1;
+							xc = xc0 - 3 * sqrt(3 * q) * s0 * s0 * s0;
 							s = 0.5 * (sqrt(4 + xc * xc) - xc);
-
-							while (xc < 2 * sqrt(q) / s) q *= 0.1;
-							alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q) / s) / xc);
+							alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q) / s) / xc);
+							alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+							xc = xc0 + 3 * sqrt(3 * q) * s0 * s0 * s0;
+							s = 0.5 * (sqrt(4 + xc * xc) - xc);
+							alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+							alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
 						}
 						scanbumper = scanbumper->next;
