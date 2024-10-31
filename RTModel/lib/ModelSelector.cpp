@@ -818,7 +818,7 @@ int main(int argc, char* argv[]) {
 						s = 0.5 * (sqrt(4 + xc * xc) - xc);
 
 						q = 0.001;
-						while (xc < 1.5 * sqrt(3*q) * s*s*s) q *= 0.1;
+						while (xc < 3 * sqrt(3*q) * s*s*s) q *= 0.1;
 						alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2]);
 						alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
