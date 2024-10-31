@@ -761,10 +761,10 @@ int main(int argc, char* argv[]) {
 				double* peaks;
 				g = fopen("InitCondLS-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "%d %d\n", npeaks, np + 4 * nmod);
+				fprintf(g, "%d %d\n", npeaks, np + 6 * nmod);
 				peaks = (double*)malloc(sizeof(double) * npeaks);
 
-				printf("\nNumber of initial conditions: %d", np + 4 * nmod);
+				printf("\nNumber of initial conditions: %d", np + 6 * nmod);
 				for (int i = 0; i < npeaks; i++) {
 					fscanf(f, "%lg", &peaks[i]);
 					fprintf(g, "%le", peaks[i]);
