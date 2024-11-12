@@ -16,7 +16,7 @@ import glob
 
 class plotmodel:
     def __init__(self, eventname,model = '', tmin = '', tmax = '', referencephot = 0, timesteps = 300, \
-                 modelfile = None, parameters = [], line = 0,printpars = True, animate = False,interval = 1000, satellitedir = '.'):
+                 modelfile = None, parameters = [], line = 0,printpars = True, animate = False,interval = 1000, satellitedir = '.', accuracy = 0.01):
         self.satellitedir = satellitedir
         self.parameters = parameters
         filin=inspect.getfile(VBMicrolensing)
@@ -40,6 +40,7 @@ class plotmodel:
             print('Please specify model parameters')
             return
         self.vbm = VBMicrolensing.VBMicrolensing()
+        self.vbm.Tol = accuracy
         self.vbm.SetMethod(VBMicrolensing.VBMicrolensing.Multipoly)
         # General information on models
         self.modelcodes= ['PS','PX','BS','BO','LS','LX','LO','LK','TS','TX']
@@ -231,6 +232,11 @@ class plotmodel:
         
         self.t0 = np.linspace(self.tmin,self.tmax,self.timesteps)
         self.usedsatellites = list(set(self.satellites))
+        if(self.eventname == None):
+            self.usedsatellites = [0]
+            self.referencephot = 0
+            self.sources = [1]
+            self.blends = [0]
         while(len(self.satellitecolors)<len(self.usedsatellites)):
             self.satellitecolors.extend(self.satellitecolors)
         self.minmag = 1000
@@ -319,7 +325,8 @@ class plotmodel:
         ax.set_xlim([self.tmin,self.tmax])
         ax.xaxis.set_minor_locator(AutoMinorLocator())
         ax.yaxis.set_minor_locator(AutoMinorLocator())
-        ax.legend(loc=self.legendlocation)
+        if(self.eventname != None):
+            ax.legend(loc=self.legendlocation)
 
     def axesresiduals(self,ax):
         ax.plot((self.tmin,self.tmax),(0,0),'k-',linewidth=0.5)
@@ -400,11 +407,14 @@ class plotmodel:
         ax.yaxis.set_minor_locator(AutoMinorLocator())
 
     def showall(self):
-        fig, axes = plt.subplot_mosaic([['tl','right'],['bl','right']],figsize=(12,5.5), gridspec_kw={'height_ratios': [5, 1]})
-        fig.suptitle(self.model);
+        if(self.eventname != None):
+            fig, axes = plt.subplot_mosaic([['tl','right'],['bl','right']],figsize=(12,5.5), gridspec_kw={'height_ratios': [5, 1]})
+            self.axesresiduals(axes['bl'])
+            axes['tl'].xaxis.set_ticklabels([])
+            fig.suptitle(self.model);
+        else:
+            fig, axes = plt.subplot_mosaic([['tl','right']],figsize=(12,5.5))
         self.axeslightcurve(axes['tl'])
-        axes['tl'].xaxis.set_ticklabels([])
-        self.axesresiduals(axes['bl'])
         self.axescaustics(axes['right'])
         plt.subplots_adjust(hspace=0.1)
         plt.show()
