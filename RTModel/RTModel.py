@@ -142,8 +142,9 @@ class RTModel:
                             print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
             print('\n  OK')
 
-    def config_LevMar(self, nfits = 5, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0):
+    def config_LevMar(self, nfits = 6, offsetdegeneracy = 3, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0):
         self.LevMar_nfits = nfits # Number of models to be calculated from the same initial condition using the bumper method
+        self.LevMar_offsetdegeneracy = offsetdegeneracy # Number of models to be fit after applying offset degeneracy to best model found so far
         self.LevMar_maxsteps = maxsteps # Maximum number of steps in each fit
         self.LevMar_timelimit = timelimit # Maximum time in seconds for total execution
         self.LevMar_bumperpower = bumperpower # Repulsion factor of bumpers
@@ -160,6 +161,7 @@ class RTModel:
                 f.write(line)
         with open(self.eventname + '/' + self.inidir + '/LevMar.ini','w') as f:
             f.write('nfits = ' + str(self.LevMar_nfits) + '\n')
+            f.write('offsetdegeneracy = ' + str(self.LevMar_offsetdegeneracy) + '\n')
             f.write('maxsteps = ' + str(self.LevMar_maxsteps) + '\n')
             f.write('timelimit = ' + str(self.LevMar_timelimit) + '\n')
             f.write('bumperpower = ' + str(self.LevMar_bumperpower) + '\n')
@@ -179,6 +181,7 @@ class RTModel:
             os.makedirs(self.eventname + '/' + self.inidir)
         with open(self.eventname + '/' + self.inidir + '/LevMar.ini','w') as f:
             f.write('nfits = ' + str(self.LevMar_nfits) + '\n')
+            f.write('offsetdegeneracy = ' + str(self.LevMar_offsetdegeneracy) + '\n')
             f.write('maxsteps = ' + str(self.LevMar_maxsteps) + '\n')
             f.write('timelimit = ' + str(self.LevMar_timelimit) + '\n')
             f.write('bumperpower = ' + str(self.LevMar_bumperpower) + '\n')
@@ -317,7 +320,7 @@ class RTModel:
             elif phase > self.endphase:
                 if(cleanup):
                     print('- Cleaning up preliminary models')
-                    self.cleanup_preliminary_models()
+                    cleanup_preliminary_models()
                 print("- Analysis of " + self.eventname + " successfully completed!")
                 print("o " + time.asctime())
                 self.done = True
@@ -435,6 +438,8 @@ class RTModel:
                     chunks = line.split()
                     if(chunks[0]=='nfits'):
                         self.LevMar_nfits = int(chunks[2])
+                    if(chunks[0]=='offsetdegeneracy'):
+                        self.LevMar_offsetdegeneracy = int(chunks[2])
                     elif(chunks[0]=='maxsteps'):
                         self.LevMar_maxsteps = int(chunks[2])
                     elif(chunks[0]=='timelimit'):
