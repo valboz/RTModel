@@ -929,7 +929,7 @@ void LevMar::Run() {
 
 				if (ichi < 4) {
 					// Final chi square of this model
-					c0 = c1;//ChiSquared(pr);
+					c0 = ChiSquared(pr);
 					printf("\nFinal chi square = %lf\n", c0);
 
 					//Check if this is the best model with this initial condition
