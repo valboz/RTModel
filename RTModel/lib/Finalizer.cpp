@@ -285,69 +285,99 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Making assessment. Each category is tested against nested ones
+	vector<int> dependencies[] = {  {},
+									{0},
+									{0},
+									{0,1,2},
+									{0},
+									{0,1,4},
+									{0,1,4,5},
+									{0,1,4,5,6},
+									{0,4},
+									{0,1,4,5},
+									};
+	double modelthrs[ncategories];
 
-	if (chis[1] > chis[0] - thrs[npss[1] - npss[0]]) {
-		chis[1] = 1.e100;
+	for (int icat = 1; icat < ncategories; icat++) {
+		modelthrs[icat] = thsigma;
+		for (int jdep = 0; jdep < dependencies[icat].size(); jdep++) {
+			double thr= chis[dependencies[icat][jdep]] - thrs[npss[icat] - npss[dependencies[icat][jdep]]];
+			if (thr < modelthrs[icat]) modelthrs[icat] = thr;
+		}
+		if (chis[icat] > modelthrs[icat]) {
+			chis[icat] = 1.e100;
+		}
 	}
-	if (chis[2] > chis[0] - thrs[npss[2] - npss[0]]) {
-		chis[2] = 1.e100;
-	}
-	if (chis[3] > chis[0] - thrs[npss[3] - npss[0]] || chis[3] > chis[1] - thrs[npss[3] - npss[1]] || chis[3] > chis[2] - thrs[npss[3] - npss[2]]) {
-		chis[3] = 1.e100;
-	}
-	if (chis[4] > chis[0] - thrs[npss[4] - npss[0]]) {
-		chis[4] = 1.e100;
-	}
-	if (chis[5] > chis[0] - thrs[npss[5] - npss[0]] || chis[5] > chis[1] - thrs[npss[5] - npss[1]] || chis[5] > chis[4] - thrs[npss[5] - npss[4]]) {
-		chis[5] = 1.e100;
-	}
-	if (chis[6] > chis[0] - thrs[npss[6] - npss[0]] || chis[6] > chis[1] - thrs[npss[6] - npss[1]] || chis[6] > chis[4] - thrs[npss[6] - npss[4]] || chis[6] > chis[5] - thrs[npss[6] - npss[5]]) {
-		chis[6] = 1.e100;
-	}
-	if (chis[7] > chis[0] - thrs[npss[7] - npss[0]] || chis[7] > chis[1] - thrs[npss[7] - npss[1]] || chis[7] > chis[4] - thrs[npss[7] - npss[4]] || chis[7] > chis[5] - thrs[npss[7] - npss[5]] || chis[7] > chis[6] - thrs[npss[7] - npss[6]]) {
-		chis[7] = 1.e100;
-	}
-	if (chis[8] > chis[0] - thrs[npss[8] - npss[0]] || chis[8] > chis[4] - thrs[npss[8] - npss[4]]) {
-		chis[8] = 1.e100;
-	}
-	if (chis[9] > chis[0] - thrs[npss[9] - npss[0]] || chis[9] > chis[1] - thrs[npss[9] - npss[1]] || chis[9] > chis[4] - thrs[npss[9] - npss[4]] || chis[9] > chis[5] - thrs[npss[9] - npss[5]]) {
-		chis[9] = 1.e100;
-	}
+
+	//if (chis[1] > chis[0] - thrs[npss[1] - npss[0]]) {
+	//	chis[1] = 1.e100;
+	//}
+	//if (chis[2] > chis[0] - thrs[npss[2] - npss[0]]) {
+	//	chis[2] = 1.e100;
+	//}
+	//if (chis[3] > chis[0] - thrs[npss[3] - npss[0]] || chis[3] > chis[1] - thrs[npss[3] - npss[1]] || chis[3] > chis[2] - thrs[npss[3] - npss[2]]) {
+	//	chis[3] = 1.e100;
+	//}
+	//if (chis[4] > chis[0] - thrs[npss[4] - npss[0]]) {
+	//	chis[4] = 1.e100;
+	//}
+	//if (chis[5] > chis[0] - thrs[npss[5] - npss[0]] || chis[5] > chis[1] - thrs[npss[5] - npss[1]] || chis[5] > chis[4] - thrs[npss[5] - npss[4]]) {
+	//	chis[5] = 1.e100;
+	//}
+	//if (chis[6] > chis[0] - thrs[npss[6] - npss[0]] || chis[6] > chis[1] - thrs[npss[6] - npss[1]] || chis[6] > chis[4] - thrs[npss[6] - npss[4]] || chis[6] > chis[5] - thrs[npss[6] - npss[5]]) {
+	//	chis[6] = 1.e100;
+	//}
+	//if (chis[7] > chis[0] - thrs[npss[7] - npss[0]] || chis[7] > chis[1] - thrs[npss[7] - npss[1]] || chis[7] > chis[4] - thrs[npss[7] - npss[4]] || chis[7] > chis[5] - thrs[npss[7] - npss[5]] || chis[7] > chis[6] - thrs[npss[7] - npss[6]]) {
+	//	chis[7] = 1.e100;
+	//}
+	//if (chis[8] > chis[0] - thrs[npss[8] - npss[0]] || chis[8] > chis[4] - thrs[npss[8] - npss[4]]) {
+	//	chis[8] = 1.e100;
+	//}
+	//if (chis[9] > chis[0] - thrs[npss[9] - npss[0]] || chis[9] > chis[1] - thrs[npss[9] - npss[1]] || chis[9] > chis[4] - thrs[npss[9] - npss[4]] || chis[9] > chis[5] - thrs[npss[9] - npss[5]]) {
+	//	chis[9] = 1.e100;
+	//}
 
 	// If more complicated category has survived, all nested categories are removed
 
-	if (chis[9] < 1.e99) {
-		chis[5] = chis[4] = chis[1] = chis[0] = 1.e100;
+	for (int icat = ncategories - 1; icat > 0; icat--) {
+		for (int jdep = 0; jdep < dependencies[icat].size(); jdep++) {
+			if (chis[9] < 1.e99) {
+				chis[dependencies[icat][jdep]] = 1.e100;
+			}
+		}
 	}
-	if (chis[8] < 1.e99) {
-		chis[4] = chis[0] = 1.e100;
-	}
-	if (chis[7] < 1.e99) {
-		chis[6] = chis[5] = chis[4] = chis[1] = chis[0] = 1.e100;
-	}
-	if (chis[6] < 1.e99) {
-		chis[5] = chis[4] = chis[1] = chis[0] = 1.e100;
-	}
-	if (chis[5] < 1.e99) {
-		chis[4] = chis[1] = chis[0] = 1.e100;
-	}
-	if (chis[4] < 1.e99) {
-		chis[0] = 1.e100;
-	}
-	if (chis[3] < 1.e99) {
-		chis[2] = chis[1] = chis[0] = 1.e100;
-	}
-	if (chis[2] < 1.e99) {
-		chis[0] = 1.e100;
-	}
-	if (chis[1] < 1.e99) {
-		chis[0] = 1.e100;
-	}
+	//if (chis[9] < 1.e99) {
+	//	chis[5] = chis[4] = chis[1] = chis[0] = 1.e100;
+	//}
+	//if (chis[8] < 1.e99) {
+	//	chis[4] = chis[0] = 1.e100;
+	//}
+	//if (chis[7] < 1.e99) {
+	//	chis[6] = chis[5] = chis[4] = chis[1] = chis[0] = 1.e100;
+	//}
+	//if (chis[6] < 1.e99) {
+	//	chis[5] = chis[4] = chis[1] = chis[0] = 1.e100;
+	//}
+	//if (chis[5] < 1.e99) {
+	//	chis[4] = chis[1] = chis[0] = 1.e100;
+	//}
+	//if (chis[4] < 1.e99) {
+	//	chis[0] = 1.e100;
+	//}
+	//if (chis[3] < 1.e99) {
+	//	chis[2] = chis[1] = chis[0] = 1.e100;
+	//}
+	//if (chis[2] < 1.e99) {
+	//	chis[0] = 1.e100;
+	//}
+	//if (chis[1] < 1.e99) {
+	//	chis[0] = 1.e100;
+	//}
 
 	// Models of discarded categories or with chi square higher than threshold are removed
 
 	for (scanbumper = bumperlist; scanbumper; scanbumper = scanbumper->next) {
-		if (scanbumper->Amp > thsigma || chis[scanbumper->il] > 1.e99) scanbumper->modelcode[0] = 'N';
+		if (scanbumper->Amp > modelthrs[scanbumper->il] || chis[scanbumper->il] > 1.e99) scanbumper->modelcode[0] = 'N';
 	}
 
 	// Counting good models
