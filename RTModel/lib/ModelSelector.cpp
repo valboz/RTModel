@@ -477,6 +477,7 @@ int main(int argc, char* argv[]) {
 						scanbumper->flipCovariance(4, 5);
 					}
 				}
+				fac /= (1 + sqrt(fabs(scanbumper2->Amp - scanbumper->Amp))); ///// TESTING YET
 				// If models are closer than threshold, the higher chi square model is set beyond acceptance threshold
 				if (fac < supfac) {
 					if (scanbumper->Amp < scanbumper2->Amp) {
