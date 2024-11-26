@@ -340,8 +340,8 @@ int main(int argc, char* argv[]) {
 	// If more complicated category has survived, all nested categories are removed
 
 	for (int icat = ncategories - 1; icat > 0; icat--) {
-		for (int jdep = 0; jdep < dependencies[icat].size(); jdep++) {
-			if (chis[icat] < 1.e99) {
+		if (chis[icat] < 1.e99) {
+			for (int jdep = 0; jdep < dependencies[icat].size(); jdep++) {
 				chis[dependencies[icat][jdep]] = 1.e100;
 			}
 		}
