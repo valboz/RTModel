@@ -341,7 +341,7 @@ int main(int argc, char* argv[]) {
 
 	for (int icat = ncategories - 1; icat > 0; icat--) {
 		for (int jdep = 0; jdep < dependencies[icat].size(); jdep++) {
-			if (chis[9] < 1.e99) {
+			if (chis[icat] < 1.e99) {
 				chis[dependencies[icat][jdep]] = 1.e100;
 			}
 		}
