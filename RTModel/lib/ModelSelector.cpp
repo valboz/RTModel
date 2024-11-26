@@ -477,14 +477,14 @@ int main(int argc, char* argv[]) {
 						scanbumper->flipCovariance(4, 5);
 					}
 				}
-				fac /= (1 + sqrt(fabs(scanbumper2->Amp - scanbumper->Amp))); ///// TESTING YET
+				fac /= (1 + fabs(scanbumper2->Amp - scanbumper->Amp)); ///// TESTING YET don'understand why some models resurrect
 				// If models are closer than threshold, the higher chi square model is set beyond acceptance threshold
 				if (fac < supfac) {
 					if (scanbumper->Amp < scanbumper2->Amp) {
-						scanbumper2->Amp = chithr + 1;
+						scanbumper2->duplicate = true;
 					}
 					else {
-						scanbumper->Amp = chithr + 1;
+						scanbumper->duplicate = true;
 					}
 				}
 			}
@@ -493,9 +493,9 @@ int main(int argc, char* argv[]) {
 		if (nmod - floor(nmod / 50.) * 50. == 0) printf("\nn: %d", nmod);
 	}
 
-	// Remove models beyond threshold and all duplicates which have been sent beyond threshold
+	// Remove models beyond threshold and all duplicates
 	if (bumperlist) {
-		while (bumperlist->Amp > chithr) {
+		while (bumperlist->Amp > chithr || bumperlist->duplicate) {
 			nmod--;
 			scanbumper = bumperlist->next;
 			delete bumperlist;
@@ -504,7 +504,7 @@ int main(int argc, char* argv[]) {
 		scanbumper = bumperlist;
 		fac = bumperlist->Amp;
 		while (scanbumper->next) {
-			if (scanbumper->next->Amp > chithr) {
+			if (scanbumper->next->Amp > chithr || scanbumper->next->duplicate) {
 				nmod--;
 				scanbumper2 = scanbumper->next->next;
 				delete scanbumper->next;
