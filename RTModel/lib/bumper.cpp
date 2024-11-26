@@ -17,6 +17,7 @@ bumper::bumper(double* pr, int ns) {
 		p0[i] = pr[i];
 	}
 	curv = cov = 0;
+	duplicate = false;
 
 	next = 0;
 }
