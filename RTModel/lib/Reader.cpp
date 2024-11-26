@@ -383,7 +383,7 @@ int main(int argc, char *argv[])
 		printf("\n\n- Re-normalizing error bars");
 		for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
 			pc = curdataset->first->sig;// / minfac;
-			for (p = curdataset->first->next; p; p = p->next) {
+			for (p = curdataset->first; p; p = p->next) {
 				p->err *= pc;
 			}
 			curdataset->first->sig = 0;
