@@ -14,6 +14,7 @@ public:
 	int nps;
 	char modelcode[16];
 	int il;
+	bool duplicate;
 	bumper(double *,int);
 	~bumper();
 	void SetCurvature(double *,double);
