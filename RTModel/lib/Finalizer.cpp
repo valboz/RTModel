@@ -298,7 +298,7 @@ int main(int argc, char* argv[]) {
 									};
 	double modelthrs[ncategories];
 
-	for (int icat = 1; icat < ncategories; icat++) {
+	for (int icat = 0; icat < ncategories; icat++) {
 		modelthrs[icat] = thsigma;
 		for (int jdep = 0; jdep < dependencies[icat].size(); jdep++) {
 			double thr= chis[dependencies[icat][jdep]] - thrs[npss[icat] - npss[dependencies[icat][jdep]]];
