@@ -1,7 +1,6 @@
 import site
 from pathlib import Path
-import VBMicrolensing
-import matplotlib.pyplot as plt
+import RTModel.plotmodel as plm
 import shutil
 import math
 import numpy as np
@@ -49,15 +48,10 @@ def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.
     logtE = 0
     t0 = 0
     print('s: ' + str(parameters[0]) + '  q: ' + str(parameters[1]) + '  u0: ' + str(parameters[2]) + '  alpha: ' + str(parameters[3]) + '  rho: '+ str(parameters[4]))
-    times = np.arange(tmin, tmax, tstep)
-    fig, ax = plt.subplots()
-    vbm = VBMicrolensing.VBMicrolensing()
-    vbm.Tol = accuracy
-    results = vbm.BinaryLightCurve([logs, logq, u0, alpha, logrho, logtE, t0], times)
-    mags = results[0]
-    ax.plot(times, mags)
-    ax.set_xlabel('t/tE')
-    ax.set_ylabel('mag')
+    parnew = parameters[0:5] + [1,0]
+    pl = plm.plotmodel(None, model = 'LS', parameters = parnew, tmin = tmin, tmax = tmax, timesteps = math.floor((tmax-tmin)/tstep+1) ,accuracy = accuracy, printpars = False)
+    times = pl.t
+    mags = pl.results[0]
 
     peaks =[]
     lastmin = mags[0]
@@ -69,14 +63,14 @@ def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.
         if(derivative == -1):
             if(mags[i]<mags[i-1]):
                 lastmin = mags[i]
-            elif(mags[i]>lastmin + 5*vbm.Tol):
+            elif(mags[i]>lastmin + 5*accuracy):
                 derivative = +1
                 lastmax = mags[i]
         else:
             if(mags[i]>mags[i-1]):
                 lastmax = mags[i]
                 timmax = times[i]
-            elif(mags[i]<lastmax - 5*vbm.Tol):
+            elif(mags[i]<lastmax - 5*accuracy):
                 derivative = -1
                 lastmin = mags[i]
                 peaks.append(timmax)
@@ -84,5 +78,5 @@ def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.
     rettemps = []
     for i in range(len(peaks)):
         for j in range(i+1,len(peaks)):
-            rettemps.append(parameters[0:5] + [math.floor(peaks[i]/tstep+0.5)*tstep, math.floor(peaks[j]/tstep+0.5)*tstep])
+            rettemps.append(parameters[0:5] + [int(peaks[i]/tstep+0.5)*tstep, int(peaks[j]/tstep+0.5)*tstep])
     return rettemps

@@ -18,7 +18,8 @@
 using namespace std;
 using namespace std::filesystem;
 
-int nlc = 5; // Number of models to be calculated from the same initial condition using the bumper method
+int nlc = 6; // Number of models to be calculated from the same initial condition using the bumper method
+int offsetdegeneracy = 3; // Number of models to be calculated with offset degeneracy
 int maxsteps = 50; // Maximum number of steps in each fit
 double maxtime = 1.e100; // 600.0; // Maximum time in seconds for total execution (no longer controlled within LevMar)
 double bumperpower = 2.0; // Repulsion factor of bumpers
@@ -193,7 +194,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				model = &VBMicrolensing::ESPLLightCurveParallax;
 				nps = 6;
 				ReadOptions();
-				double presigmapr[] = { .5,.5,5.,4.6,1,1 };
+				double presigmapr[] = { .5,1.0,5.,2.3,0.1,0.1 };
 				double preleftlim[] = { -13.,-6.9,-10.e100,-11.5,-10.,-10. };
 				double prerightlim[] = { .7,6.9,10.e100,0.0,10.,10. };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -207,7 +208,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				model = &VBMicrolensing::ESPLLightCurve;
 				nps = 4;
 				ReadOptions();
-				double presigmapr[] = { .5,.5,5.,4.6 };
+				double presigmapr[] = { 1.15,1.0,5.,2.3 };
 				double preleftlim[] = { -13.,-6.9,-10.e100,-11.5 };
 				double prerightlim[] = { .7,6.9,10.e100,0.0 };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -229,7 +230,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				model = &VBMicrolensing::BinSourceSingleLensXallarap;
 				nps = 10;
 				ReadOptions();
-				double presigmapr[] = { 1,1,1,15,3,3,1,3,6,3 };
+				double presigmapr[] = { 0.1,1,1,0.5,0.3,0.3,0.1,0.3,0.3, 2.3};
 				double preleftlim[] = { -3.,-1.e100,-6.9,-11.5,-3.,-3.,0,-3,-6,-4.6 };
 				double prerightlim[] = { 3.,1.e100,6.9,0.,3.,3.,1,3,6,1,+4.6 };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -244,7 +245,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				model = &VBMicrolensing::BinSourceExtLightCurve;
 				nps = 7;
 				ReadOptions();
-				double presigmapr[] = { .1,.4,1,1,1,1,4.6 };
+				double presigmapr[] = { 1.0,.5,0.5,0.5,1,1,0.5 };
 				double preleftlim[] = { -6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5 };
 				double prerightlim[] = { 6.9,11.5,3.,3.,10.e100,10.e100,0.0 };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -266,7 +267,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				model = &VBMicrolensing::BinaryLightCurveParallax;
 				nps = 9;
 				ReadOptions();
-				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,1.,1. };
+				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03};
 				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3. };
 				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3. };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -283,7 +284,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					model = &VBMicrolensing::BinaryLightCurveOrbital;
 					nps = 12;
 					ReadOptions();
-					double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3. };
+					double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.01,0.01,0.01 };
 					double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7 };
 					double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1 };
 					error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -300,7 +301,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						model = &VBMicrolensing::BinaryLightCurveKepler;
 						nps = 14;
 						ReadOptions();
-						double presigmapr[] = { 1.,2.,1.,5.,15.6,2.,10.,3.,3.,1.,1.,3., 3., 3. };
+						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.1, 0.1 };
 						double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001 };
 						double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,10,10 };
 						error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -316,7 +317,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						model = &VBMicrolensing::BinaryLightCurve;
 						nps = 7;
 						ReadOptions();
-						double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1. };
+						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.};
 						double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100 };
 						double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100 };
 						error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -354,7 +355,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				model = &VBMicrolensing::TripleLightCurve;
 				nps = 10;
 				ReadOptions();
-				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,.1,.4,.1};
+				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5., 0.3, 0.5, 0.3};
 				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56};
 				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.0, 11.5, 12.56 };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -502,6 +503,9 @@ void LevMar::ReadOptions() {
 				}
 				if (strcmp(command, "nfits") == 0) {
 					sscanf(value, "%d", &nlc);
+				}
+				if (strcmp(command, "offsetdegeneracy") == 0) {
+					sscanf(value, "%d", &offsetdegeneracy);
 				}
 				if (strcmp(command, "maxsteps") == 0) {
 					sscanf(value, "%d", &maxsteps);
@@ -925,7 +929,7 @@ void LevMar::Run() {
 
 				if (ichi < 4) {
 					// Final chi square of this model
-					c0 = c1;//ChiSquared(pr);
+					c0 = ChiSquared(pr);
 					printf("\nFinal chi square = %lf\n", c0);
 
 					//Check if this is the best model with this initial condition
@@ -937,49 +941,12 @@ void LevMar::Run() {
 					// Add a new bumper at the position of this model
 					scanbumper = bumperlist;
 					bumperlist = new bumper(pr, nps);
+					bumperlist->Amp = c0;
 					bumperlist->next = scanbumper;
 					// Calculate covariance matrix
 					Grad();
 					Covariance();
 					bumperlist->SetCurvature(Curv, np / c0);
-
-
-					// Saving the steps done to this model
-		//			sprintf(filename, "stepchain%d.dat", il);
-					//f = fopen(filename, "w");
-					//for (scanbumper = stepchain; scanbumper; scanbumper = scanbumper->next) {
-					//	fprintf(f, "%.16le", scanbumper->p0[0]);
-					//	for (int j = 1; j < nps; j++) {
-					//		fprintf(f, " %.16le", scanbumper->p0[j]);
-					//	}
-					//	fprintf(f, "\n");
-					//}
-					//fclose(f);
-
-					// Finding the last step outside any bumper
-					k = 1;
-					for (scanbumper = stepchain; scanbumper && (scanbumper->next); scanbumper = scanbumper->next) {
-						k++;
-						fac = 1.e100;
-						for (scanbumper2 = bumperlist; scanbumper2; scanbumper2 = scanbumper2->next) {
-							fac2 = scanbumper2->distance(scanbumper->next->p0);
-							if (fac2 < fac) fac = fac2;
-						}
-						printf("\n%d %lf", k, fac);
-						if (fac < 1.) {
-							laststep = scanbumper;
-							k--;
-							scanbumper2 = scanbumper->next;
-							while (scanbumper2) {
-								scanbumper = scanbumper2->next;
-								delete scanbumper2;
-								scanbumper2 = scanbumper;
-							}
-							laststep->next = 0;
-							scanbumper = laststep;
-						}
-					}
-
 
 					// Check if the model makes sense, otherwise set negative chi square for 
 					// processing by subsequent programs.
@@ -1021,6 +988,58 @@ void LevMar::Run() {
 					fclose(f);
 
 
+					if (modelcode[0]=='L' && il == nlc - offsetdegeneracy - 1) {
+						// Find best model found so far and fit offset degeneracy model
+						scanbumper2 = bumperlist;
+						for (scanbumper = bumperlist; scanbumper; scanbumper = scanbumper->next) {
+							if (scanbumper->Amp < scanbumper2->Amp) scanbumper2 = scanbumper;
+						}
+						for (int i = 0; i < nps; i++) {
+							pr[i] = scanbumper2->p0[i];
+						}
+
+						if (sin(pr[3]) != 0) {
+							double s = exp(pr[0]);
+							double xc = pr[2] / sin(pr[3]);
+							double ac = 2 * s;
+							double b = 1 - s * s + ac * xc;
+							pr[0] = log((b + sqrt(ac * ac + b * b)) / ac);
+						}
+						scanbumper2 = stepchain;
+						while (scanbumper2) {
+							scanbumper = scanbumper2->next;
+							delete scanbumper2;
+							scanbumper2 = scanbumper;
+						}
+
+						stepchain = laststep = new bumper(pr, nps);
+					}
+					else {
+
+						// Finding the last step outside any bumper
+						k = 1;
+						for (scanbumper = stepchain; scanbumper && (scanbumper->next); scanbumper = scanbumper->next) {
+							k++;
+							fac = 1.e100;
+							for (scanbumper2 = bumperlist; scanbumper2; scanbumper2 = scanbumper2->next) {
+								fac2 = scanbumper2->distance(scanbumper->next->p0);
+								if (fac2 < fac) fac = fac2;
+							}
+							printf("\n%d %lf", k, fac);
+							if (fac < 1.) {
+								laststep = scanbumper;
+								k--;
+								scanbumper2 = scanbumper->next;
+								while (scanbumper2) {
+									scanbumper = scanbumper2->next;
+									delete scanbumper2;
+									scanbumper2 = scanbumper;
+								}
+								laststep->next = 0;
+								scanbumper = laststep;
+							}
+						}
+					}
 					// Updating time count
 					//printf("\npartial time=%lf secs\n",(Environment::TickCount-tm)/1000.0);
 					//printf("total time = %lf mins\n",(Environment::TickCount-tim0)/60000.0);

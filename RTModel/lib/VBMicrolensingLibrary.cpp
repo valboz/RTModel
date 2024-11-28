@@ -1,4 +1,4 @@
-// VBMicrolensing v4.1.1 (2024)
+// VBMicrolensing v4.1.2 (2024)
 //
 // This code has been developed by Valerio Bozza (University of Salerno) and collaborators.
 // Check the repository at https://github.com/valboz/VBMicrolensing
@@ -312,25 +312,25 @@ double VBMicrolensing::ESPLMag(double u, double RSv) {
 }
 
 double VBMicrolensing::ESPLMag2(double u, double rho) {
-	double Mag, u2, u6, rho2Tol;
+	static double Mag, u2, u2_1, u2_2, u2_4, s_u2_4, u6, rho2, quad;
 	int c = 0;
 
-	//Tol1_4 = sqrt(2 / Tol);
-	//u2 = u*u;
-	//u3Tol = u2*u*Tol;
-
-	//if (u2 < Tol1_4) {
-	//	rho2 = rho*rho;
-	//	if (u3Tol > rho2*(1 + Tol1_4*rho)) {
 
 	u2 = u * u;
-	rho2Tol = rho * rho / Tol;
-	u6 = u2 * u2 * u2;
+	u2_1 = u2 + 1;
+	u2_4 = u2 + 4;
+	s_u2_4 = sqrt(u2_4);
 
-	if (u6 * (1 + 0.003 * rho2Tol) > 0.027680640625 * rho2Tol * rho2Tol) {
-		Mag = (u2 + 2) / (u * sqrt(u2 + 4));
+	rho2 = rho * rho;
+
+	quad = 4 * u2_1 * rho2 / (u2 * u * u2_4 * u2_4 * s_u2_4); //quadrupole correction
+
+//	if (u6 * (1 + 0.003 * rho2Tol) > 0.027680640625 * rho2Tol * rho2Tol) {
+	if(quad*10<Tol){
+		u2_2 = u2 + 2;
+		Mag = u2_2 / (u * s_u2_4) + quad;
 		if (astrometry) {
-			astrox1 = u * (1 + 1 / (u2 + 2));
+			astrox1 = u * (1 + 1 / u2_2) - 2*(u2_1+u2_2)*rho2/(u*u2_2*u2_2*u2_4); // quadrupole correction for astrometry
 		}
 	}
 	else {
@@ -4173,9 +4173,9 @@ void VBMicrolensing::TripleLightCurve(double* pr, double* ts, double* mags, doub
 		y1s[i] = pr[2] * salpha - tn * calpha;
 		y2s[i] = -pr[2] * calpha - tn * salpha;
 		mindi = 1.e100;
-		for (int i = 0; i < n; i++) {
-			di = fabs(y1s[i] - s[i].re) + fabs(y2s[i] - s[i].im);
-			di /= sqrt(q[i]);
+		for (int j = 0; j < n; j++) {
+			di = fabs(y1s[i] - s[j].re) + fabs(y2s[i] - s[j].im);
+			di /= sqrt(q[j]);
 			if (di < mindi) mindi = di;
 		}
 		if (mindi >= 10.) {
@@ -4210,9 +4210,9 @@ void VBMicrolensing::TripleLightCurveParallax(double* pr, double* ts, double* ma
 		y1s[i] = u * salpha - tn * calpha;
 		y2s[i] = -u * calpha - tn * salpha;
 		mindi = 1.e100;
-		for (int i = 0; i < n; i++) {
-			di = fabs(y1s[i] - s[i].re) + fabs(y2s[i] - s[i].im);
-			di /= sqrt(q[i]);
+		for (int j = 0; j < n; j++) {
+			di = fabs(y1s[i] - s[j].re) + fabs(y2s[i] - s[j].im);
+			di /= sqrt(q[j]);
 			if (di < mindi) mindi = di;
 		}
 		if (mindi >= 10.) {
