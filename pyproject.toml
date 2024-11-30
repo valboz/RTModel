@@ -30,6 +30,8 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/valboz/RTModel"
 
+[tool.scikit-build]
+build-dir = "build"
 
 [tool.setuptools.package-data]
 "RTModel.data" = ["data/*"]
