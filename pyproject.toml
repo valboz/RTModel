@@ -32,9 +32,11 @@ Homepage = "https://github.com/valboz/RTModel"
 
 [tool.scikit-build]
 build-dir = "build"
+minimum-version = "build-system.requires"
 
 [tool.cibuildwheel]
 build-verbosity = "3"
+build-frontend = "build[uv]"
 
 [tool.setuptools.package-data]
 "RTModel.data" = ["data/*"]
