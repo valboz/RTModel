@@ -22,7 +22,21 @@ jobs:
         # with:
         #  package-dir: .
         #  output-dir: wheelhouse
-        #  config-file: "{package}/pyproject.toml"
+        #  config-file: "{package}/pyproject.toml
+  build_sdist:
+    name: Build source distribution ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build sdist
+        run: pipx run build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-sdist
+          path: dist/*.tar.gz
+
 
       - uses: actions/upload-artifact@v4
         with:
