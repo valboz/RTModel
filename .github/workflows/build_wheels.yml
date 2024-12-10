@@ -16,7 +16,7 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.22.0
         env:                            #
-          MACOSX_DEPLOYMENT_TARGET: "10.14" # 
+          MACOSX_DEPLOYMENT_TARGET: "10.15" # 
         #   CIBW_SOME_OPTION: value
         #    ...
         #with:
