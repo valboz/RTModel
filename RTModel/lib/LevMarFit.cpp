@@ -1000,10 +1000,14 @@ void LevMar::Run() {
 
 						if (sin(pr[3]) != 0) {
 							double s = exp(pr[0]);
-							double xc = pr[2] / sin(pr[3]);
+							double q = exp(pr[1]);
+							q /= 1 + q;
+							double xc = pr[2] / sin(pr[3])+ s*q;
 							double ac = 2 * s;
 							double b = 1 - s * s + ac * xc;
-							pr[0] = log((b + sqrt(ac * ac + b * b)) / ac);
+							double snew = (b + sqrt(ac * ac + b * b)) / ac;
+							pr[0] = log(snew);
+							pr[2] = (xc - snew * q)*sin(pr[3]);
 						}
 						scanbumper2 = stepchain;
 						while (scanbumper2) {
