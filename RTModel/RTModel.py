@@ -320,7 +320,7 @@ class RTModel:
             elif phase > self.endphase:
                 if(cleanup):
                     print('- Cleaning up preliminary models')
-                    cleanup_preliminary_models()
+                    self.cleanup_preliminary_models()
                 print("- Analysis of " + self.eventname + " successfully completed!")
                 print("o " + time.asctime())
                 self.done = True
