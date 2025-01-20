@@ -20,7 +20,6 @@ class plotmodel:
         self.satellitedir = satellitedir
         self.parameters = parameters
         filin=inspect.getfile(VBMicrolensing)
-        self.filout= os.path.dirname(filin) + '/data/ESPL.tbl'
         self.eventname = eventname
         self.model = model
         self.tmin = tmin
@@ -172,8 +171,6 @@ class plotmodel:
                 self.chi2 += sumy2+(sumfy*sumfy*sumsigma+sumf2*sumy*sumy-2*sumf*sumy*sumfy)/p1
                 
     def lightcurve(self):
-        if(self.modnumber < 4):
-            self.vbm.LoadESPLTable(self.filout)
         if(self.modnumber == 1 or self.modnumber > 4):
             self.vbm.SetObjectCoordinates(glob.glob('Data/*.coordinates')[0],self.satellitedir)
             self.vbm.parallaxsystem = 1
