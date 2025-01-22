@@ -1185,7 +1185,7 @@ void LevMar::Grad() {
 			prn[nps + 1 + i * 2] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
 
 			if (prn[nps + 1 + i * 2] < 0)  prn[nps + 1 + i * 2] = 0;
-			dFdp[(1 + 2 * i) * nps + j] = -1.08574 *log((prn[nps + i * 2] + prn[nps + 1 + i * 2])/( pr[nps + i * 2] - pr[nps + 1 + i * 2])) / inc;  // error on baseline -2.5log(FB+FS)/log(10)
+			dFdp[(1 + 2 * i) * nps + j] = -1.08574 * ((prn[nps + i * 2] + prn[nps + 1 + i * 2]) / (pr[nps + i * 2] - pr[nps + 1 + i * 2])-1) / inc;  // error on baseline -2.5log(FB+FS)/log(10) expanded to first order
 			dFdp[(2 * i) * nps + j] = (prn[nps + i * 2] / prn[nps + 1 + i * 2] - pr[nps + i * 2] / pr[nps + 1 + i * 2]) / inc;    // error on blending FB/FS
 		}
 		for (int icons = 0; icons < consnumber; icons++) { // Gradient of constraints
