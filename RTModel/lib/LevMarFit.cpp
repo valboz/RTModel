@@ -268,8 +268,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				nps = 9;
 				ReadOptions();
 				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03};
-				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3. };
-				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3. };
+				double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3. };
+				double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3. };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
@@ -285,8 +285,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					nps = 12;
 					ReadOptions();
 					double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.01,0.01,0.01 };
-					double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7 };
-					double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1 };
+					double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7 };
+					double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1 };
 					error = InitCond(presigmapr, preleftlim, prerightlim);
 					pr[0] = log(pr[0]);
 					pr[1] = log(pr[1]);
@@ -302,8 +302,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						nps = 14;
 						ReadOptions();
 						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.1, 0.1 };
-						double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001 };
-						double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,10,10 };
+						double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001 };
+						double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,10,10 };
 						error = InitCond(presigmapr, preleftlim, prerightlim);
 						pr[0] = log(pr[0]);
 						pr[1] = log(pr[1]);
@@ -318,8 +318,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						nps = 7;
 						ReadOptions();
 						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.};
-						double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100 };
-						double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100 };
+						double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100 };
+						double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100 };
 						error = InitCond(presigmapr, preleftlim, prerightlim);
 						pr[0] = log(pr[0]);
 						pr[1] = log(pr[1]);
