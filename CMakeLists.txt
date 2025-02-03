@@ -11,6 +11,20 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif()
 endif()
 
+# Find directory of VBMicrolensing
+
+find_package(Python3 COMPONENTS Interpreter Development)
+set(Python3_EXECUTABLE "./python")
+
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} fVBM.py   
+    #-c "import sys, os, inspect; sys.path.extend(os.environ['PYTHONPATH'].split(os.pathsep));  mod = __import__('VBMicrolensing'); dir1=os.path.dirname(inspect.getfile(mod)); print(dir1.replace(\"\\\",\"/\"))"
+    OUTPUT_VARIABLE VBMICROLENSING_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message(STATUS "Installation directory of VBMicrolensing: ${VBMICROLENSING_DIR}")
+
+
 # Build executables
 # =================
 
@@ -20,9 +34,8 @@ target_include_directories(Reader PRIVATE RTModel/include)
 add_executable(InitCond RTModel/lib/InitCond.cpp)
 target_include_directories(InitCond PRIVATE RTModel/include)
 
-add_executable(LevMar RTModel/lib/bumper.cpp RTModel/lib/LevMar.cpp RTModel/lib/LevMarFit.cpp
-        RTModel/lib/VBMicrolensingLibrary.cpp)
-target_include_directories(LevMar PRIVATE RTModel/include)
+add_executable(LevMar RTModel/lib/bumper.cpp RTModel/lib/LevMar.cpp RTModel/lib/LevMarFit.cpp ${VBMICROLENSING_DIR}/lib/VBMicrolensingLibrary.cpp)
+target_include_directories(LevMar PRIVATE RTModel/include ${VBMICROLENSING_DIR}/lib)
 
 add_executable(ModelSelector RTModel/lib/bumper.cpp RTModel/lib/ModelSelector.cpp)
 target_include_directories(ModelSelector PRIVATE RTModel/include)
