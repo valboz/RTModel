@@ -35,8 +35,8 @@ class LevMar {
 	double* t, * y, * w, * delta, * maxdelta, * Curv, * A, * B, * B0, * Cov, * fb, ** Gr, * dFdp, * errs;
 	double* pr, * prn, * sumy, * sumy2, * sumsigma, * sumfy, * sumf, * sumf2, * limbdarks;
 
-	int consnumber, *consindex;
-	double* constraints, * consleft, * consright, *consvars;
+	int consnumber, * consindex;
+	double* constraints, * consleft, * consright, * consvars;
 	int modnumber;
 
 	double Tol;
@@ -55,11 +55,11 @@ public:
 	int InitCond(double* presigmapr, double* preleftlim, double* prerightlim);
 	void ReadCurve();
 	void ReadOptions();
-	void Run();
+	int Run();
 	double ChiSquared(double*);
 	void Grad();
 	void Covariance();
-	double ComputeConstraint(double *pr, int i);
+	double ComputeConstraint(double* pr, int i);
 
 	void PrintOutPS(double*);
 	void PrintOutPX(double*);

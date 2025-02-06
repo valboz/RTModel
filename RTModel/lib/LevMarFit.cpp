@@ -15,7 +15,6 @@
 #include <regex>
 #include <filesystem>
 
-
 using namespace std;
 using namespace std::filesystem;
 
@@ -35,9 +34,9 @@ std::vector<std::vector<std::string>> parnames = { {"u0","tE","t0","rho"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz","sz_s","a_s3d"},
-					{"s","q","u0","alpha","rho","tE","t0","s2","q2","beta"}};
+					{"s","q","u0","alpha","rho","tE","t0","s2","q2","beta"} };
 
-std::vector<std::vector<int>> logposs = {{0, 1, 3},
+std::vector<std::vector<int>> logposs = { {0, 1, 3},
 										{1, 3},
 										{0, 1, 6},
 										{2, 3, 9},
@@ -50,6 +49,7 @@ std::vector<std::vector<int>> logposs = {{0, 1, 3},
 const double epsilon = 1.e-100;
 
 LevMar::LevMar(int argc, char* argv[]) {
+	setbuf(stdout, nullptr);
 	printf("******************************************\n");
 	printf("*************      LevMar     **********\n");
 	printf("******************************************\n\n\n");
@@ -231,7 +231,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				model = &VBMicrolensing::BinSourceSingleLensXallarap;
 				nps = 10;
 				ReadOptions();
-				double presigmapr[] = { 0.1,1,1,0.5,0.3,0.3,0.1,0.3,0.3, 2.3};
+				double presigmapr[] = { 0.1,1,1,0.5,0.3,0.3,0.1,0.3,0.3, 2.3 };
 				double preleftlim[] = { -3.,-1.e100,-6.9,-11.5,-3.,-3.,0,-3,-6,-4.6 };
 				double prerightlim[] = { 3.,1.e100,6.9,0.,3.,3.,1,3,6,1,+4.6 };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -268,7 +268,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				model = &VBMicrolensing::BinaryLightCurveParallax;
 				nps = 9;
 				ReadOptions();
-				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03};
+				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03 };
 				double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3. };
 				double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3. };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -318,7 +318,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						model = &VBMicrolensing::BinaryLightCurve;
 						nps = 7;
 						ReadOptions();
-						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.};
+						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5. };
 						double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100 };
 						double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100 };
 						error = InitCond(presigmapr, preleftlim, prerightlim);
@@ -356,8 +356,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				model = &VBMicrolensing::TripleLightCurve;
 				nps = 10;
 				ReadOptions();
-				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5., 0.3, 0.5, 0.3};
-				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56};
+				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5., 0.3, 0.5, 0.3 };
+				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56 };
 				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.0, 11.5, 12.56 };
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
@@ -412,7 +412,7 @@ void LevMar::ReadOptions() {
 			constraints = (double*)malloc(sizeof(double) * consnumber);
 			consleft = (double*)malloc(sizeof(double) * consnumber);
 			consright = (double*)malloc(sizeof(double) * consnumber);
-			consvars = (double*)malloc(sizeof(double) * consnumber*(nps+1));
+			consvars = (double*)malloc(sizeof(double) * consnumber * (nps + 1));
 			printf("\n\n- Reading Constraints.ini");
 			f = fopen("Constraints.ini", "r");
 			int conscurrent = 0;
@@ -426,12 +426,12 @@ void LevMar::ReadOptions() {
 				else {
 					consindex[conscurrent] = -1;
 					strcpy(buffer, command);
-					int flaglog = 0,flaglog2 = 0;
+					int flaglog = 0, flaglog2 = 0;
 					buffer[4] = 0;
 					for (int i = 0; i < parnames[modnumber].size(); i++) {
 						if (strcmp(buffer, "log_") == 0) { // Log parameter
 							if (strcmp(parnames[modnumber][i].c_str(), &command[4]) == 0) {
-								consindex[conscurrent] = i;							
+								consindex[conscurrent] = i;
 								flaglog = 1;
 							}
 						}
@@ -697,7 +697,7 @@ void LevMar::ReadCurve() {
 
 }
 
-void LevMar::Run() {
+int LevMar::Run() {
 	FILE* f;
 	int il, k, ichi, flag, ilam, bumpnum, bumpcounter;
 	double minchi, bestchi, c1, c0, oldlambda, lambda, inclambda, fac, fac2;
@@ -803,8 +803,8 @@ void LevMar::Run() {
 						for (int i = 0; i < nps; i++) {
 							for (int j = 0; j < nps; j++) {
 								A[i * nps + j] = Curv[i * nps + j];
-								if (i == j) { 
-									A[i * nps + j] += lambda *Curv[i * nps + i]; 
+								if (i == j) {
+									A[i * nps + j] += lambda * Curv[i * nps + i];
 								}
 							}
 							B[i] = B0[i];
@@ -989,7 +989,7 @@ void LevMar::Run() {
 					fclose(f);
 
 
-					if (modelcode[0]=='L' && il == nlc - offsetdegeneracy - 1) {
+					if (modelcode[0] == 'L' && il == nlc - offsetdegeneracy - 1) {
 						// Find best model found so far and fit offset degeneracy model
 						scanbumper2 = bumperlist;
 						for (scanbumper = bumperlist; scanbumper; scanbumper = scanbumper->next) {
@@ -1003,12 +1003,12 @@ void LevMar::Run() {
 							double s = exp(pr[0]);
 							double q = exp(pr[1]);
 							q /= 1 + q;
-							double xc = pr[2] / sin(pr[3])+ s*q;
+							double xc = pr[2] / sin(pr[3]) + s * q;
 							double ac = 2 * s;
 							double b = 1 - s * s + ac * xc;
 							double snew = (b + sqrt(ac * ac + b * b)) / ac;
 							pr[0] = log(snew);
-							pr[2] = (xc - snew * q)*sin(pr[3]);
+							pr[2] = (xc - snew * q) * sin(pr[3]);
 						}
 						scanbumper2 = stepchain;
 						while (scanbumper2) {
@@ -1085,6 +1085,7 @@ void LevMar::Run() {
 			error = 8;
 		}
 	}
+	return error;
 }
 
 double LevMar::ChiSquared(double* pr) {
@@ -1186,11 +1187,11 @@ void LevMar::Grad() {
 			prn[nps + 1 + i * 2] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
 
 			if (prn[nps + 1 + i * 2] < 0)  prn[nps + 1 + i * 2] = 0;
-			dFdp[(1 + 2 * i) * nps + j] = -1.08574 * ((prn[nps + i * 2] + prn[nps + 1 + i * 2]) / (pr[nps + i * 2] - pr[nps + 1 + i * 2])-1) / inc;  // error on baseline -2.5log(FB+FS)/log(10) expanded to first order
+			dFdp[(1 + 2 * i) * nps + j] = -1.08574 * ((prn[nps + i * 2] + prn[nps + 1 + i * 2]) / (pr[nps + i * 2] - pr[nps + 1 + i * 2]) - 1) / inc;  // error on baseline -2.5log(FB+FS)/log(10) expanded to first order
 			dFdp[(2 * i) * nps + j] = (prn[nps + i * 2] / prn[nps + 1 + i * 2] - pr[nps + i * 2] / pr[nps + 1 + i * 2]) / inc;    // error on blending FB/FS
 		}
 		for (int icons = 0; icons < consnumber; icons++) { // Gradient of constraints
-			consvars[icons + (j+1) * consnumber] = ComputeConstraint(prn, icons);
+			consvars[icons + (j + 1) * consnumber] = ComputeConstraint(prn, icons);
 			p1 = (consvars[icons] - constraints[icons]);
 			consvars[icons + (j + 1) * consnumber] = (consvars[icons + (j + 1) * consnumber] - consvars[icons]) / (((p1 > 0) ? consright[icons] : consleft[icons]) * inc);
 		}
@@ -1209,7 +1210,7 @@ void LevMar::Grad() {
 			}
 			// Constraints in curvature
 			for (int icons = 0; icons < consnumber; icons++) {
-				Curv[i * nps + j] += consvars[icons + (i+1) * consnumber]* consvars[icons + (j+1) * consnumber];
+				Curv[i * nps + j] += consvars[icons + (i + 1) * consnumber] * consvars[icons + (j + 1) * consnumber];
 			}
 		}
 	}
@@ -1224,12 +1225,12 @@ void LevMar::Grad() {
 		for (int icons = 0; icons < consnumber; icons++) {
 			p1 = (consvars[icons] - constraints[icons]);
 			p1 /= (p1 > 0) ? consright[icons] : consleft[icons];
-			B0[i] -= p1 * consvars[icons + (i+1)*consnumber];
+			B0[i] -= p1 * consvars[icons + (i + 1) * consnumber];
 		}
 	}
 }
 
-inline double LevMar::ComputeConstraint(double *pr, int ic) {
+inline double LevMar::ComputeConstraint(double* pr, int ic) {
 	int i = consindex[ic];
 	if (i < 10000) {
 		return pr[i];
@@ -1238,7 +1239,7 @@ inline double LevMar::ComputeConstraint(double *pr, int ic) {
 		return pr[nps + (i - 10000) * 2] / pr[nps + (i - 10000) * 2 + 1];
 	}
 	if (i == 30000) {
-		int posN=-1, posE=-1;
+		int posN = -1, posE = -1;
 		for (int i = 0; i < nps; i++) {
 			if (strcmp(parnames[modnumber][i].c_str(), "piN") == 0) posN = i;
 			if (strcmp(parnames[modnumber][i].c_str(), "piE") == 0) posE = i;
@@ -1251,9 +1252,9 @@ inline double LevMar::ComputeConstraint(double *pr, int ic) {
 			if (strcmp(parnames[modnumber][i].c_str(), "tE") == 0) postE = i;
 			if (strcmp(parnames[modnumber][i].c_str(), "rho") == 0) posrho = i;
 		}
-		return exp(pr[postE]+pr[posrho]);
+		return exp(pr[postE] + pr[posrho]);
 	}
-	
+
 	return 0;
 }
 
