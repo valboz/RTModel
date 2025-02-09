@@ -24,6 +24,7 @@ dependencies = [
     "pytest",
     "matplotlib", 
     "tqdm",
+    "tabulate",
     "VBMicrolensing>=4.1.0"
 ]
 
