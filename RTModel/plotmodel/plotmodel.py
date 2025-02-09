@@ -12,6 +12,7 @@ from tqdm import tqdm
 import sys
 import inspect
 import glob
+from tabulate import tabulate
 
 
 class plotmodel:
@@ -132,6 +133,8 @@ class plotmodel:
                         self.pars[i] = math.log(self.pars[i])
                     self.blends = np.array([values[self.npars[self.modnumber]+i*2] for i in range(0,self.nfil)])
                     self.sources = np.array([values[self.npars[self.modnumber]+i*2+1] for i in range(0,self.nfil)])
+                    self.blendings = self.blends/self.sources
+                    self.baselines = -2.5*np.log10(self.blends+self.sources)
                     self.chi2=values[-1]
                     #Errors
                     if(not self.animate):
@@ -139,8 +142,8 @@ class plotmodel:
                         chunks = line.split(' ')
                         values = [float(v) for v in chunks]
                         self.parerrs = values[0:self.npars[self.modnumber]]
-                        self.blenderrs = np.array([values[self.npars[self.modnumber]+i*2] for i in range(0,self.nfil)])
-                        self.sourceerrs = np.array([values[self.npars[self.modnumber]+i*2+1] for i in range(0,self.nfil)])
+                        self.blendingerrs = np.array([values[self.npars[self.modnumber]+i*2] for i in range(0,self.nfil)])
+                        self.baselineerrs = np.array([values[self.npars[self.modnumber]+i*2+1] for i in range(0,self.nfil)])
                     return True
         else:
             self.pars = self.parameters[0:self.npars[self.modnumber]]
@@ -293,16 +296,21 @@ class plotmodel:
         # tE=parsprint[parnames[modnumber].index('tE')]
 
     def printparameters(self):
-        self.parstring = 'Parameters\n'
+        self.parstring = ''
+        table =[['chi2', str(self.chi2)]]
         for i in range(self.npars[self.modnumber]):
             if((not self.animate) and len(self.parameters)==0):
-                    self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + self.approx(i) + '\n'  #+ str(self.parsprint[i]) +  ' +- ' + str(self.parerrs[i]) + '\n'
+                table.append([self.parnames[self.modnumber][i], self.approx(i)])
+#                    self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + self.approx(i) + '\n'  #+ str(self.parsprint[i]) +  ' +- ' + str(self.parerrs[i]) + '\n'
             else:
-                self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + str(self.parsprint[i]) + '\n'
-        self.parstring = self.parstring + '\n'
-        self.parstring = self.parstring + 'blending = ' + str(np.array(self.blends)/np.array(self.sources)) + '\n'
-        self.parstring = self.parstring + 'baseline = ' + str(-2.5*np.log10(np.array(self.blends)+np.array(self.sources))) + '\n'
-        self.parstring = self.parstring + 'chi2 =' + str(self.chi2)
+                table.append([self.parnames[self.modnumber][i], str(self.parsprint[i])])
+#                self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + str(self.parsprint[i]) + '\n'
+        self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
+        self.parstring = self.parstring + '\n\n'
+        
+        table = [[t,base, baseerr, bl, blerr] for t,base, baseerr,bl, blerr in zip(self.telescopes,self.baselines,self.baselineerrs,self.blendings,self.blendingerrs)]
+        table.insert(0,['telescope','baseline', 'error', 'blending', 'error'])
+        self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
         print(self.parstring)
 
     def fexp(self, f):
@@ -310,7 +318,7 @@ class plotmodel:
     
     def approx(self, i):
         exerr= self.fexp(self.parerrs[i])-1
-        return f'{self.parsprint[i]:.{max(0,-exerr+3)}f}' + ' +- ' + f'{self.parerrs[i]:.{max(0,-exerr)}f}'
+        return f'{self.parsprint[i]:.{max(0,-exerr)}f}' + ' +- ' + f'{self.parerrs[i]:.{max(0,-exerr)}f}'
 
     def axeslightcurve(self,ax):
         for i in range(0,self.nfil):
