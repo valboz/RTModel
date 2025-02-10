@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
 	bumper* bumperlist = 0, * scanbumper, * scanbumper2;
 
 
+	setbuf(stdout, nullptr);
 	printf("******************************************\n");
 	printf("**********     Model selector    *********\n");
 	printf("******************************************\n\n\n");

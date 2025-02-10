@@ -80,13 +80,16 @@ class RTModel:
             f.write('thresholdoutliers = ' + str(self.Reader_thresholdoutliers) + '\n')
         print('- Launching: Reader')
         print('  Pre-processing data...')
-        completedprocess = subprocess.run([self.bindir+self.readerexe,self.eventname], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
-        if(completedprocess.returncode != 0):
-            print('! Error in pre-processing. Please check your data!')            
-            self.done = True
-        else:
+        try:
+            completedprocess=subprocess.run([self.bindir+self.readerexe,self.eventname], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
             print('  OK')
-
+        except subprocess.CalledProcessError as e:
+            print('\033[30;41m! Error in pre-processing. Please check your data!\033[m')
+            print('\033[30;43m'+e.stdout+'\033[m')
+            print('\033[30;43m'+e.stderr+'\033[m')
+            print('\033[30;41m! Program stopped here!\033[m')
+            self.done = True
+ 
     def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
                        , templatelibrary = None, modelcategories = ['PS','PX','BS','BO','LS','LX','LO'], onlyupdate =False):
         self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
@@ -124,11 +127,8 @@ class RTModel:
                 f.write('onlyupdate = 1\n')
         print('- Launching: InitCond')
         print('  Setting initial conditions...')
-        completedprocess = subprocess.run([self.bindir+self.initcondexe,self.eventname], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
-        if(completedprocess.returncode != 0):
-            print('! Error in setting initial conditions!')
-            self.done = True
-        else:
+        try:
+            completedprocess=subprocess.run([self.bindir+self.initcondexe,self.eventname], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
             peaksearch = True
             i=0
             while(peaksearch):
@@ -141,6 +141,12 @@ class RTModel:
                         for i in range(0,npeaks):
                             print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
             print('\n  OK')
+        except subprocess.CalledProcessError as e:
+            print('\033[30;41m! Error in setting initial conditions!\033[m')
+            print('\033[30;43m'+e.stdout+'\033[m')
+            print('\033[30;43m'+e.stderr+'\033[m')
+            print('\033[30;41m! Program stopped here!\033[m')
+            self.done = True
 
     def config_LevMar(self, nfits = 6, offsetdegeneracy = 3, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0):
         self.LevMar_nfits = nfits # Number of models to be calculated from the same initial condition using the bumper method
@@ -169,12 +175,15 @@ class RTModel:
                 f.write('parametersfile = ' + parameters_file)
         print('- Launching: LevMar')
         print('  Fitting ' + strmodel + ' ...')
-        completedprocess = subprocess.run([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
-        if(completedprocess.returncode != 0):
-            print('! Error in fit!')
-            self.done = True
-        else:
+        try:
+            completedprocess=subprocess.run([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
             print('  OK')
+        except subprocess.CalledProcessError as e:
+            print('\033[30;41m! Error in fit!\033[m')
+            print('\033[30;43m'+e.stdout+'\033[m')
+            print('\033[30;43m'+e.stderr+'\033[m')
+            print('\033[30;41m! Program stopped here!\033[m')
+            self.done = True
   
     def launch_fits(self,modelcode):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
@@ -207,18 +216,24 @@ class RTModel:
             procepochs = []
             iinitcond = 0
             finitcond = 0
-            finitcondold = -1       
+            finitcondold = -1
+            timeouts = 0
+            crashes = 0
             pbar = tqdm(total = ninitconds,desc = 'Fits completed',file=sys.stdout, colour='GREEN', smoothing = 0)
             while(finitcond < ninitconds):
                 i=0
                 while i < len(processes):
                     if(time.time() - procepochs[i] > self.LevMar_timelimit):
                         processes[i].kill()
+                        timeouts += 1
+                        crashes -= 1
                         premodfiles = glob.glob(self.eventname +'/PreModels/*.txt')
                         strmodel =  modelcode + '{:0>4}'.format(str(procnumbers[i]))
                         with open(self.eventname +'/PreModels/' + strmodel + '/t' + strmodel + '.dat','w') as f:
                             f.write(f'{len(premodfiles)} {self.LevMar_nfits}')
                     if(processes[i].poll() != None):
+                        if(processes[i].returncode!=0):
+                            crashes +=1
                         processes.pop(i)
                         procnumbers.pop(i)
                         procepochs.pop(i)
@@ -240,6 +255,11 @@ class RTModel:
                     finitcondold =finitcond
                 time.sleep(0.1)
             pbar.close()
+            if(crashes>0):
+                print('crashed fits: ' + str(crashes))
+            if(timeouts>0):
+                print('timed out fits: ' + str(timeouts))
+            print('  OK')
         else:
             print('- No initial conditions for this category')
  
@@ -266,25 +286,31 @@ class RTModel:
                         'TS' : '- Selecting models for Triple-lens-Single-source fits',
                         'TX' : '- Selecting models for Triple-lens-Single-source fits with parallax'}   
         print(stringmodels[modelcode])
-        completedprocess = subprocess.run([self.bindir+self.modelselectorexe,self.eventname, modelcode], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
-        if(completedprocess.returncode != 0):
-            print('! Error in model selection!')
-            self.done = True
-        else:
+        try:
+            completedprocess=subprocess.run([self.bindir+self.modelselectorexe,self.eventname, modelcode], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
             print('  OK')
+        except subprocess.CalledProcessError as e:
+            print('\033[30;41m! Error in model selection!\033[m')
+            print('\033[30;43m'+e.stdout+'\033[m')
+            print('\033[30;43m'+e.stderr+'\033[m')
+            print('\033[30;41m! Program stopped here!\033[m')
+            self.done = True
             
     def Finalizer(self):
         print('- Launching: Finalizer')
         print('  Making final assessment for this event')
-        completedprocess = subprocess.run([self.bindir+self.finalizerexe,self.eventname], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
-        if(completedprocess.returncode != 0):
-            print('! Error in finalization. Maybe there are problems with models')
-            self.done = True
-        else:
+        try:
+            completedprocess=subprocess.run([self.bindir+self.finalizerexe,self.eventname], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
             with open(self.eventname + '/Nature.txt') as f:
                 for line in f.readlines():
                     print("  " + line,end='')
                 print("  OK")  
+        except subprocess.CalledProcessError as e:
+            print('\033[30;41m! Error in finalization!\033[m')
+            print('\033[30;43m'+e.stdout+'\033[m')
+            print('\033[30;43m'+e.stderr+'\033[m')
+            print('\033[30;41m! Program stopped here!\033[m')
+            self.done = True
 
     def run(self, event = None, cleanup = False):
         phase =0
@@ -320,7 +346,7 @@ class RTModel:
             elif phase > self.endphase:
                 if(cleanup):
                     print('- Cleaning up preliminary models')
-                    cleanup_preliminary_models()
+                    self.cleanup_preliminary_models()
                 print("- Analysis of " + self.eventname + " successfully completed!")
                 print("o " + time.asctime())
                 self.done = True

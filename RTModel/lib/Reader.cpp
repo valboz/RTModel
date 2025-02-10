@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
 	
 // Directory preliminaries. Reads event name from arguments.
 
+	setbuf(stdout, nullptr);
 	printf("******************************************\n");
 	printf("*************      Reader      **********\n");
 	printf("******************************************\n\n");

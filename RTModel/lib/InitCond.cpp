@@ -21,7 +21,7 @@ char systemslash = '/';
 
 // Main global parameters
 int nobspeaks = 2; // Number of peaks in the observed light curve to be considered for setting initial conditions.
-double sigmathr = 5.; // Number of sigmas for spline approximation
+double sigmathr = 5.; // Number of sigmas for spline approximation currently set to 0.5 peakthr
 double peakthr = 10.; // Number of sigmnas necessary for a deviation to be identified as a maximum or a minimum.
 int maxoldmodels = 4; // Maximum number of old models to include in new run as initial conditions
 bool override = false; // Override peak identification and manually set peak times
@@ -72,6 +72,7 @@ int main(int argc, char* argv[])
 	dataset** peaklist, * cpeaks, * newpeaks;
 	datapoint* p, * pm, * pmm, * pl, * pr, * pasy = 0, * highestpeak, * minimum, * startsection, * endsection, * sectionpeak;
 
+	setbuf(stdout, nullptr);
 
 	// Directory preliminaries. Reads event name from arguments.
 
@@ -93,6 +94,9 @@ int main(int argc, char* argv[])
 
 	printf("\n\n- Event: %s\n", eventname);
 
+	if (!exists(eventname)) {
+		throw(1);
+	}
 	current_path(eventname);
 
 
@@ -146,7 +150,7 @@ int main(int argc, char* argv[])
 				if (strcmp(command, "override") == 0) {
 					fscanf(f, " %lf", &value2);
 					override = true;
-					sscanf(value,"%lf",&t1);
+					sscanf(value, "%lf", &t1);
 					t2 = value2;
 				}
 				if (strcmp(command, "npeaks") == 0) {
@@ -223,7 +227,7 @@ int main(int argc, char* argv[])
 	if (onlyupdate) {
 		newpeaks = new dataset;
 		newpeaks->length = 0;
-		newpeaks->first = newpeaks->last=0;
+		newpeaks->first = newpeaks->last = 0;
 	}
 	else {
 
@@ -254,6 +258,10 @@ int main(int argc, char* argv[])
 
 			f = fopen("LCToFit.txt", "r");
 			fscanf(f, "%d", &np);
+			if (np == 0) {
+				printf("\n! No data !");
+				return -1;
+			}
 
 			nfil = 1;
 			dn = 0;
@@ -271,6 +279,10 @@ int main(int argc, char* argv[])
 				dn = ifil;
 			}
 			fclose(f);
+			if (np == 0) {
+				printf("\n! No datasets match the chosen satellite!\n  Check your usesatellite option.");
+				return -1;
+			}
 			np++;
 
 			tt = (double*)malloc(sizeof(double) * np);
@@ -878,7 +890,7 @@ int main(int argc, char* argv[])
 
 	current_path(eventname);
 
-	dn = 0; 
+	dn = 0;
 	if (strstr(modelcategories, "PS") != 0) {
 		filebest = regex("PS.*\\.txt");
 		strcpy(fileinit, "InitCondPS.txt");

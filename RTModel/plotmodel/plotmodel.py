@@ -12,6 +12,7 @@ from tqdm import tqdm
 import sys
 import inspect
 import glob
+from tabulate import tabulate
 
 
 class plotmodel:
@@ -20,7 +21,6 @@ class plotmodel:
         self.satellitedir = satellitedir
         self.parameters = parameters
         filin=inspect.getfile(VBMicrolensing)
-        self.filout= os.path.dirname(filin) + '/data/ESPL.tbl'
         self.eventname = eventname
         self.model = model
         self.tmin = tmin
@@ -133,6 +133,8 @@ class plotmodel:
                         self.pars[i] = math.log(self.pars[i])
                     self.blends = np.array([values[self.npars[self.modnumber]+i*2] for i in range(0,self.nfil)])
                     self.sources = np.array([values[self.npars[self.modnumber]+i*2+1] for i in range(0,self.nfil)])
+                    self.blendings = self.blends/self.sources
+                    self.baselines = -2.5*np.log10(self.blends+self.sources)
                     self.chi2=values[-1]
                     #Errors
                     if(not self.animate):
@@ -140,8 +142,8 @@ class plotmodel:
                         chunks = line.split(' ')
                         values = [float(v) for v in chunks]
                         self.parerrs = values[0:self.npars[self.modnumber]]
-                        self.blenderrs = np.array([values[self.npars[self.modnumber]+i*2] for i in range(0,self.nfil)])
-                        self.sourceerrs = np.array([values[self.npars[self.modnumber]+i*2+1] for i in range(0,self.nfil)])
+                        self.blendingerrs = np.array([values[self.npars[self.modnumber]+i*2] for i in range(0,self.nfil)])
+                        self.baselineerrs = np.array([values[self.npars[self.modnumber]+i*2+1] for i in range(0,self.nfil)])
                     return True
         else:
             self.pars = self.parameters[0:self.npars[self.modnumber]]
@@ -172,8 +174,6 @@ class plotmodel:
                 self.chi2 += sumy2+(sumfy*sumfy*sumsigma+sumf2*sumy*sumy-2*sumf*sumy*sumfy)/p1
                 
     def lightcurve(self):
-        if(self.modnumber < 4):
-            self.vbm.LoadESPLTable(self.filout)
         if(self.modnumber == 1 or self.modnumber > 4):
             self.vbm.SetObjectCoordinates(glob.glob('Data/*.coordinates')[0],self.satellitedir)
             self.vbm.parallaxsystem = 1
@@ -296,16 +296,21 @@ class plotmodel:
         # tE=parsprint[parnames[modnumber].index('tE')]
 
     def printparameters(self):
-        self.parstring = 'Parameters\n'
+        self.parstring = ''
+        table =[['chi2', str(self.chi2)]]
         for i in range(self.npars[self.modnumber]):
             if((not self.animate) and len(self.parameters)==0):
-                    self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + self.approx(i) + '\n'  #+ str(self.parsprint[i]) +  ' +- ' + str(self.parerrs[i]) + '\n'
+                table.append([self.parnames[self.modnumber][i], self.approx(i)])
+#                    self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + self.approx(i) + '\n'  #+ str(self.parsprint[i]) +  ' +- ' + str(self.parerrs[i]) + '\n'
             else:
-                self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + str(self.parsprint[i]) + '\n'
-        self.parstring = self.parstring + '\n'
-        self.parstring = self.parstring + 'blending = ' + str(np.array(self.blends)/np.array(self.sources)) + '\n'
-        self.parstring = self.parstring + 'baseline = ' + str(-2.5*np.log10(np.array(self.blends)+np.array(self.sources))) + '\n'
-        self.parstring = self.parstring + 'chi2 =' + str(self.chi2)
+                table.append([self.parnames[self.modnumber][i], str(self.parsprint[i])])
+#                self.parstring = self.parstring + self.parnames[self.modnumber][i] + ' = ' + str(self.parsprint[i]) + '\n'
+        self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
+        self.parstring = self.parstring + '\n\n'
+        
+        table = [[t,base, baseerr, bl, blerr] for t,base, baseerr,bl, blerr in zip(self.telescopes,self.baselines,self.baselineerrs,self.blendings,self.blendingerrs)]
+        table.insert(0,['telescope','baseline', 'error', 'blending', 'error'])
+        self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
         print(self.parstring)
 
     def fexp(self, f):
@@ -313,7 +318,7 @@ class plotmodel:
     
     def approx(self, i):
         exerr= self.fexp(self.parerrs[i])-1
-        return f'{self.parsprint[i]:.{max(0,-exerr+3)}f}' + ' +- ' + f'{self.parerrs[i]:.{max(0,-exerr)}f}'
+        return f'{self.parsprint[i]:.{max(0,-exerr)}f}' + ' +- ' + f'{self.parerrs[i]:.{max(0,-exerr)}f}'
 
     def axeslightcurve(self,ax):
         for i in range(0,self.nfil):
@@ -498,4 +503,100 @@ def plotchain(eventname, model, par1, par2):
         y = chain.transpose()[par2]
         ax.plot(x,y,color = colors[i])
         ax.scatter(x[-1], y[-1],s=20,color = colors[i])
-    
+        
+def orbital_elements(modelfile):
+    with open(modelfile) as f:
+        line=f.readline().split()
+        parsall=[float(chunk) for chunk in line]
+        orbitalparameters = None
+        if(os.path.basename(modelfile)[0]=='L'):
+            if(os.path.basename(modelfile)[1]=='O'):
+                parameters = parsall[0:12]
+                w1 = parameters[9]
+                w2 = parameters[10]
+                w3 = parameters[11]
+                s = parameters[0]
+                t0 = parameters[6]
+                alpha = parameters[3]
+                calpha = math.cos(alpha)
+                salpha = math.sin(alpha)
+                w13 = w1 * w1 + w3 * w3
+                w123 = math.sqrt(w13 + w2 * w2)
+                w13 = math.sqrt(w13)
+                if (w13 > 1.e-8):
+                    if(w3 < 1.e-8): 
+                        w3 = 1.e-8
+                    w = w3 * w123 / w13
+                    s3d = s*w13/w3
+                    inc = math.acos(w2 * w3 / w13 / w123)
+                    Om = math.atan2(w1*w2/w13,w13)
+                    phi0 = math.atan2(-w1 / w3, w13 / w123)
+                else:
+                    w = w2
+                    inc = 0.0
+                    Om = math.pi/2
+                    phi0 = -Om
+                orbitalparameters = {'T': 2*math.pi/w, 'a': s3d, 'e': 0, 'inc': inc, 'OM': Om, 'om': 0, 'phi0': phi0,'epoch': t0-phi0*w}
+            elif(os.path.basename(modelfile)[1]=='K'):
+                parameters = parsall[0:14]
+                w1 = parameters[9]
+                w2 = parameters[10]
+                w3 = parameters[11]
+                szs = parameters[12]
+                ar = parameters[13]
+                s = parameters[0]
+                t0 = parameters[6]
+                alpha = parameters[3]
+                calpha = math.cos(alpha)
+                salpha = math.sin(alpha)
+                smix = 1 + szs * szs
+                sqsmix = math.sqrt(smix)
+                w22 = w2 * w2
+                w11 = w1 * w1
+                w33 = w3 * w3
+                w12 = w11 + w22
+                w23 = w22 + w33
+                wt2 = w12 + w33
+                
+                szs2 = szs * szs
+                ar2 = ar * ar
+                arm1 = ar - 1
+                arm2 = 2 * ar - 1
+                n = math.sqrt(wt2 / arm2 / smix) / ar
+                Z0 = -szs * w2
+                Z1 = szs * w1 - w3
+                Z2 = w2
+                h = math.sqrt(Z0 * Z0 + Z1 * Z1 + Z2 * Z2)
+                Z0 /= h
+                Z1 /= h
+                Z2 /= h
+                X0 = -ar * w11 + arm1 * w22 - arm2 * szs * w1 * w3 + arm1 * w33
+                X1 = -arm2 * w2 * (w1 + szs * w3)
+                X2 = arm1 * szs * w12 - arm2 * w1 * w3 - ar * szs * w33
+                e = math.sqrt(X0 * X0 + X1 * X1 + X2 * X2)
+                X0 /= e
+                X1 /= e
+                X2 /= e
+                e /= ar * sqsmix * wt2
+                a = ar * s * math.sqrt(smix)
+                Y0 = Z1 * X2 - Z2 * X1;
+                Y1 = Z2 * X0 - Z0 * X2;
+                Y2 = Z0 * X1 - Z1 * X0;
+                
+                cosnu = (X0 + X2 * szs) / sqsmix
+                sinnu = Y0 + Y2 * szs
+        
+                co1EE0 = cosnu + e
+                co2EE0 = 1 + e * cosnu
+                cosE = co1EE0 / co2EE0
+                EE0 = math.acos(cosE)
+                EE0 *= np.sign(sinnu)
+                sinE = math.sqrt(1 - cosE * cosE) * np.sign(sinnu);
+                co1tperi = e * sinE;
+                tperi = t0 - (EE0 - co1tperi) / n;
+                inc = math.acos(Z2)
+                Om = math.atan2(Z0,-Z1)
+                om = math.acos((X1*Z0-X0*Z1)/math.sin(inc))*np.sign(X2)
+                phi0 = math.acos(cosnu)*np.sign(sinnu)       
+                orbitalparameters = {'T': 2*math.pi/n, 'a': a, 'e': e, 'inc': inc, 'OM': Om, 'om': om, 'phi0': phi0, 'epoch': tperi}
+    return orbitalparameters

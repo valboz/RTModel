@@ -91,7 +91,8 @@ The call to `config_LevMar()` will affect all following executions of the `LevMa
 
 Here we describe the options for `LevMar` in detail indicating their default values.
 
-- `nfits = 5`: Number of fits executed from the same initial condition.
+- `nfits = 6`: Number of fits executed from the same initial condition.
+- `offsetdegeneracy = 3`: Number of fits to be executed after applying the [offset degeneracy](https://ui.adsabs.harvard.edu/abs/2022NatAs...6..782Z/abstract) reflection.
 - `maxsteps = 50`: Maximum number of steps for each fit.
 - `timelimit = 600.0`: Maximum time in seconds allowed for the execution of `LevMar`. If the limit is reached, the execution of the individual fitting is stopped and only the minima found so far will be saved.
 - `bumperpower = 2.0`: Size of the bumper in the parameter space expressed in sigmas. The bumper is created with the shape determined by the local covariance matrix. and the size given by this parameter.

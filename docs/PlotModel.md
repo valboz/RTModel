@@ -79,6 +79,38 @@ Finally, each plot can be saved to a file. In fact, after the execution of `show
 myplot.figure.savefig('myfile.png')
 ```
 
+## Orbital elements
 
+The fit parameters for [models with orbital motion](ModelCategories.md) may not be as transparent. The subpackage `plotmodel` offers the function `orbital_elements` for a translation to conventional orbital elements. Suppose you have obtained a model with circular orbital motion `LO0001-1.txt'. If we just use `plotmodel` as before, we can read the fitting parameters, including the three components of the orbital velocity. However, if we write
+
+```
+import RTModel.plotmodel as plm
+plm.orbital_elements(`LO0001-1.txt')
+```
+
+the output will be the list of conventional orbital elements calculated from the components of the orbital motion
+
+```
+T  =  3362.6154510332913
+a  =  0.5269665151055616
+e  =  0
+inc  =  1.3715375471903625
+OM  =  0.35
+om  =  0
+phi0  =  0.45222968275074405
+epoch  =  9816.2023437747
+```
+
+The elements are as follows
+- T: orbital period in days
+- a: semimajor axis in Einstein radii
+- e: eccentricity (0 for circular orbital motion)
+- inc: inclination in radians (0 is face-on, 1.57 is edge-on)
+- OM: longitude of the ascending node in radians, taken from the binary axis at time t0.
+- om: argument of periastron in radians (0 for circular orbital motion)
+- phi0: true anomaly in radians (taken from the ascending node for circular orbital motion)
+- epoch: epoch of the periastron in HJD (for circular orbital motion this coincides with the epoch of the ascending node)
+
+The same function can also be used for models obtained with [eccentric orbital motion](ModelCategories.md), for which the eccentricity and the argument of the periastron will take non-zero values. 
 
 [Go to **Archiving and updating models**](Archive.md)

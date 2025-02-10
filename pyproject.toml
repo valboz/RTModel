@@ -1,11 +1,11 @@
 [build-system]
-requires = ["scikit-build-core>=0.10"]
+requires = ["scikit-build-core>=0.10","VBMicrolensing>=4.1"]
 build-backend = "scikit_build_core.build"
 
 [project]
 name = "RTModel"
 description = "RTModel is a tool for microlensing event interpretation."
-version = "2.3"
+version = "2.4"
 keywords = ['Microlensing analysis and fitting']
 authors = [
     { name = "Valerio Bozza", email = "valboz@sa.infn.it" },
@@ -16,7 +16,7 @@ readme = "README.md"
 classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Science/Research',
-    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
     'Programming Language :: Python :: 3',
 ]
 dependencies = [
@@ -24,6 +24,7 @@ dependencies = [
     "pytest",
     "matplotlib", 
     "tqdm",
+    "tabulate",
     "VBMicrolensing>=4.1.0"
 ]
 

@@ -3,10 +3,10 @@
 
 #include "LevMarFit.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	LevMar *MyLevMar= new LevMar(argc,argv);
-	MyLevMar->Run();
+	LevMar* MyLevMar = new LevMar(argc, argv);
+	int err = MyLevMar->Run();
 	delete MyLevMar;
-    return 0;
+	return err;
 }

@@ -151,7 +151,7 @@ Finally, we also explore circular orbital motion for our binary lens:
 | 8 | piN| Parallax component along North |  |
 | 9 | piE | Parallax component along East |  |
 | 10 | gamma1 | Angular velocity parallel to the lens axis |  |
-| 11 | gamma2 | Angulr velocity perpendicular to the lens axis |  |
+| 11 | gamma2 | Angular velocity perpendicular to the lens axis |  |
 | 12 | gammaz | Angular velocity along the line of sight |  |
 
 The three components of the orbital motion are expressed at time t0 in units of days^-1.
@@ -159,6 +159,8 @@ The three components of the orbital motion are expressed at time t0 in units of 
 The component gamma1 is equivalent to ds/dt/s. The component gamma2 is dalpha/dt. The third component gammaz is generally poorly constrained, but is required to move along a physical circular orbit.
 
 More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/OrbitalMotion.md).
+
+The subpackage [plotmodel](PlotModel.md) contains a function for translating from the fitting parameters to conventional orbital elements.
 
 ## Binary-lens-single-source with eccentric orbital motion (LK)
 
@@ -176,12 +178,14 @@ Eccentric orbital motion is not fit by default, but can be requested by setting 
 | 8 | piN| Parallax component along North |  |
 | 9 | piE | Parallax component along East |  |
 | 10 | gamma1 | Angular velocity parallel to the lens axis |  |
-| 11 | gamma2 | Angulr velocity perpendicular to the lens axis |  |
+| 11 | gamma2 | Angular velocity perpendicular to the lens axis |  |
 | 12 | gammaz | Angular velocity along the line of sight |  |
 | 13 | sz_s | Separation along the line of sight over projected separation |  |
 | 14 | a_s3d | Semimajor axis over total separation |  |
 
 The two additional parameters are sufficient to completely define an eccentric orbit. More details are available at [VBMicrolensing Orbital Motion](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/OrbitalMotion.md).
+
+The subpackage [plotmodel](PlotModel.md) contains a function for translating from the fitting parameters to conventional orbital elements.
 
 [Go to **Plotting models**](PlotModel.md)
 
