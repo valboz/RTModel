@@ -85,7 +85,9 @@ The fit parameters for [models with orbital motion](ModelCategories.md) may not 
 
 ```
 import RTModel.plotmodel as plm
-plm.orbital_elements(`LO0001-1.txt')
+orbitalelements = plm.orbital_elements(`LO0001-1.txt')
+for oe in orbitalelements:
+    print(oe,' = ',orbitalelements[oe])
 ```
 
 the output will be the list of conventional orbital elements calculated from the components of the orbital motion
