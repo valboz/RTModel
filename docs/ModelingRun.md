@@ -143,4 +143,6 @@ Each step is described in a dedicated documentation page (see [Summary](README.m
 
 In case the modeling run is interrupted, it can be resumed by executing the `run()` function again on the same event. The function checks whether the expected output of each step is present and in such case it moves to the next step.
 
+If one of the child processes fails (typically for corrupted data), the output of the process is shown to help the user understand the problem.
+
 [Go to **Model categories**](ModelCategories.md)
