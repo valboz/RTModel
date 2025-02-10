@@ -83,7 +83,8 @@ class plotmodel:
     def readdata(self):
         if(self.eventname== None):
             self.lightcurves = []
-            self.telescopes = []
+            self.telescopes = []            
+            self.limbdarkenings = []   
             self.nfil = 0
             self.npoints = 0
         else:
@@ -111,6 +112,12 @@ class plotmodel:
                 self.telescopes = [tel.split('_')[0] for tel in self.telescopes]
             while(len(self.colors)<self.nfil):
                 self.colors.extend(self.colors)
+            if(os.path.exists(self.eventname + '\\Data\\LimbDarkening.txt')):
+                with open(self.eventname + '\\Data\\LimbDarkening.txt') as f:
+                    lines = f.readlines()
+                    self.limbdarkenings = [float(ld) for ld in lines]
+            else:
+                self.limbdarkenings = [0 for t in self.telescopes]
 
     # Reading model parameters
     def readparameters(self):
@@ -249,11 +256,12 @@ class plotmodel:
         self.trajectories = []
         for satellite in self.usedsatellites:   
             self.t =self.t0[:]
-            for i in range(self.nfil):
-                if(self.satellites[i] == satellite):
-                    self.t = np.concatenate((self.t,self.lctimes[i]))                
+#            for i in range(self.nfil):
+#                if(self.satellites[i] == satellite):
+#                    self.t = np.concatenate((self.t,self.lctimes[i]))                
             self.t = np.sort(self.t)
             self.vbm.satellite = satellite
+            self.vbm.a1 = self.limbdarkenings[self.referencephot]
             self.lightcurve()        
             self.mags = [-2.5*math.log10(self.sources[self.referencephot]*yi+self.blends[self.referencephot]) for yi in self.results[0]]
             self.y1 = self.results[1]
@@ -278,11 +286,12 @@ class plotmodel:
 
         self.lcress = []
         for i in range(self.nfil):
-            ress = []
-            isat = np.where(np.array(self.usedsatellites) == self.satellites[i])[0][0]
-            for j in range(0,len(self.lctimes[i])):
-                ip = np.where(self.magnifications[isat][0] == self.lctimes[i][j])[0][0]
-                ress.append(self.magnifications[isat][1][ip]-self.lcmags[i][j])
+            self.t = self.lctimes[i]                
+            self.vbm.satellite = self.satellites[i]
+            self.vbm.a1 = self.limbdarkenings[i]
+            self.lightcurve()
+            self.mags = [-2.5*math.log10(self.sources[self.referencephot]*yi+self.blends[self.referencephot]) for yi in self.results[0]]
+            ress = self.mags-self.lcmags[i]
             self.lcress.append(ress)
 
     # Caustic plot preparation   
