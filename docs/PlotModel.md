@@ -81,7 +81,7 @@ myplot.figure.savefig('myfile.png')
 
 ## Orbital elements
 
-Fitting parameters for [models with orbital motion](ModelCategories.md) may not be as transparent. The subpackage `plotmodel` offers the function `orbital_elements` for a translation to conventional orbital elements. Suppose you have obtained a model with circular orbital motion `LO0001-1.txt'. If we just use `plotmodel` as before, we can read the fitting parameters, including the three components of the orbital velocity. However, if we write
+The fit parameters for [models with orbital motion](ModelCategories.md) may not be as transparent. The subpackage `plotmodel` offers the function `orbital_elements` for a translation to conventional orbital elements. Suppose you have obtained a model with circular orbital motion `LO0001-1.txt'. If we just use `plotmodel` as before, we can read the fitting parameters, including the three components of the orbital velocity. However, if we write
 
 ```
 import RTModel.plotmodel as plm
