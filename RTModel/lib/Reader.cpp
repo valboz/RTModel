@@ -615,7 +615,7 @@ int main(int argc, char* argv[])
 	for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
 		printf("\n%d", curdataset->length);
 		undersc = curdataset->label - 5 + strlen(curdataset->label);
-		satellite = (*undersc < 'A') ? (*undersc) - '0' : 0; // satellite data should have names like ZOB1501241.dat where 1.dat distinguishes satellites data
+		satellite = (*undersc <= '9' && *undersc > '0') ? (*undersc) - '0' : 0; // satellite data should have names like ZOB1501241.dat where 1.dat distinguishes satellites data
 		for (p = curdataset->first; p; p = p->next) {
 			y = pow(10., -0.4 * p->y);
 			err = p->err * y * 0.9210340371976184;
