@@ -20,27 +20,27 @@ char systemslash = '\\';
 char systemslash = '/';
 #endif
 
-double tau=0.1; // conventional correlation time for consecutive points
-int npmax=4000; // maximum number of points left after re-binning
+double tau = 0.1; // conventional correlation time for consecutive points
+int npmax = 4000; // maximum number of points left after re-binning
 int otherseasons = 1; // How to use other seasons
 int renormalize = 1; // Re-normalize error bars
 double thresholdoutliers = 10; // Threshold for removing outliers
 
-struct datapoint{
-	datapoint *prev,*next;
-	double t,y,err,sig,basesig;
+struct datapoint {
+	datapoint* prev, * next;
+	double t, y, err, sig, basesig;
 	int dn;
 };
 
-struct dataset{
-	dataset *prev,*next;
-	datapoint *first,*last;
+struct dataset {
+	dataset* prev, * next;
+	datapoint* first, * last;
 	int length;
 	char label[100];
 
 	dataset();
 	~dataset();
-	void addpoint(double,double,double);
+	void addpoint(double, double, double);
 };
 
 #define _computesig\
@@ -52,22 +52,22 @@ struct dataset{
 
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	char exedir[256]="";
+	char exedir[256] = "";
 	char eventname[512] = "";
 	char filename[256] = "";
-	char titstring[256]="",nostr[2],*undersc;
-	char command[256],buffer[256];
+	char titstring[256] = "", nostr[2], * undersc;
+	char command[256], buffer[256];
 	double value;
-	double t,y,err,yr,errr,w1,w2;
-	FILE *f;
-	int ifile,flag,nps,normalized=0,satellite;
-	double pc,residual,residual1,residual2,outlier,crosscheck,weight,minfac,maxlength;
-	dataset *datalist=0,*curdataset,*pmaxdataset;
-	datapoint *p,*pmax,*p1,*p2;
-	
-// Directory preliminaries. Reads event name from arguments.
+	double t, y, err, yr, errr, w1, w2;
+	FILE* f;
+	int ifile, flag, nps, normalized = 0, satellite;
+	double pc, residual, residual1, residual2, outlier, crosscheck, weight, minfac, maxlength;
+	dataset* datalist = 0, * curdataset, * pmaxdataset;
+	datapoint* p, * pmax, * p1, * p2;
+
+	// Directory preliminaries. Reads event name from arguments.
 
 	setbuf(stdout, nullptr);
 	printf("******************************************\n");
@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
 	printf("*** This program formats data for a specific event\n\n");
 
 
-	if(argc>1){
-		strcpy(eventname,argv[1]);
+	if (argc > 1) {
+		strcpy(eventname, argv[1]);
 	}
 	else {
 		printf("\n\nEvent name? ");
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 		//sprintf(eventname, "WDC10193");
 	}
 
-	printf("\n\n- Event: %s\n",eventname);
+	printf("\n\n- Event: %s\n", eventname);
 
 	current_path(eventname);
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-// Reading Reader.ini and set parameters accordingly
+	// Reading Reader.ini and set parameters accordingly
 
 	if (exists("ini")) {
 		current_path("ini");
@@ -111,16 +111,16 @@ int main(int argc, char *argv[])
 					//};
 				}
 				if (strcmp(command, "binning") == 0) {
-					npmax = (int) value;
+					npmax = (int)value;
 				}
 				if (strcmp(command, "tau") == 0) {
 					tau = value;
 				}
 				if (strcmp(command, "otherseasons") == 0) {
-					otherseasons = (int) value;
+					otherseasons = (int)value;
 				}
 				if (strcmp(command, "renormalize") == 0) {
-					renormalize = (int) value;
+					renormalize = (int)value;
 				}
 				if (strcmp(command, "thresholdoutliers") == 0) {
 					thresholdoutliers = value;
@@ -140,11 +140,11 @@ int main(int argc, char *argv[])
 	printf("\nBinning down to %d", npmax);
 	printf("\nThreshold for outliers removal: %lf", thresholdoutliers);
 	printf("\nTimescale for scatter evaluation %lf", tau);
-	printf("\nRenormalize error bars: %s", (renormalize>0)? "yes" : "no");
+	printf("\nRenormalize error bars: %s", (renormalize > 0) ? "yes" : "no");
 	if (renormalize == 0) normalized = 1;
 
 
-// Read data from files and create structured lists
+	// Read data from files and create structured lists
 
 
 
@@ -216,12 +216,12 @@ int main(int argc, char *argv[])
 	//}
 	current_path(eventname);
 
-// Sort lists
+	// Sort lists
 
 	printf("\n\n- Time ordering of data\n");
 
 	curdataset = datalist;
-	while(curdataset){
+	while (curdataset) {
 		printf("\n%s", curdataset->label);
 		p = curdataset->first;
 		while (p) {
@@ -306,44 +306,44 @@ int main(int argc, char *argv[])
 	}
 
 
-// Estimating error bars for each dataset
-	
+	// Estimating error bars for each dataset
+
 	double ft1, ft2;
 	printf("\n\n- Assessing error bars\n");
 
-	minfac=1.e100;
-	maxlength=-minfac;
-	for(curdataset=datalist;curdataset;curdataset=curdataset->next){
-		residual=weight=0;
-		for(p=curdataset->first->next;p;p=p->next){
-			residual1=residual2 = 0;
-			if(p->next){
-				p1=p->next;
-				if(p1->next){
-					p2=p1->next;
+	minfac = 1.e100;
+	maxlength = -minfac;
+	for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
+		residual = weight = 0;
+		for (p = curdataset->first->next; p; p = p->next) {
+			residual1 = residual2 = 0;
+			if (p->next) {
+				p1 = p->next;
+				if (p1->next) {
+					p2 = p1->next;
 					ft2 = (p->t - p1->t) / (p2->t - p1->t);
 					ft1 = 1 - ft2;
-					y=p1->y+((p2->t==p1->t)? 0 : (p2->y-p1->y)*ft2);
-					pc=(p2->t-p->t)/tau;
-					err=(p1->err*p1->err*ft1*ft1+p2->err*p2->err*ft2*ft2 +p->err*p->err)*exp(pc/tau);
-					w1=1/exp(pc/tau);
-					pc=(p->y-y);
-					residual1= pc /sqrt(err);
+					y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) * ft2);
+					pc = (p2->t - p->t) / tau;
+					err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err) * exp(pc / tau);
+					w1 = 1 / exp(pc / tau);
+					pc = (p->y - y);
+					residual1 = pc / sqrt(err);
 					yr = y;
 					errr = err;
 				}
 			}
-			if(p->prev){
-				p1=p->prev;
-				if(p1->prev){
-					p2=p1->prev;
+			if (p->prev) {
+				p1 = p->prev;
+				if (p1->prev) {
+					p2 = p1->prev;
 					ft2 = (p->t - p1->t) / (p2->t - p1->t);
 					ft1 = 1 - ft2;
-					y=p1->y+((p2->t==p1->t)? 0 : (p2->y-p1->y)/(p2->t-p1->t)*(p->t-p1->t));
-					pc=(p2->t-p->t)/tau;
-					err=(p1->err*p1->err*ft1*ft1+p2->err*p2->err*ft2*ft2+p->err*p->err)*exp(-pc/tau);
-					w2=1/exp(-pc/tau);
-					pc=(p->y-y);
+					y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) / (p2->t - p1->t) * (p->t - p1->t));
+					pc = (p2->t - p->t) / tau;
+					err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err) * exp(-pc / tau);
+					w2 = 1 / exp(-pc / tau);
+					pc = (p->y - y);
 					residual2 = pc / sqrt(err);
 				}
 			}
@@ -351,9 +351,9 @@ int main(int argc, char *argv[])
 			crosscheck = (y - yr);
 			crosscheck *= crosscheck;
 			crosscheck /= (err + errr);
-			if (residual1!=0 && residual2!=0  && crosscheck <9 && sqrt(outlier) >thresholdoutliers) {
+			if (residual1 != 0 && residual2 != 0 && crosscheck <9 && sqrt(outlier) >thresholdoutliers) {
 				printf("\nOutlier found: %lf %lf %lf", p->t, p->y, sqrt(outlier));
-				p1 = p ->prev;
+				p1 = p->prev;
 				p2 = p->next;
 				p1->next = p2;
 				p2->prev = p1;
@@ -367,14 +367,14 @@ int main(int argc, char *argv[])
 			}
 		}
 		// 		residual*=0.5*curdataset->length/weight;
-		residual=(residual+1.)/(weight+1.);
-		pc=sqrt(residual);
+		residual = (residual + 1.) / (weight + 1.);
+		pc = sqrt(residual);
 		printf("\n%s", curdataset->label);
-		printf("\nResidual: %le      Length: %d      Weight: %le       Normalization factor: %le",residual,curdataset->length,weight,pc);
-		curdataset->first->sig=pc;
-		if(curdataset->length>maxlength){
-			minfac=pc;
-			maxlength=curdataset->length;
+		printf("\nResidual: %le      Length: %d      Weight: %le       Normalization factor: %le", residual, curdataset->length, weight, pc);
+		curdataset->first->sig = pc;
+		if (curdataset->length > maxlength) {
+			minfac = pc;
+			maxlength = curdataset->length;
 		}
 	}
 
@@ -392,38 +392,12 @@ int main(int argc, char *argv[])
 	}
 
 
-	// Eliminating short datasets
-
-	printf("\n\n- Removing short datasets\n");
-
-	pmaxdataset = datalist;
-	nps = 0;
-	while (pmaxdataset) {
-		curdataset = pmaxdataset->next;
-		if (pmaxdataset->length < 4) {
-			printf("\n- Discarding: %s", pmaxdataset->label);
-			if (pmaxdataset->prev) {
-				pmaxdataset->prev->next = pmaxdataset->next;
-			}
-			else {
-				datalist = pmaxdataset->next;
-			}
-			if (pmaxdataset->next) pmaxdataset->next->prev = pmaxdataset->prev;
-			pmaxdataset->next = 0;
-			delete pmaxdataset;
-		}
-		else {
-			nps += pmaxdataset->length;
-		}
-		pmaxdataset = curdataset;
-	}
-
-// Calculate peak season
+	// Calculate peak season
 
 	if (otherseasons > 0) {
 
 		printf("\n\n- Calculate peak season\n");
-		
+
 		for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
 			datapoint** chunkfirst, ** chunklast;
 			int nchunks, ns, imaxdev;
@@ -483,7 +457,7 @@ int main(int argc, char *argv[])
 				}
 			}
 			else { // Otherwise remove seasons other than peak season
-				printf("\nSeasons other than peak season are removed"); 
+				printf("\nSeasons other than peak season are removed");
 				for (p = curdataset->first; p != chunkfirst[imaxdev]; p = p1) {
 					p1 = p->next;
 					delete p;
@@ -508,164 +482,199 @@ int main(int argc, char *argv[])
 
 
 
-// Calculate significance of each point with respect to the previous one
+	// Calculate significance of each point with respect to the previous one
 
 	printf("\n- Calculate significance of each data point\n");
 
-	for(curdataset=datalist;curdataset;curdataset=curdataset->next){
-		for(p=curdataset->first->next;p;p=p->next){
+	for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
+		for (p = curdataset->first->next; p; p = p->next) {
 			_computesig
 		}
 	}
 
 
-// Rebin useless points, reducing the number of points to npmax
+	// Eliminating short datasets
 
-	printf("\n- Rebinning data down to %d\n",npmax);
-	while(nps>npmax){
-		pmax=datalist->first->next;
-		pmaxdataset=datalist;
-		ifile=flag=0;
-		for(curdataset=datalist;curdataset;curdataset=curdataset->next){
-			for(p=curdataset->first->next;p;p=p->next){
-				if(p->sig<pmax->sig){
-					pmax=p;
-					pmaxdataset=curdataset;
-					flag=ifile;
+	printf("\n\n- Removing short datasets\n");
+
+	pmaxdataset = datalist;
+	nps = 0;
+	while (pmaxdataset) {
+		curdataset = pmaxdataset->next;
+		if (pmaxdataset->length < 4) {
+			printf("\n- Discarding: %s", pmaxdataset->label);
+			if (pmaxdataset->prev) {
+				pmaxdataset->prev->next = pmaxdataset->next;
+			}
+			else {
+				datalist = pmaxdataset->next;
+			}
+			if (pmaxdataset->next) pmaxdataset->next->prev = pmaxdataset->prev;
+			pmaxdataset->next = 0;
+			delete pmaxdataset;
+		}
+		else {
+			nps += pmaxdataset->length;
+		}
+		pmaxdataset = curdataset;
+	}
+
+	// Rebin useless points, reducing the number of points to npmax
+
+	printf("\n- Rebinning data down to %d\n", npmax);
+	while (nps > npmax) {
+		pmax = datalist->first->next;
+		pmaxdataset = datalist;
+		ifile = flag = 0;
+		for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
+			for (p = curdataset->first->next; p; p = p->next) {
+				if (p->sig < pmax->sig) {
+					pmax = p;
+					pmaxdataset = curdataset;
+					flag = ifile;
 				}
 			}
 			ifile++;
 		}
-		p=pmax->prev;
-//			printf("\n%d %d %lf\n%lf %le %le\n%lf %le %le",nps,flag,pmax->sig,p->t,p->y,p->err,pmax->t,pmax->y,pmax->err);
-		w1=1/(p->err*p->err);
-		w2=1/(pmax->err*pmax->err);
-		p->t=(p->t*w1+pmax->t*w2)/(w1+w2);
-		p->y=(p->y*w1+pmax->y*w2)/(w1+w2);
-		p->err=1/sqrt(w1+w2);
-		p->next=pmax->next;
-//			printf("\n%lf %le %le",p->t,p->y,p->err);
+		p = pmax->prev;
+		//			printf("\n%d %d %lf\n%lf %le %le\n%lf %le %le",nps,flag,pmax->sig,p->t,p->y,p->err,pmax->t,pmax->y,pmax->err);
+		w1 = 1 / (p->err * p->err);
+		w2 = 1 / (pmax->err * pmax->err);
+		p->t = (p->t * w1 + pmax->t * w2) / (w1 + w2);
+		p->y = (p->y * w1 + pmax->y * w2) / (w1 + w2);
+		p->err = 1 / sqrt(w1 + w2);
+		p->next = pmax->next;
+		//			printf("\n%lf %le %le",p->t,p->y,p->err);
 
-		if(pmax->next){
-			pmax->next->prev=p;
-		}else{
-			pmaxdataset->last=p;
+		if (pmax->next) {
+			pmax->next->prev = p;
+		}
+		else {
+			pmaxdataset->last = p;
 		}
 		pmaxdataset->length--;
 		delete pmax;
 		nps--;
 
-		if(p->t>-1.e99 && p->y>-1.e99){
-		}else{
-			if(p->prev){
-				p->prev->next=p->next;
-			}else{
-				datalist->first=p->next;
+		if (p->t > -1.e99 && p->y > -1.e99) {
+		}
+		else {
+			if (p->prev) {
+				p->prev->next = p->next;
 			}
-			if(p->next){
-				p->next->prev=p->prev;
-			}else{
-				datalist->last=p->prev;
+			else {
+				datalist->first = p->next;
+			}
+			if (p->next) {
+				p->next->prev = p->prev;
+			}
+			else {
+				datalist->last = p->prev;
 			}
 			delete p;
 			pmaxdataset->length--;
-			nps --;
+			nps--;
 		}
 
 
-		if(pmaxdataset->length<4){
-			if(pmaxdataset->prev){
-				pmaxdataset->prev->next=pmaxdataset->next;
-			}else{
-				datalist=pmaxdataset->next;
+		if (pmaxdataset->length < 4) {
+			if (pmaxdataset->prev) {
+				pmaxdataset->prev->next = pmaxdataset->next;
 			}
-			if(pmaxdataset->next) pmaxdataset->next->prev=pmaxdataset->prev;
-			nps-=pmaxdataset->length;
-			pmaxdataset->next=0;
+			else {
+				datalist = pmaxdataset->next;
+			}
+			if (pmaxdataset->next) pmaxdataset->next->prev = pmaxdataset->prev;
+			nps -= pmaxdataset->length;
+			pmaxdataset->next = 0;
 			delete pmaxdataset;
-		}else{
-			if(p->prev){
+		}
+		else {
+			if (p->prev) {
 				_computesig
 			}
-			p=p->next;
-			if(p){
+			p = p->next;
+			if (p) {
 				_computesig
 			}
 		}
 	}
 
-// Write rebinned datasets to file
+
+
+	// Write rebinned datasets to file
 
 	printf("\n- Writing final data to LCToFit.txt\n");
 
 	remove("LCToFit.bkp");
-	rename("LCToFit.txt","LCToFit.bkp");
+	rename("LCToFit.txt", "LCToFit.bkp");
 
-	f=fopen("LCToFit.txt","w");
-	ifile=0;
-	fprintf(f,"%d\n",nps);
-	for(curdataset=datalist;curdataset;curdataset=curdataset->next){
-		printf("\n%d",curdataset->length);
-		undersc=curdataset->label-5+strlen(curdataset->label);
-		satellite=(*undersc<'A')? (*undersc)-'0' : 0; // satellite data should have names like ZOB1501241.dat where 1.dat distinguishes satellites data
-		for(p=curdataset->first;p;p=p->next){
-			y=pow(10.,-0.4*p->y);
-			err=p->err*y*0.9210340371976184;
-			fprintf(f,"%d %.10le %.10le %.10le %d\n",ifile,p->t,y,err,satellite);
+	f = fopen("LCToFit.txt", "w");
+	ifile = 0;
+	fprintf(f, "%d\n", nps);
+	for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
+		printf("\n%d", curdataset->length);
+		undersc = curdataset->label - 5 + strlen(curdataset->label);
+		satellite = (*undersc <= '9' && *undersc > '0') ? (*undersc) - '0' : 0; // satellite data should have names like ZOB1501241.dat where 1.dat distinguishes satellites data
+		for (p = curdataset->first; p; p = p->next) {
+			y = pow(10., -0.4 * p->y);
+			err = p->err * y * 0.9210340371976184;
+			fprintf(f, "%d %.10le %.10le %.10le %d\n", ifile, p->t, y, err, satellite);
 		}
 		ifile++;
 	}
 	fclose(f);
 
-	f=fopen("FilterToData.txt","w");
-	for(curdataset=datalist;curdataset;curdataset=curdataset->next){
-		fprintf(f,"%s\n",curdataset->label);
+	f = fopen("FilterToData.txt", "w");
+	for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
+		fprintf(f, "%s\n", curdataset->label);
 	}
 	fclose(f);
 
-// Exiting
+	// Exiting
 
 	delete datalist;
 
 	//printf("\nHello!");
 //	getchar();
 
-    return 0;
+	return 0;
 }
 
 
-dataset::dataset(){
-	length=0;
-	prev=next=0;
-	first=last=0;
+dataset::dataset() {
+	length = 0;
+	prev = next = 0;
+	first = last = 0;
 }
 
-dataset::~dataset(){
-	datapoint *p,*q;
+dataset::~dataset() {
+	datapoint* p, * q;
 
 	delete next;
-	for(p=first;p;p=q){
-		q=p->next;
+	for (p = first; p; p = q) {
+		q = p->next;
 		delete p;
 	}
 }
 
-void dataset::addpoint(double t, double y, double err){
-	datapoint *p;
-	p=new datapoint;
-	p->t=t;
-	p->y=y;
-	p->err=err;
-	if(length){
-		p->prev=last;
-		last->next=p;
-		last=p;
-	}else{
-		first=last=p;
-		p->prev=0;
+void dataset::addpoint(double t, double y, double err) {
+	datapoint* p;
+	p = new datapoint;
+	p->t = t;
+	p->y = y;
+	p->err = err;
+	if (length) {
+		p->prev = last;
+		last->next = p;
+		last = p;
 	}
-	p->next=0;
-	p->sig=0;
+	else {
+		first = last = p;
+		p->prev = 0;
+	}
+	p->next = 0;
+	p->sig = 0;
 	p->basesig = 1;
 	length++;
 }

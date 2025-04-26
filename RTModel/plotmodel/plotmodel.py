@@ -179,6 +179,10 @@ class plotmodel:
                 self.blends.append((sumf*sumfy-sumf2*sumy)/p1)
                 self.sources.append((sumf*sumy-sumsigma*sumfy)/p1)
                 self.chi2 += sumy2+(sumfy*sumfy*sumsigma+sumf2*sumy*sumy-2*sumf*sumy*sumfy)/p1
+            self.blends =np.array(self.blends)
+            self.sources =np.array(self.sources)
+            self.blendings = self.blends/self.sources
+            self.baselines = -2.5*np.log10(self.blends+self.sources)
                 
     def lightcurve(self):
         if(self.modnumber == 1 or self.modnumber > 4):
@@ -317,8 +321,12 @@ class plotmodel:
         self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
         self.parstring = self.parstring + '\n\n'
         
-        table = [[t,base, baseerr, bl, blerr] for t,base, baseerr,bl, blerr in zip(self.telescopes,self.baselines,self.baselineerrs,self.blendings,self.blendingerrs)]
-        table.insert(0,['telescope','baseline', 'error', 'blending', 'error'])
+        if((not self.animate) and len(self.parameters)==0):
+            table = [[self.telescopes[i], self.approxbaselines(i), self.approxblendings(i)] for i in range(self.nfil)]
+            table.insert(0,['telescope','baseline', 'blending'])
+        else:
+            table = [[t,base, bl] for t,base,bl in zip(self.telescopes,self.baselines,self.blendings)]
+            table.insert(0,['telescope','baseline', 'blending'])
         self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
         print(self.parstring)
 
@@ -328,6 +336,14 @@ class plotmodel:
     def approx(self, i):
         exerr= self.fexp(self.parerrs[i])-1
         return f'{self.parsprint[i]:.{max(0,-exerr)}f}' + ' +- ' + f'{self.parerrs[i]:.{max(0,-exerr)}f}'
+
+    def approxbaselines(self, i):
+        exerr= self.fexp(self.baselineerrs[i])-1
+        return f'{self.baselines[i]:.{max(0,-exerr)}f}' + ' +- ' + f'{self.baselineerrs[i]:.{max(0,-exerr)}f}'
+
+    def approxblendings(self, i):
+        exerr= self.fexp(self.blendingerrs[i])-1
+        return f'{self.blendings[i]:.{max(0,-exerr)}f}' + ' +- ' + f'{self.blendingerrs[i]:.{max(0,-exerr)}f}'
 
     def axeslightcurve(self,ax):
         for i in range(0,self.nfil):
