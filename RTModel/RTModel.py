@@ -130,9 +130,9 @@ class RTModel:
         try:
             completedprocess=subprocess.run([self.bindir+self.initcondexe,self.eventname], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
             peaksearch = True
-            i=0
+            imod=0
             while(peaksearch):
-                initfils=glob.glob(self.eventname + '/InitCond/InitCond'+ self.modelcodes[i] + '*')
+                initfils=glob.glob(self.eventname + '/InitCond/InitCond'+ self.modelcodes[imod] + '*')
                 if(len(initfils)!=0):
                     peaksearch = False
                     with open(initfils[0], 'r') as f:
@@ -140,6 +140,7 @@ class RTModel:
                         print('Peaks:  ',end ='')
                         for i in range(0,npeaks):
                             print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
+                imod+=1
             print('\n  OK')
         except subprocess.CalledProcessError as e:
             print('\033[30;41m! Error in setting initial conditions!\033[m')
