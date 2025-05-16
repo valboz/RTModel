@@ -1,5 +1,5 @@
 # RTModel
-`RTModel` is a package for modeling and interpretation of microlensing events. It uses photometric time series collected from ground and/or space telescopes to propose one or more possible models among the following:
+`RTModel` is a package for modeling and interpretation of microlensing events. It uses photometric and/or astrometric time series collected from ground and/or space telescopes to propose one or more possible models among the following:
 - Single-lens-single-source microlensing (i.e. Paczynski)
 - Single-lens-binary-source microlensing (with or without xallarap)
 - Binary-lens-single-source microlensing (including planetary microlensing, parallax and orbital motion)
@@ -16,7 +16,7 @@ A second subpackage **`RTModel.templates`** helps the user in the visualization 
 
 ## Attribution
 
-`RTModel` has been created by Valerio Bozza (University of Salerno) as a product of many years of direct experience on microlensing modeling (see [RTModel webpage](http://www.fisica.unisa.it/GravitationAstrophysics/RTModel.htm)). 
+`RTModel` has been created by Valerio Bozza (University of Salerno) as a product of many years of direct experience on microlensing modeling (see [RTModel webpage](https://projects.phys.unisa.it/GravitationAstrophysics/RTModel.htm)). 
 
 Any scientific use of `RTModel` should be acknowledged by citing the paper [V.Bozza, A&A 688 (2024) 83](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract), describing all the algorithms behind the code.
 
