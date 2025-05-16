@@ -1,10 +1,12 @@
 [Back to **Final assessment**](FinalAssessment.md)
 
-# Astrophotometric datasets
+# Astrophotometric modeling
 
-Space telescopes or adaptive optics facilities may reach astrometric precisions of the order of milliarcsecond, thus being sensitive to the astrometric shift of the images during the microlensing event. Follow-up observations may also measure the source proper motion providing constraints on the microlensing event. If the lens is luminous, it may be resolved as a separate object, enabling a direct measurement of the relative proper motion.
+Space telescopes or adaptive optics facilities may reach astrometric precisions of the order of milliarcsecond, thus being sensitive to the astrometric shift of the images during the microlensing event. Follow-up observations may also measure the source proper motion providing constraints on the microlensing event. If the lens is luminous, it may be resolved as a separate object, enabling a direct measurement of the relative proper motion. All this additional information can be incorporated in `RTModel` via the inclusion of astrophotometric datasets, which trigger a combined astrophometric fit, in which additional physical parameters are retrieved based on the astrometric measurements.
 
-All this additional information can be incorporated in `RTModel` via the inclusion of astrophotometric datasets. We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with thre columns: magnitude, error, HJD. We recall an example here for convenience:
+## Astrophotometric datasets
+
+We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with thre columns: magnitude, error, HJD. We recall an example here for convenience:
 
 ```
 # Mag err HJD-2450000
@@ -19,7 +21,7 @@ All this additional information can be incorporated in `RTModel` via the inclusi
 
 ```
 
-If we have Declination and Right Ascension of our microlensing event with the respective uncertainties, we will have four additional columns: Declination, error, Right Ascension, error. An astrophotometric dataset will look as follows:
+If we have Declination and Right Ascension of our microlensing event with the respective uncertainties, we will have four additional columns: Declination, error on declination, Right Ascension, error on right ascension. Therefore, an astrophotometric dataset will look as follows:
 
 ```
 # Mag err HJD-2450000 Dec errDec RA errRA
@@ -34,8 +36,22 @@ If we have Declination and Right Ascension of our microlensing event with the re
 
 ```
 
-As usual, the first line is just a header and is inessential
+As usual, the first line is just a header and is ignored by `RTModel`. Dec and RA indicate the angular displacements in milliarcseconds from a fixed reference point (decided by the observer) in the North and East directions respectively.
 
+We caution that for the purpose of [binning](DataPreprocessing.md#pre-processing-operations) the astrometric undertainties are not taken into account. Re-binning affects photometry and astrometry at the same time.
+
+## Astrophotometric models
+
+If `RTModel` finds an astrophotometric dataset, it automatically includes four additional parameters in the fit, which are necessary to model the astrometric centroid trajectory:
+
+| Parameter | Meaning | 
+| --- | --- |
+| muS_Dec | Source proper motion component in the North direction in milliarcseconds per year | 
+| muS_RA | Source proper motion component in the East direction in milliarcseconds per year |
+| piS | Geometric parallax of the source in milliarcseconds |
+| thetaE | Einstein angle in milliarcseconds |
+
+Furthermore, the microlensing parallax components piN and piE are always included in the model, which means that no static models are fitted. This is because the lens proper motion is obtained from the source proper motion using the information on the relative proper motion hidden in the standard microlensing parameters. In definitive, the [model categories](ModelCategories.md) used by default in astrophotometric fits are `['PX','BO','LX','LO']`. The Keplerian fit 'LK' can be added by the user, if desired.
 
 
 [Go to **High Resolution Imaging**](HighResolutionImaging.md)
