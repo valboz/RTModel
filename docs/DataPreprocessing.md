@@ -28,7 +28,7 @@ The `Reader` module performs several operations on the original data to improve 
 - Data are re-binned until the number of data points is contained within the desired amount;
 - Error bars are re-normalized based on the assessment of local scatter;
 - Outliers are removed;
-- Datasets left with less than 4 points are ignored.
+- Datasets left with less than 2 points are ignored.
 
 For details about the algorithms used in this pre-processing, please refer to the [RTModel paper](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract).
 
