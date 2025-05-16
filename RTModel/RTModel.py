@@ -44,6 +44,7 @@ class RTModel:
         self.config_LevMar()
         self.config_ModelSelector()
         self.satellitedir = '.'
+        self.astrometric = False
 
     def set_processors(self, nprocessors):
         self.nprocessors = nprocessors
@@ -82,6 +83,15 @@ class RTModel:
         print('  Pre-processing data...')
         try:
             completedprocess=subprocess.run([self.bindir+self.readerexe,self.eventname], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
+            with open(self.eventname + '/LCToFit.txt') as f:
+                lines = f.readlines()
+                del(lines[0])
+                self.astrometric = False
+                for line in lines:
+                    if(float(line.split()[6])>0):
+                        self.astrometric = True
+                        print('  Astrometric data found: static models will be skipped')
+                        break                    
             print('  OK')
         except subprocess.CalledProcessError as e:
             print('\033[30;41m! Error in pre-processing. Please check your data!\033[m')
