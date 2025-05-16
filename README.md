@@ -20,7 +20,7 @@ A second subpackage **`RTModel.templates`** helps the user in the visualization 
 
 Any scientific use of `RTModel` should be acknowledged by citing the paper [V.Bozza, A&A 688 (2024) 83](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract), describing all the algorithms behind the code.
 
-We are grateful to Greg Olmschenk, who revised the package installation in order to make it as cross-platform as possible. We also thank all the users who are providing suggestions, reporting bugs or failures: Etienne Bachelet, David Bennett, Jonathan Brashear, Stela Ishitani Silva, Yiannis Tsapras, Keto Zhang.
+We are grateful to Greg Olmschenk, who revised the package installation in order to make it as cross-platform as possible. We also thank all the users who are providing suggestions, reporting bugs or failures: Etienne Bachelet, David Bennett, Jonathan Brashear, Laura Salmeri, Stela Ishitani Silva, Yiannis Tsapras, Sigfried Vanaverbeke, Keto Zhang.
 
 ## Installation
 
@@ -40,9 +40,9 @@ In alternative, you may directly install it from PyPI without cloning this repos
 pip install RTModel
 ```
 
-Currently, `RTModel` works on Linux, Windows and MacOS, requiring Python >= 3.6. 
+Currently, `RTModel` works on Linux, Windows and MacOS, requiring Python >= 3.7. 
 A C++ compiler compatible with C++17 standard is needed for installation.
-`RTModel` also incorporates version 4.1 of [`VBMicrolensing`](https://github.com/valboz/VBMicrolensing). You are encouraged to cite the relevant papers listed in that repository as well.
+`RTModel` uses [`VBMicrolensing`](https://github.com/valboz/VBMicrolensing) for all calculations. You are encouraged to cite the relevant papers listed in that repository as well.
 
 ## Documentation
 Full [documentation for the use of RTModel](docs/README.md) is available.
