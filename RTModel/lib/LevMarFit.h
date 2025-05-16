@@ -24,25 +24,31 @@ class LevMar {
 	int error;
 	int flagblending;
 	path exedir;
+	bool astrometric;
+	int nlinpar;
 
 	double tim0, tm;
 
-	double (VBMicrolensing::* model)(double*, double);
 	int nps;
 	double* sigmapr, * leftlim, * rightlim;
 
 	int* filter, * satel, nfil, np, OGLE;
-	double* t, * y, * w, * delta, * maxdelta, * Curv, * A, * B, * B0, * Cov, * fb, ** Gr, * dFdp, * errs;
+	double* t, * y, * w, *y1a, *y2a, * delta, * maxdelta, * Curv, * A, * B, * B0, * Cov, * fb, ** Gr, * dFdp, * errs;
+	double* cN, * cE, * wcN, * wcE, *c1s, *c2s, *c1l, *c2l;
 	double* pr, * prn, * sumy, * sumy2, * sumsigma, * sumfy, * sumf, * sumf2, * limbdarks;
+	double* sumsigmaN, * sumsigmaE, * sumcN, * sumcE, * sumc1, * sumc2;
+	int* sizes, * starts;
 
-	int consnumber, * consindex;
-	double* constraints, * consleft, * consright, * consvars;
+	int consnumber, *consindex;
+	double* constraints, * consleft, * consright, *consvars;
 	int modnumber;
 
 	double Tol;
 
-	void (LevMar::* PrintOut)(double*);
-	void (LevMar::* PrintFile)(FILE*, double, bool);
+//	void (LevMar::* PrintOut)(double*);
+//	void (LevMar::* PrintFile)(FILE*, double, bool);
+	void PrintOut(double*);
+	void PrintFile(char *filename, double, bool);
 
 	bumper* stepchain, * bumperlist, * laststep;
 
@@ -54,12 +60,14 @@ public:
 	void ReadFiles(int, char**);
 	int InitCond(double* presigmapr, double* preleftlim, double* prerightlim);
 	void ReadCurve();
+	void ReadAncillary();
 	void ReadOptions();
 	int Run();
 	double ChiSquared(double*);
 	void Grad();
+	void EvaluateModel(double *pr, int filter, int ips);
 	void Covariance();
-	double ComputeConstraint(double* pr, int i);
+	double ComputeConstraint(double *pr, int i);
 
 	void PrintOutPS(double*);
 	void PrintOutPX(double*);

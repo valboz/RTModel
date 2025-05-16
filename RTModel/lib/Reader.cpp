@@ -28,7 +28,7 @@ double thresholdoutliers = 10; // Threshold for removing outliers
 
 struct datapoint {
 	datapoint* prev, * next;
-	double t, y, err, sig, basesig;
+	double t, y, err, sig, basesig, Dec, errDec, RA, errRA;
 	int dn;
 };
 
@@ -40,17 +40,19 @@ struct dataset {
 
 	dataset();
 	~dataset();
-	void addpoint(double, double, double);
+	void addpoint(double, double, double, double, double, double, double);
+	void deletepoint(datapoint*);
+	void swappoints(datapoint*, datapoint*);
 };
 
 #define _computesig\
-	p->sig=(p->y-p->prev->y);\
-	pc=(p->t-p->prev->t)/tau;\
-	p->sig*=p->sig/(p->err*p->err + p->prev->err*p->prev->err);\
-	p->sig+=pc*pc;\
-	p->sig *= p->basesig;
-
-
+	if(p->err>0){\
+		p->sig=(p->y-p->prev->y);\
+		pc=(p->t-p->prev->t)/tau;\
+		p->sig*=p->sig/(p->err*p->err + p->prev->err*p->prev->err);\
+		p->sig+=pc*pc;\
+		p->sig *= p->basesig;\
+	}else p->sig = 1.e100;
 
 int main(int argc, char* argv[])
 {
@@ -60,7 +62,7 @@ int main(int argc, char* argv[])
 	char titstring[256] = "", nostr[2], * undersc;
 	char command[256], buffer[256];
 	double value;
-	double t, y, err, yr, errr, w1, w2;
+	double t, y, err, Dec, errDec, RA, errRA, yr, errr, w1, w2;
 	FILE* f;
 	int ifile, flag, nps, normalized = 0, satellite;
 	double pc, residual, residual1, residual2, outlier, crosscheck, weight, minfac, maxlength;
@@ -156,6 +158,7 @@ int main(int argc, char* argv[])
 	for (auto const& itr : directory_iterator(".")) {
 		string curfile = itr.path().filename().string();
 		if (regex_match(curfile, searchstring)) {
+			int ncolumns;
 			strcpy(filename, curfile.c_str());
 			if (!datalist) {
 				curdataset = datalist = new dataset;
@@ -172,48 +175,22 @@ int main(int argc, char* argv[])
 			fscanf(f, "%[\n]", nostr);
 			while (fscanf(f, "%[^\n]", titstring) == 1) {
 				fscanf(f, "%[\n]", nostr);
-				sscanf(titstring, "%lf %lf %lf", &y, &err, &t);
-				// Sanity checks on individual point
-				if (y < 90 && err >0) {
-					curdataset->addpoint(t, y, err);
+				ncolumns = sscanf(titstring, "%lg %lg %lg %lg %lg %lg %lg", &y, &err, &t, &Dec, &errDec, &RA, &errRA);
+				if (y > -1.e100 && err > -1.e100 && t > -1.e100) {
+					if (ncolumns < 7) {
+						Dec = errDec = RA = errRA = -1;
+					}
+					// Sanity checks on individual point
+					//if (y < 90 && err >0) {
+					curdataset->addpoint(t, y, err, Dec, errDec, RA, errRA);
+					//}
 				}
 			}
 			fclose(f);
 			printf("\npoints: %d", curdataset->length);
 		}
 	}
-	//auto itr = directory_iterator(".");
-	//while (!itr._At_end()) {
-	//	string curfile = (*itr).path().filename().string();
-	//	if (regex_match(curfile, searchstring)) {
-	//		strcpy(filename, curfile.c_str());
-	//		if (!datalist) {
-	//			curdataset = datalist = new dataset;
-	//		}
-	//		else {
-	//			curdataset->next = new dataset;
-	//			curdataset->next->prev = curdataset;
-	//			curdataset = curdataset->next;
-	//		}
-	//		printf("\n%s", filename);
-	//		strcpy(curdataset->label,filename);
-	//		f = fopen(filename, "r");
-	//		fscanf(f, "%[^\n]", titstring);
-	//		fscanf(f, "%[\n]", nostr);
-	//		while (fscanf(f, "%[^\n]", titstring) == 1) {
-	//			fscanf(f, "%[\n]", nostr);
-	//			sscanf(titstring, "%lf %lf %lf", &y, &err, &t);
-	//			// Sanity checks on individual point
-	//			if (y < 90 && err >0) {
-	//				curdataset->addpoint(t, y, err);
-	//			}
-	//		}
-	//		fclose(f);
-	//		printf("\npoints: %d", curdataset->length);
-	//		fclose(f);
-	//	}
-	//	itr++;
-	//}
+
 	current_path(eventname);
 
 	// Sort lists
@@ -230,10 +207,7 @@ int main(int argc, char* argv[])
 			while (p1) {
 				if (p1->t == pmax->t) {
 					p2 = p1->prev;
-					if (p1->prev)	p1->prev->next = p1->next;
-					if (p1->next)	p1->next->prev = p1->prev;
-					delete p1;
-					curdataset->length--;
+					curdataset->deletepoint(p1);
 					p1 = p2;
 				}
 				else {
@@ -244,67 +218,15 @@ int main(int argc, char* argv[])
 				p1 = p1->next;
 			}
 			if (p != pmax) {
-				pc = pmax->t;
-				pmax->t = p->t;
-				p->t = pc;
-				pc = pmax->y;
-				pmax->y = p->y;
-				p->y = pc;
-				pc = pmax->err;
-				pmax->err = p->err;
-				p->err = pc;
+				curdataset->swappoints(p, pmax);
+				p = pmax;
 			}
 			p = p->next;
 		}
 
 		curdataset = curdataset->next;
-		//if (curdataset->length <= 3) {
-		//	printf(" discarded!");
-		//	if (curdataset->prev) {
-		//		dataset* predataset = curdataset->prev;
-		//		curdataset = curdataset->next;
-		//		delete predataset->next;
-		//		predataset->next = curdataset;
-		//		if (curdataset) curdataset->prev = predataset;
-		//	}
-		//	else {
-		//		datalist = curdataset->next;
-		//		if (datalist) datalist->prev = 0;
-		//		delete curdataset;
-		//		curdataset = datalist;
-		//	}
-		//}
-		//else {
-		// 			curdataset = curdataset->next;
-		//}
-		//pmax=curdataset->first->next;
-		//while(pmax){
-		//	flag=0;
-		//	p=curdataset->first;
-		//	while(p->t<=pmax->t && p!=pmax) p=p->next;
-		//	if(p!=pmax){
-		//		if(p->t!=pmax->t){
-		//			pc=pmax->t;
-		//			pmax->t=p->t;
-		//			p->t=pc;
-		//			pc=pmax->y;
-		//			pmax->y=p->y;
-		//			p->y=pc;
-		//			pc=pmax->err;
-		//			pmax->err=p->err;
-		//			p->err=pc;
-		//		}else{
-		//			if(p->prev)	p->prev->next=p->next;
-		//			if(p->next)	p->next->prev=p->prev;
-		//			delete p;
-		//			curdataset->length--;
-		//		}
-		//		flag=1;
-		//	}
-		//	if(!flag)	pmax=pmax->next;
-		//}
-	}
 
+	}
 
 	// Estimating error bars for each dataset
 
@@ -315,66 +237,75 @@ int main(int argc, char* argv[])
 	maxlength = -minfac;
 	for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
 		residual = weight = 0;
-		for (p = curdataset->first->next; p; p = p->next) {
-			residual1 = residual2 = 0;
-			if (p->next) {
-				p1 = p->next;
-				if (p1->next) {
-					p2 = p1->next;
-					ft2 = (p->t - p1->t) / (p2->t - p1->t);
-					ft1 = 1 - ft2;
-					y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) * ft2);
-					pc = (p2->t - p->t) / tau;
-					err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err) * exp(pc / tau);
-					w1 = 1 / exp(pc / tau);
-					pc = (p->y - y);
-					residual1 = pc / sqrt(err);
-					yr = y;
-					errr = err;
+		if (curdataset->first->err > 0) {
+			for (p = curdataset->first->next; p; p = p->next) {
+				residual1 = residual2 = w1 = w2 = 0;
+				if (p->next) {
+					p1 = p->next;
+					if (p1->next) {
+						p2 = p1->next;
+						ft2 = (p->t - p1->t) / (p2->t - p1->t);
+						ft1 = 1 - ft2;
+						y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) * ft2);
+						pc = (p2->t - p->t) / tau;
+						err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err) * exp(pc);
+						w1 = 1 / exp(pc);
+						pc = (p->y - y);
+						residual1 = pc / sqrt(err);
+						yr = y;
+						errr = err;
+					}
+				}
+				if (p->prev) {
+					p1 = p->prev;
+					if (p1->prev) {
+						p2 = p1->prev;
+						ft2 = (p->t - p1->t) / (p2->t - p1->t);
+						ft1 = 1 - ft2;
+						y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) / (p2->t - p1->t) * (p->t - p1->t));
+						pc = (p2->t - p->t) / tau;
+						err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err) * exp(-pc);
+						w2 = 1 / exp(-pc);
+						pc = (p->y - y);
+						residual2 = pc / sqrt(err);
+					}
+				}
+				if (residual1 > -1.e100 && residual2 > -1.e100) {
+					residual1 = residual1;
+				}
+				else {
+					residual1 = residual1;
+				}
+				outlier = residual1 * residual1 + residual2 * residual2;
+				crosscheck = (y - yr);
+				crosscheck *= crosscheck;
+				crosscheck /= (err + errr);
+				if (residual1 != 0 && residual2 != 0 && crosscheck <9 && sqrt(outlier) >thresholdoutliers) {
+					printf("\nOutlier found: %lf %lf %lf", p->t, p->y, sqrt(outlier));
+					p1 = p->prev;
+					curdataset->deletepoint(p);
+					/*p2 = p->next;
+					p1->next = p2;
+					p2->prev = p1;
+					delete p;
+					curdataset->length--;*/
+					p = p1;
+				}
+				else {
+					residual += outlier;
+					weight += w1 + w2;
 				}
 			}
-			if (p->prev) {
-				p1 = p->prev;
-				if (p1->prev) {
-					p2 = p1->prev;
-					ft2 = (p->t - p1->t) / (p2->t - p1->t);
-					ft1 = 1 - ft2;
-					y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) / (p2->t - p1->t) * (p->t - p1->t));
-					pc = (p2->t - p->t) / tau;
-					err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err) * exp(-pc / tau);
-					w2 = 1 / exp(-pc / tau);
-					pc = (p->y - y);
-					residual2 = pc / sqrt(err);
-				}
+			// 		residual*=0.5*curdataset->length/weight;
+			residual = (residual + 1.) / (weight + 1.);
+			pc = sqrt(residual);
+			printf("\n%s", curdataset->label);
+			printf("\nResidual: %le      Length: %d      Weight: %le       Normalization factor: %le", residual, curdataset->length, weight, pc);
+			curdataset->first->sig = pc;
+			if (curdataset->length > maxlength) {
+				minfac = pc;
+				maxlength = curdataset->length;
 			}
-			outlier = residual1 * residual1 + residual2 * residual2;
-			crosscheck = (y - yr);
-			crosscheck *= crosscheck;
-			crosscheck /= (err + errr);
-			if (residual1 != 0 && residual2 != 0 && crosscheck <9 && sqrt(outlier) >thresholdoutliers) {
-				printf("\nOutlier found: %lf %lf %lf", p->t, p->y, sqrt(outlier));
-				p1 = p->prev;
-				p2 = p->next;
-				p1->next = p2;
-				p2->prev = p1;
-				delete p;
-				curdataset->length--;
-				p = p1;
-			}
-			else {
-				residual += outlier;
-				weight += w1 + w2;
-			}
-		}
-		// 		residual*=0.5*curdataset->length/weight;
-		residual = (residual + 1.) / (weight + 1.);
-		pc = sqrt(residual);
-		printf("\n%s", curdataset->label);
-		printf("\nResidual: %le      Length: %d      Weight: %le       Normalization factor: %le", residual, curdataset->length, weight, pc);
-		curdataset->first->sig = pc;
-		if (curdataset->length > maxlength) {
-			minfac = pc;
-			maxlength = curdataset->length;
 		}
 	}
 
@@ -383,11 +314,13 @@ int main(int argc, char* argv[])
 	if (normalized < 0.5) {
 		printf("\n\n- Re-normalizing error bars");
 		for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
-			pc = curdataset->first->sig;// / minfac;
-			for (p = curdataset->first; p; p = p->next) {
-				p->err *= pc;
+			if (curdataset->first->err > 0) {
+				pc = curdataset->first->sig;// / minfac;
+				for (p = curdataset->first; p; p = p->next) {
+					p->err *= pc;
+				}
+				curdataset->first->sig = 0;
 			}
-			curdataset->first->sig = 0;
 		}
 	}
 
@@ -402,7 +335,7 @@ int main(int argc, char* argv[])
 			datapoint** chunkfirst, ** chunklast;
 			int nchunks, ns, imaxdev;
 			double* devs;
-			double sy, sy2, ss, maxdev;
+			double sy, sy2, scury2, mean, dev, ss, maxdev;
 			printf("\n%s", curdataset->label);
 			// Divide dataset in chunks separated by gaps longer than 30 days
 			chunkfirst = (datapoint**)malloc(sizeof(chunkfirst));
@@ -435,7 +368,21 @@ int main(int argc, char* argv[])
 					ss += 1 / (p->err * p->err);
 					ns++;
 				}
-				devs[ichunk] = sqrt((sy2 - sy * sy / ss) / ns);
+				//				devs[ichunk] = sqrt((sy2 - sy * sy / ss) / ns);
+				mean = sy / ss;
+				scury2 = devs[ichunk] = 0;
+				for (p = chunkfirst[ichunk]; p != chunklast[ichunk]->next; p = p->next) {
+					dev = p->y - mean;
+					if (dev > 0) {
+						dev /= p->err;
+						scury2 += dev * dev;
+					}
+					else {
+						if (scury2 > devs[ichunk]) devs[ichunk] = scury2;
+						scury2 = 0;
+					}
+				}
+				if (scury2 > devs[ichunk]) devs[ichunk] = scury2;
 				// Note chunk with maximal deviation (should be peak season)
 				if (devs[ichunk] > maxdev) {
 					maxdev = devs[ichunk];
@@ -448,7 +395,7 @@ int main(int argc, char* argv[])
 				printf("\nSeasons other than peak season considered less significant in re-binning");
 				for (int ichunk = 0; ichunk < nchunks; ichunk++) {
 					if (ichunk != imaxdev) {
-						double fac = devs[ichunk] / maxdev;
+						double fac = (devs[ichunk] + 1.e-10) / (maxdev + 1.e-10);
 						fac *= fac;
 						for (p = chunkfirst[ichunk]; p != chunklast[ichunk]->next; p = p->next) {
 							p->basesig = fac;
@@ -501,7 +448,7 @@ int main(int argc, char* argv[])
 	nps = 0;
 	while (pmaxdataset) {
 		curdataset = pmaxdataset->next;
-		if (pmaxdataset->length < 4) {
+		if (pmaxdataset->length < 2) {
 			printf("\n- Discarding: %s", pmaxdataset->label);
 			if (pmaxdataset->prev) {
 				pmaxdataset->prev->next = pmaxdataset->next;
@@ -518,6 +465,7 @@ int main(int argc, char* argv[])
 		}
 		pmaxdataset = curdataset;
 	}
+
 
 	// Rebin useless points, reducing the number of points to npmax
 
@@ -543,41 +491,28 @@ int main(int argc, char* argv[])
 		p->t = (p->t * w1 + pmax->t * w2) / (w1 + w2);
 		p->y = (p->y * w1 + pmax->y * w2) / (w1 + w2);
 		p->err = 1 / sqrt(w1 + w2);
-		p->next = pmax->next;
-		//			printf("\n%lf %le %le",p->t,p->y,p->err);
-
-		if (pmax->next) {
-			pmax->next->prev = p;
+		if (p->errDec > 0) {
+			w1 = 1 / (p->errDec * p->errDec);
+			w2 = 1 / (pmax->errDec * pmax->errDec);
+			p->Dec = (p->Dec * w1 + pmax->Dec * w2) / (w1 + w2);
+			p->errDec = 1 / sqrt(w1 + w2);
+			w1 = 1 / (p->errRA * p->errRA);
+			w2 = 1 / (pmax->errRA * pmax->errRA);
+			p->RA = (p->RA * w1 + pmax->RA * w2) / (w1 + w2);
+			p->errRA = 1 / sqrt(w1 + w2);
 		}
-		else {
-			pmaxdataset->last = p;
-		}
-		pmaxdataset->length--;
-		delete pmax;
+		pmaxdataset->deletepoint(pmax);
 		nps--;
 
 		if (p->t > -1.e99 && p->y > -1.e99) {
 		}
 		else {
-			if (p->prev) {
-				p->prev->next = p->next;
-			}
-			else {
-				datalist->first = p->next;
-			}
-			if (p->next) {
-				p->next->prev = p->prev;
-			}
-			else {
-				datalist->last = p->prev;
-			}
-			delete p;
-			pmaxdataset->length--;
+			pmaxdataset->deletepoint(p);
 			nps--;
 		}
 
 
-		if (pmaxdataset->length < 4) {
+		if (pmaxdataset->length < 2) {
 			if (pmaxdataset->prev) {
 				pmaxdataset->prev->next = pmaxdataset->next;
 			}
@@ -618,8 +553,8 @@ int main(int argc, char* argv[])
 		satellite = (*undersc <= '9' && *undersc > '0') ? (*undersc) - '0' : 0; // satellite data should have names like ZOB1501241.dat where 1.dat distinguishes satellites data
 		for (p = curdataset->first; p; p = p->next) {
 			y = pow(10., -0.4 * p->y);
-			err = p->err * y * 0.9210340371976184;
-			fprintf(f, "%d %.10le %.10le %.10le %d\n", ifile, p->t, y, err, satellite);
+			err = (p->err > 0) ? p->err * y * 0.9210340371976184 : p->err;
+			fprintf(f, "%d %.10le %.10le %.10le %d %.10le %.10le %.10le %.10le\n", ifile, p->t, y, err, satellite, p->Dec, p->errDec, p->RA, p->errRA);
 		}
 		ifile++;
 	}
@@ -658,12 +593,16 @@ dataset::~dataset() {
 	}
 }
 
-void dataset::addpoint(double t, double y, double err) {
+void dataset::addpoint(double t, double y, double err, double Dec, double errDec, double RA, double errRA) {
 	datapoint* p;
 	p = new datapoint;
 	p->t = t;
 	p->y = y;
 	p->err = err;
+	p->Dec = Dec;
+	p->errDec = errDec;
+	p->RA = RA;
+	p->errRA = errRA;
 	if (length) {
 		p->prev = last;
 		last->next = p;
@@ -677,4 +616,83 @@ void dataset::addpoint(double t, double y, double err) {
 	p->sig = 0;
 	p->basesig = 1;
 	length++;
+}
+
+void dataset::deletepoint(datapoint* pdel) {
+	datapoint* p;
+	if (pdel == first) {
+		first = pdel->next;
+		if (first) {
+			first->prev = 0;
+		}
+		else {
+			last = 0;
+		}
+	}
+	else {
+		if (pdel == last) {
+			last = pdel->prev;
+			last->next = 0;
+		}
+		else {
+			pdel->prev->next = pdel->next;
+			pdel->next->prev = pdel->prev;
+		}
+	}
+	delete pdel;
+	length--;
+}
+
+void dataset::swappoints(datapoint* p1, datapoint* p2) {
+	datapoint* p1p, * p1n, * p2p, * p2n;
+	if (first == p1) {
+		first = p2;
+	}
+	else {
+		if (first == p2) {
+			first = p1;
+		}
+	}
+
+	if (last == p1) {
+		last = p2;
+	}
+	else {
+		if (last == p2) {
+			last = p1;
+		}
+	}
+	p1p = p1->prev;
+	p1n = p1->next;
+	p2p = p2->prev;
+	p2n = p2->next;
+	if (p1n == p2) {
+		if (p1p) p1p->next = p2;
+		p2->prev = p1p;
+		p2->next = p1;
+		p1->prev = p2;
+		p1->next = p2n;
+		if (p2n) p2n->prev = p1;
+	}
+	else {
+		if (p2n == p1) {
+			if (p2p) p2p->next = p1;
+			p1->prev = p2p;
+			p1->next = p2;
+			p2->prev = p1;
+			p2->next = p1n;
+			if (p1n) p1n->prev = p2;
+		}
+		else {
+			if (p1p) p1p->next = p2;
+			p2->prev = p1p;
+			p2->next = p1n;
+			if (p1n) p1n->prev = p2;
+			if (p2p) p2p->next = p1;
+			p1->prev = p2p;
+			p1->next = p2n;
+			if (p2n) p2n->prev = p1;
+		}
+	}
+
 }
