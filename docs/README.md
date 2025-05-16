@@ -66,6 +66,8 @@ Astrometric information on a microlensing event can also be incorporated. The fo
 
 - [Astrophotometric datasets](Astrophotometric.md)
 
+- [Astrometric plots](AstrometricPlots.md)
+
 - [High-resolution imaging observations](HighResolutionImaging.md)
 
 Some more miscellaneous functionalities can be useful for diagnostics and customization
