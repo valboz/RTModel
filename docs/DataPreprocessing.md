@@ -25,9 +25,9 @@ After the execution of `Reader`, you may call the `run()` function to complete t
 
 The `Reader` module performs several operations on the original data to improve the chances of a successful modeling run and limit the computational time. All these operations can be fully controlled by the user through specific options. In particular:
 
-- Data are re-binned until the number of data points is contained within the desired amount;
 - Error bars are re-normalized based on the assessment of local scatter;
 - Outliers are removed;
+- Data are re-binned until the number of data points is contained within the desired amount;
 - Datasets left with less than 2 points are ignored.
 
 For details about the algorithms used in this pre-processing, please refer to the [RTModel paper](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract).
