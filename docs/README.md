@@ -62,7 +62,15 @@ Advanced users may attempt a deeper understanding of the modeling steps and opti
 
 - [Final assessment and results](FinalAssessment.md)
 
-- [Animating fits](Animation.md)
+Astrometric information on a microlensing event can also be incorporated. The following pages discuss possible cases.
+
+- [Astrophotometric datasets](Astrophotometric.md)
+
+- [High-resolution imaging observations](HighResolutionImaging.md)
+
+Some more miscellaneous functionalities can be useful for diagnostics and customization
+
+- [Animation of the fit process](Animation.md)
 
 - [Template library customization](TemplateLibraries.md)
 
