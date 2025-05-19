@@ -1,4 +1,4 @@
-[Back to **Final assessment**](FinalAssessment.md)
+[Back to **High-Resolution Observations**](HighResolutionImaging.md)
 
 # Animating fits
 
