@@ -32,6 +32,18 @@ In the source dataset, both epochs report '0' for the astrometric coordinates RA
 
 In principle, `RTModel` is perfectly able to deal also with the case in which the source and the lens positions are measured with respect to an absolute reference frame. In this case, at the second epoch both will have some non-zero astrometric shift from the original position.
 
+## Modeling and results
+
+The modeling process flows identically to the case of [astrophotometric datasets](Astrophotometric.md). In the directory `/events`, the file [HRevent.zip`](/event/HRevent.zip) contains an example with simulated High-Resolutions observations.
+
+In the end, the astrometric plot for the lens will look like this
+
+```
+myplot.showastrometry()
+```
+
+
+
 
 
 [Go to **Animaton of the Fit process**](Animation.md)
