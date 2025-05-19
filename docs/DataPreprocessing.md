@@ -41,7 +41,7 @@ The user may specify his/her own options to drive the pre-processing to the desi
 ```
 import RTModel
 rtm = RTModel.RTModel('/event001')
-rtm.config_Reader(binning = 4000, tau = 0.1, otherseasons = 1, renormalize = 1, thresholdoutliers = 10)
+rtm.config_Reader(binning = 4000, tau = 0.1, otherseasons = 10, renormalize = 1, thresholdoutliers = 10)
 rtm.run()
 ```
 
@@ -53,7 +53,7 @@ Here we describe the options in detail with their default values:
 
 - `binning = 4000`: the maximum number of data points you want to model. If the original datasets total to less than `binning` they are left untouched.
 - `tau = 0.1`: The timescale (in days) used for the assessment of local scatter and for re-binning. In a first approximation, `RTModel` considers variations below `tau` as possible scatter.
-- `otherseasons = 1`: how to treat seasons other than the season containing the peak value: 0 for including all seasons, 1 to downgrade the significance of other seasons in the re-binning process, 2 to remove all seasons other than the peak season.
+- `otherseasons = 10`: how to treat seasons other than the season containing the peak value: 0 for including all seasons; a positive value will downgrade the significance of other seasons in the re-binning process by a factor `1/otherseasons`; a negative value removes all seasons other than the peak season.
 - `renormalize = 1`: if non-zero, all datasets are re-normalized based on the scatter assessment.
 - `thresholdoutliers = 10`: threshold in sigmas to remove outliers.
 
