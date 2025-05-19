@@ -42,6 +42,7 @@ In the end, the astrometric plot for the lens will look like this
 myplot.showastrometry()
 ```
 
+<img src="figs/fig_HRimaging.png" width = 500>
 
 
 
