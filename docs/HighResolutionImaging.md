@@ -4,4 +4,4 @@
 
 
 
-[Go to **Animation of Fits**](Animation.md)
+[Go to **Animaton of the Fit process**](Animation.md)
