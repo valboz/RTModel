@@ -31,6 +31,8 @@ myplot.showastrometry()
 
 <img src="figs/fig_astro.png" width = 500>
 
+Only the first astrometric series found is displayed, since the centroid trajectory also depends on the blending fraction, which varies for each telescope/filter. If we want to show a specific astrometric series, we just have to add the number of the telescope in the order it appears in the legend of the light curve, starting from zero: `myplot.showastrometry(1)`.
 
+In the example shown above, we note that the error bars are much larger than the astrometric displacement, having assumed an uncertainty of 1 milliarcsecond in our simulation. Astrometric data in the years following the microlensing peak are very precious to fix the proper motion and the source parallax.
 
 [Go to **High-Resolution Imaging**](HighResolutionImaging.md)
