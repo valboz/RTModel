@@ -63,7 +63,7 @@ class RTModel:
             for cons in constraints:
                 f.write(cons[0] + ' = '+ str(cons[1]) + ' '+ str(cons[2]) + ' '+ str(cons[3]) + ' ' + '\n')
 
-    def config_Reader(self, tau = 0.1, binning = 4000, otherseasons = 1, renormalize = 1, thresholdoutliers = 10):
+    def config_Reader(self, tau = 0.1, binning = 4000, otherseasons = 10, renormalize = 1, thresholdoutliers = 10):
         self.Reader_tau= tau # conventional correlation time for consecutive points
         self.Reader_binning = binning # maximum number of points left after re-binning
         self.Reader_otherseasons = otherseasons # How to use other seasons (0 = Yes, 1 = decrease significance, 2 = remove)
