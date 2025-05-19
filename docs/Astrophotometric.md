@@ -38,6 +38,8 @@ If we have Declination and Right Ascension of our microlensing event with the re
 
 As usual, the first line is just a header and is ignored by `RTModel`. Dec and RA indicate the angular displacements in milliarcseconds from a fixed reference point (decided by the observer) in the North and East directions respectively.
 
+In the directory [`/events`](/events) we have an example of an astrophotometric event ([`astroevent001.zip'](/events/astroevent001.zip) with one purely photometric dataset and an astrophotometric dataset that can be useful to understand how to prepare such datasets.
+
 We caution that for the purpose of [binning](DataPreprocessing.md#pre-processing-operations) the astrometric undertainties are not taken into account. Re-binning affects photometry and astrometry at the same time.
 
 ## Astrophotometric models
