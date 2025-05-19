@@ -35,7 +35,7 @@ myplot.showastrometry()
 
 Only the first astrometric series found is displayed, since the centroid trajectory also depends on the blending fraction, which varies for each telescope/filter. If we want to show a specific astrometric series, we just have to add the number of the telescope in the order it appears in the legend of the light curve, starting from zero: `myplot.showastrometry(1)`.
 
-In the example shown above, we note that the error bars are much larger than the astrometric displacement, having assumed an uncertainty of 1 milliarcsecond in our simulation. Astrometric data in the years following the microlensing peak are very precious to fix the proper motion and the source parallax.
+In the example shown above, we note that the error bars are much larger than the astrometric displacement, having assumed an uncertainty of 1 milliarcsecond in our simulation. Astrometric data in the years following the microlensing peak are very precious to fix the proper motion and the source parallax. As explained in [Data pre-processing](DataPreprocessing.md), we have let `RTModel` re-bin the data giving more weight to data in the peak season. Therefore, the data in the following years have been re-binned and appear with smaller error bars. 
 
 ## RA and Dec timeseries
 
