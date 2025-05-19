@@ -1,4 +1,4 @@
-[Back to **Animating fits**](Animation.md)
+[Back to **Animaton of the Fit process**](Animation.md)
 
 # Template libraries
 
