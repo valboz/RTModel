@@ -23,7 +23,7 @@ plm.plotchain(eventname,model,parameter1,parameter2)
 
 The output will look like this
 
-<img src="plotchain.png" width = 400>
+<img src="figs/plotchain.png" width = 400>
 
 The `plotchain()` function shows the chains of steps taken by the Levenberg-Marquardt fit from the initial condition to the minima found. The blue line is the first fit, while the following fits after the bumping mechanism described in [Fitting](Fitting.md) are shown with different colors. Each minimum is marked by a filled circle. The parameter space is identified by the two values given as `parameter1,parameter2`. The order of parameters is the one specified in [Model categories](ModelCategories.md).
 
@@ -38,7 +38,7 @@ plm.plotmodel(eventname = eventname, modelfile = stepchainfile, printpars = Fals
 
 The output is a gif file `ani.gif` generated in the directory `/event001` which looks like this
 
-<img src="ani.gif" width = 900>
+<img src="figs/ani.gif" width = 900>
 
 The individual frames are contained in a subdirectory `/tmpssteps`.
 
@@ -50,7 +50,7 @@ If you want to show the gif file in a Jupyter notebook you may use the following
 
 ```
 from IPython.display import Image
-Image(filename = 'ani.gif')
+Image(filename = 'figs/ani.gif')
 ```
 
 [Go to **Template libraries**](TemplateLibraries.md)
