@@ -44,7 +44,41 @@ myplot.showastrometry()
 
 <img src="figs/fig_HRimaging.png" width = 500>
 
+The lens centroid (calculated ignoring the source) interpolates the two data points.
 
+With only two observations, the source parallax remains unconstrained and this causes infinite uncertainty on all astrometric parameters:
+
+
+```
+├─────────┼─────────────────────┤
+│ muS_Dec │ -0 +- 98981         │
+├─────────┼─────────────────────┤
+│ muS_RA  │ 0 +- 1898988        │
+├─────────┼─────────────────────┤
+│ piS     │ 0 +- 5725837        │
+├─────────┼─────────────────────┤
+│ thetaE  │ 2 +- 116            │
+╘═════════╧═════════════════════╛
+```
+
+However, we have imposed that the reference frame follows the source, so that the proper motion should be zero by construction. if we repeat the fit by imposing the source proper motion to be zero, we retrieve accurate information for the remaining parameters. In order to do that, before the modeling run we have to impose the following [constraint](Constraints.md)
+```
+rtm.set_constraints([['muSDec',0,-.001,.001],['muSRA',0,-.001,.001]])
+```
+
+In this way, the reported uncertainties will be realistic
+
+```
+├─────────┼─────────────────────┤
+│ muS_Dec │ 0.00000 +- 0.00100  │
+├─────────┼─────────────────────┤
+│ muS_RA  │ 0.00000 +- 0.00100  │
+├─────────┼─────────────────────┤
+│ piS     │ 0.05 +- 0.77        │
+├─────────┼─────────────────────┤
+│ thetaE  │ 1.57 +- 0.11        │
+╘═════════╧═════════════════════╛
+```
 
 
 [Go to **Animaton of the Fit process**](Animation.md)
