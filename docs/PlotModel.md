@@ -19,7 +19,7 @@ myplot = plm.plotmodel(eventname = event, modelfile = model)
 
 The output will look like this
 
-<img src="plotmodel_fig1.png" width = 900>
+<img src="figs/plotmodel_fig1.png" width = 900>
 
 On the left, we have the model light curve with the data points. Residuals are also shown below. the source trajectory and the caustics are shown on the right. The plots are followed by the list of parameters with their errors. For each telescope we also have the blending fraction $F_{background}/F_{source}$ and the baseline magnitude. Finally, the chi square for the model is displayed.
 
