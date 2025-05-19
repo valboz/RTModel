@@ -21,7 +21,7 @@ The output will look like this
 
 <img src="figs/fig_astrophot.png" width = 900>
 
-
+We note that the parameters table contains the assessment for the four additional astrometric parameters `muS_Dec, muS_RA, piS, thetaE`, as explained [before](Astrophotometric.md).
 
 
 [Go to **High-Resolution Imaging**](HighResolutionImaging.md)
