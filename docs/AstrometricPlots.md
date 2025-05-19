@@ -23,5 +23,14 @@ The output will look like this
 
 We note that the parameters table contains the assessment for the four additional astrometric parameters `muS_Dec, muS_RA, piS, thetaE`, as explained [before](Astrophotometric.md).
 
+Now, to see the trajectory of the centroid in the sky, we just type
+
+```
+myplot.showastrometry()
+```
+
+<img src="figs/fig_astro.png" width = 500>
+
+
 
 [Go to **High-Resolution Imaging**](HighResolutionImaging.md)
