@@ -1,6 +1,6 @@
 [Back to **High-Resolution Imaging**](HighResolutionImaging.md)
 
-# Animating fits
+# Animation of the Fit process
 
 It is sometimes useful to analyze the fitting process by simple visualization tools. This is possible by the `RTModel.plotmodel` subpackage, which also includes the possibility to show an animation of the fitting process.
 
