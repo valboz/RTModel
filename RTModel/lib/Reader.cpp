@@ -22,7 +22,7 @@ char systemslash = '/';
 
 double tau = 0.1; // conventional correlation time for consecutive points
 int npmax = 4000; // maximum number of points left after re-binning
-int otherseasons = 10; // How to use other seasons
+int otherseasons = 100; // How to use other seasons
 int renormalize = 1; // Re-normalize error bars
 double thresholdoutliers = 10; // Threshold for removing outliers
 
