@@ -2,15 +2,15 @@
 
 # Astrometric Plots
 
-`RTModel` comes with a subpackage that is intended for fast and basic visualization of results with a minimal number of options.
+The subpackage `RTModel.plotmodel` contains functions for plotting the astrometric centroid trajectory and comparing with the observations.
 
-Assuming you have a completed run on some event in its directory `/event001`, we may plot the best models with the following code
+Assuming you have a completed run on some astrophotometric event in its directory `/astroevent001`, we proceed as for purely photometric events to [plot the light curve](PlotModel.ms) as usual
 
 ```
 import RTModel.plotmodel as plm
 import glob
 
-event = '/event001'
+event = '/astroevent001'
 models = glob.glob(event +'/FinalModels/*')
 model = models[0] # let's plot the first of the best models
 
@@ -20,6 +20,8 @@ myplot = plm.plotmodel(eventname = event, modelfile = model)
 The output will look like this
 
 <img src="figs/fig_astrophot.png" width = 900>
+
+
 
 
 [Go to **High-Resolution Imaging**](HighResolutionImaging.md)
