@@ -68,7 +68,7 @@ plm.plotmodel(eventname = event, modelfile = model, satellitedir = '/satellitedi
 
 The plots will include the light curves for ground datasets and for satellite datasets with different colors. The same colors are used to represent the source trajectories as seen from ground and satellite in the plot on the right:
 
-<img src="plotmodel_fig2.png" width = 900>
+<img src="figs/plotmodel_fig2.png" width = 900>
 
 
 [Go to **Limb darkening**](LimbDarkening.md)
