@@ -22,7 +22,7 @@ char systemslash = '/';
 
 double tau = 0.1; // conventional correlation time for consecutive points
 int npmax = 4000; // maximum number of points left after re-binning
-int otherseasons = 1; // How to use other seasons
+int otherseasons = 10; // How to use other seasons
 int renormalize = 1; // Re-normalize error bars
 double thresholdoutliers = 10; // Threshold for removing outliers
 
@@ -327,7 +327,7 @@ int main(int argc, char* argv[])
 
 	// Calculate peak season
 
-	if (otherseasons > 0) {
+	if (otherseasons != 0) {
 
 		printf("\n\n- Calculate peak season\n");
 
@@ -391,14 +391,14 @@ int main(int argc, char* argv[])
 				printf("\n%lf --- %lf : dev: %lf", chunkfirst[ichunk]->t, chunklast[ichunk]->t, devs[ichunk]);
 			}
 
-			if (otherseasons == 1) { // Diminish significance of seasons other than peak season
+			if (otherseasons > 0) { // Diminish significance of seasons other than peak season
 				printf("\nSeasons other than peak season considered less significant in re-binning");
 				for (int ichunk = 0; ichunk < nchunks; ichunk++) {
 					if (ichunk != imaxdev) {
-						double fac = (devs[ichunk] + 1.e-10) / (maxdev + 1.e-10);
-						fac *= fac;
+						//						double fac = (devs[ichunk]+1.e-10) /(maxdev + 1.e-10);
+						//						fac *= fac;
 						for (p = chunkfirst[ichunk]; p != chunklast[ichunk]->next; p = p->next) {
-							p->basesig = fac;
+							p->basesig = 1.0 / otherseasons;// fac;
 						}
 					}
 				}
