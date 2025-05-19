@@ -19,7 +19,7 @@ myplot = plm.plotmodel(eventname = event, modelfile = model)
 
 The output will look like this
 
-<img src="plotmodel_fig1.png" width = 900>
+<img src="figs/fig_astrophot.png" width = 900>
 
 
 [Go to **High-Resolution Imaging**](HighResolutionImaging.md)
