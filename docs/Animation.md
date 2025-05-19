@@ -1,4 +1,4 @@
-[Back to **High-Resolution Observations**](HighResolutionImaging.md)
+[Back to **High-Resolution Imaging**](HighResolutionImaging.md)
 
 # Animating fits
 
