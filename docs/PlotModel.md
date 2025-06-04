@@ -33,7 +33,7 @@ Here is a list of arguments available for the `plotmodel` function:
 - `tmin = None`, `tmax = None`: Minimum and maximum time for the plot in units of HJD-2450000. If not specified, the plot is made between t0-2tE and t0+2tE.
 - `timesteps = 300`: Number of steps in time axis.
 - `magmin = None`, `magmax = None`: Minimum and maximum magnitude in the light curve plot. If not specified, these are deduced from the light curve model.
-- `tlabel = 't'`, `maglabel = 'mag'`: Labels for the axes in the light curve plot.
+- `tlabel = 't'`, `maglabel = 'mag'`, `reslabel = 'Res'`: Labels for the axes in the light curve plot.
 - `referencephot = 0`: Dataset to be used as photometric reference for the magnitude axis. All other datasets are rescaled to magnitudes in the system of the chosen dataset. By default the first dataset is chosen.
 - `printpars = True`: If left True, the parameters are printed below the figure, otherwise only the figure is shown.
 - `accuracy = 0.01`: The accuracy of magnification calculations in the plot.
