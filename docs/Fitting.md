@@ -96,7 +96,7 @@ Here we describe the options for `LevMar` in detail indicating their default val
 - `maxsteps = 50`: Maximum number of steps for each fit.
 - `timelimit = 600.0`: Maximum time in seconds allowed for the execution of `LevMar`. If the limit is reached, the execution of the individual fitting is stopped and only the minima found so far will be saved.
 - `bumperpower = 2.0`: Size of the bumper in the parameter space expressed in sigmas. The bumper is created with the shape determined by the local covariance matrix. and the size given by this parameter.
-- `turn_off_secondary_source = False`: if set, the secondary source flux will be set to zero. This is useful to model a source orbiting around a dark object. In this case, the model `BS` has no difference from `PS` and should be removed.
+- `turn_off_secondary_source = False`: if set, the secondary source flux will be set to zero. This is useful to model a source orbiting around a dark object. In this case, the model `BS` has no difference from `PS` and should be removed. We also suggest to set the mass_luminosity_exponent to 1.0 so that the flux ratio parameter is converted to a mass-ratio parameter.
 - `turn_off_secondary_lens = False`: if set, the secondary lens flux will be set to zero. This only affects astrometric trajectories very weakly for binary lens models. It has been introduced to cover the case of a binary lens in which a star orbits a dark object.
 - `mass_luminosity_exponent = 4.0`: in binary source models it is used to relate the flux ratio parameter with the mass ratio.
 - `mass_radius_exponent = 0.9`: in binary source models it is used to relate the mass ratio with the radius ratio.
