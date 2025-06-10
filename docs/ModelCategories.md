@@ -77,7 +77,7 @@ Here we consider two sources and one lens. The two sources have different fluxes
 
 Note that both sources may have positive or negative impact parameters.
 
-The source radius is only given for the primary star, while the secondary star has a source radius calculated by the relation rho2 = rho1 * FR^(0.225), coming from approximate stellar mass-luminosity-radius relations for solar-type stars. In general, we do not expect that both sources have a detectable finite-size effect, so this relation is enforced with the only purpose to avoid the exploration of grossly unphysical models.
+The source radius is only given for the primary star, while the secondary star has a source radius calculated by the relation rho2 = rho1 * FR^(0.225), coming from approximate stellar mass-luminosity-radius relations for solar-type stars. This exponent can be changed by operating on the mass-radius and mass-luminosity exponents, as explained in [Fitting](Fitting.md).
 
 ## Single-lens-binary-source with xallarap (BO)
 
@@ -85,22 +85,24 @@ Here we also include circular orbital motion of the two sources around a common 
 
 | Number | Parameter | Meaning | ln |
 | --- | --- | --- | --- |
-| 1 | u01 | Impact parameter of the primary source |  |
-| 2 | t01 | Closest approach time of the primary source |  |
-| 3 | tE | Einstein time in days | X |
-| 4 | rho1 | Source radius for the primary | X |
-| 5 | xi1 | Xallarap component parallel to the source velocity | |
-| 6 | xi2 | Xallarap component orthogonal to the source velocity | |
-| 7 | omega | Orbital angular velocity in days^-1 |  |
-| 8 | i | Inclination of the orbital plane in radians |  |
-| 9 | phi | Phase of the orbit from the passage on the line of nodes | |
-| 10 | qs | Mass ratio of the secondary to the primary | X |
+| 1 | tE | Einstein time in days | X |
+| 2 | FR | Flux ratio of the secondary to the primary source | X |
+| 3 | u01 | Impact parameter of the primary source |  |
+| 4 | u02 | Impact parameter of the secondary source |  |
+| 5 | t01 | Closest approach time of the primary source |  |
+| 6 | t02 | Closest approach time of the secondary source |  |
+| 7 | rho1 | Source radius for the primary | X |
+| 8 | piN| Parallax component along North |  |
+| 9 | piE | Parallax component along East |  |
+| 10 | gamma1 | Angular velocity parallel to the lens axis |  |
+| 11 | gamma2 | Angular velocity perpendicular to the lens axis |  |
+| 12 | gammaz | Angular velocity along the line of sight |  |
 
-The position of the secondary source is calculated from the position of the primary at any time. See [VBMicrolensing Binary Sources](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/BinarySources.md) for a detailed explanation.
+See [VBMicrolensing Binary Sources](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/BinarySources.md) for a detailed explanation.
 
-Annual parallax is not considered in this model because it can be mimicked by xallarap, as well known and would only induce bad degeneracies in a higher dimensional parameter space. However, satellite observations may distinguish between parallax and xallarap.
+The mass ratio between the two component is calculated as qs = FR^(0.25) and the radius of the secondary is rho2 = rho1*FR^(0.225). These exponents can be changed by operating on the mass-radius and mass-luminosity exponents, as explained in [Fitting](Fitting.md).
 
-Note that the flux ratio is calculated as FR = qs^4 and the radius of the secondary is rho2 = rho1 * qs^0.9. As before, we do not expect that these mass-radius-luminosity relations are strictly needed except for avoiding the exploration of unphysical models.
+Finally, note that we may also [turn off the light from the secondary component](Fitting.md), if we want to model a source orbiting a dark object.
 
 ## Binary-lens-single-source (LS)
 
