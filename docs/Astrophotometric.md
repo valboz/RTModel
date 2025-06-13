@@ -40,7 +40,7 @@ As usual, the first line is just a header and is ignored by `RTModel`. Dec and R
 
 In the directory [`/events`](/events) we have an example of an astrophotometric event ([`astroevent001.zip`](/events/astroevent001.zip)) with one purely photometric dataset and an astrophotometric dataset that can be useful to understand how to prepare such datasets.
 
-We caution that for the purpose of [binning](DataPreprocessing.md#pre-processing-operations) the astrometric undertainties are not taken into account. Re-binning affects photometry and astrometry at the same time.
+We caution that for the purpose of [binning](DataPreprocessing.md#pre-processing-operations) the astrometric uncertainties are not taken into account. Re-binning affects photometry and astrometry at the same time.
 
 ## Astrophotometric models
 
