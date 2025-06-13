@@ -19,6 +19,8 @@ rtm.LevMar('PS0000')
 With this code, we first perform the data pre-processing by `Reader`, we set the initial conditions by `InitCond` and finally launch the fit of the single-lens-single-source model from the first initial condition found in the file `InitCondPS.txt` (see [Initial conditions](InitCond.md)). Initial condition seeds in each `InitCondXX.txt` file are numbered starting from zero (e.g. `PS0011` would be the 12th initial condition).
 
 In the `/event001` directory you will see that the following products appear:
+- In the subfolder `ini/`, the file `LevMar.ini` appears, which contains the current options with which `LevMar` has been launched. 
+- In the same subfolder, the file `Parameters_Ranges.ini` appears, containing the ranges and the maximum step for each parameter.
 - A new subdirectory called `PreModels/` is created with a file `minchi.dat`. This file contains the value of the minimum chi square among all  preliminary models contained in the subdirectories within `PreModels/`.
 - In the subdirectory `PreModels/` there will be a file numbered `PS0000.txt` containing the preliminary models found by this run of `LevMar`.
 
