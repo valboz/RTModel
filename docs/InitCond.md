@@ -43,7 +43,8 @@ The user may specify his/her own options to drive the initial conditions to the 
 ```
 import RTModel
 rtm = RTModel.RTModel('/event001')
-rtm.config_InitCond(npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0)
+rtm.config_InitCond(npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None,
+                    nostatic = False, onlyorbital = False, usesatellite = 0, onlyupdate = False)
 rtm.run()
 ```
 
