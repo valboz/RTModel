@@ -19,6 +19,8 @@ The preliminary models calculated by `RTModel` may occupy 30MB of disk space in 
 rtm.cleanup_preliminary_models()
 ```
 
-Besides the preliminary models, in this directory you will also find the 'stepchain' files, which contain the full list of steps in the fit leading to the calculated preliminary models. These can be visualized by [purposed functions](Animation.md#visualizing-the-step-chain-in-the-parameter-space).
+Preliminary models can be plotted as usual by the [plotmodel](PlotModel.md) module.
+
+Besides the preliminary models, in this directory you will also find the 'stepchain' files, which contain the full list of steps in the fit leading to the calculated preliminary models. These can be visualized by additional functions explained in the next page.
 
 [Go to **Animation of the Fit process**](Animation.md)
