@@ -31,7 +31,7 @@ The `plotchain()` function shows the chains of steps taken by the Levenberg-Marq
 The fit process can be animated by the following code
 
 ```
-stepchainfile = 'PreModels/LS0190/LS0190-stepchain0.dat'
+stepchainfile = 'PreModels/LS0190-stepchain0.dat'
 plm.plotmodel(eventname = eventname, modelfile = stepchainfile, printpars = False, animate = 1,interval = 800)
 ```
 
