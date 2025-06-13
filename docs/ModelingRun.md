@@ -111,6 +111,8 @@ spline.txt               # List of points in the spline approximation used for i
 nature.txt               # Text file containing the final assessment on the event and the list of best models
 ```
 
+In addition, a temporary folder `PreModels/` containing the [preliminary models](PreliminaryModels.md) is deleted at the end of the modeling run.
+
 These files will be explained in the following chapters in due time. You may vision an event with a completed run among the provided examples: [event001done.zip](/events/event001done.zip).
 
 ## Structure of a modeling run
@@ -130,27 +132,5 @@ Each step is described in a dedicated documentation page (see [Summary](README.m
 In case the modeling run is interrupted, it can be resumed by executing the `run()` function again on the same event. The function checks whether the expected output of each step is present and in such case it moves to the next step.
 
 If one of the child processes fails (typically for corrupted data), the output of the process is shown to help the user understand the problem.
-
-### Preliminary models
-
-By default, `RTModel` cleans up all the preliminary models that have not been selected in order to save disk space. However, these can be useful for careful diagnostics of the modeling process. If you want to see these preliminary models, you should run modeling with the `cleanup = False` option:
-```
-rtm.run('/event002', cleanup = False)
-```
-
-At the end of the modeling run, you will also see the directory
-
-```
-PreModels/               # Directory containing all preliminary models calculated by all fits
-```
-
-The preliminary models calculated by `RTModel` may occupy 30MB of disk space in nearly 10000 files. Unless you need some specific debugging or some deeper investigation, we suggest to cleanup the event directory from the directory `/PreModels`, thus saving 99% disk space. You may do it after the modeling run by executing the following line:
-
-```
-rtm.cleanup_preliminary_models()
-```
-
-Besides the preliminary models, in this directory you will also find the 'stepchain' files, which contain the full list of steps in the fit leading to the calculated preliminary models. These can be visualized by [purposed functions](Animation.md#visualizing-the-step-chain-in-the-parameter-space).
-
 
 [Go to **Model categories**](ModelCategories.md)
