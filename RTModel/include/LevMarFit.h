@@ -13,8 +13,7 @@ using namespace std::filesystem;
 #define _LevMarFit
 #define __unmanaged
 
-#include "C:\\Users\\valboz\\Personali\\source\\Projects\\VBMicrolensing\\VBMicrolensing\\VBMicrolensingLibrary.h"
-//#include <VBMicrolensingLibrary.h>
+#include <VBMicrolensingLibrary.h>
 
 class LevMar {
 
