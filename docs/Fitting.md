@@ -80,7 +80,10 @@ The user may specify his/her own options to drive the initial conditions to the 
 ```
 import RTModel
 rtm = RTModel.RTModel('/event001')
-rtm.config_LevMar(nfits = 5, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0)
+rtm.config_LevMar(self, nfits = 6, offsetdegeneracy = 3, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0, 
+                      mass_luminosity_exponent = None, mass_radius_exponent = None, lens_mass_luminosity_exponent = None, 
+                     turn_off_secondary_source = False, turn_off_secondary_lens = False)
+
 rtm.run()
 ```
 
