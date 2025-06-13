@@ -117,7 +117,7 @@ An empty call to `config_LevMar()` with no parameters will reset all variables t
 
 In each modeling run, the options for `LevMar` are stored in the file `LevMar.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run. The function `recover_options()` can be used to load the options from a previous run.
 
-### Parameters ranges and step sizes
+## Parameters ranges and step sizes
 
 Each parameter is left free to vary within a well-defined range. In addition, the maximum variation allowed for a parameter in an individual Levenberg-Marquardt step is also defined in `RTModel`. The values of minimum, maximum and step size for each parameter are stored in the property `parameters_ranges`. For example, if you want to check the default values for the `PS` model category, you may write
 
