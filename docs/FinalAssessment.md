@@ -31,4 +31,4 @@ The `Finalizer` module compares models of different categories according to Wilk
 
 There are no available options for `Finalizer()` since an unsatisfied user may easily vet the models in the directory `Models/` according to his/her own criteria.
 
-[Go to **Animating fits**](Animation.md)
+[Go to **Astrophotometric fits**](Astrophotometric.md)
