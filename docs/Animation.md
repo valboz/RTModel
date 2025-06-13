@@ -4,7 +4,7 @@
 
 It is sometimes useful to analyze the fitting process by simple visualization tools. This is possible by the `RTModel.plotmodel` subpackage, which also includes the possibility to show an animation of the fitting process.
 
-Note that the functions in this section access the `PreModels/` directory. It is not possible to see the animation of the fit if you have already deleted the directory with `cleanup_preliminary_models()` function. 
+Note that the functions in this section access the `PreModels/` directory. It is not possible to see the animation of the fit if you have not decided to keep this directory by the `cleanup = False` option, as explained in [Preliminary Models](PreliminaryModels.md). 
 
 ## Visualizing the step chain in the parameter space
 
