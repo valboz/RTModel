@@ -25,6 +25,10 @@ double maxtime = 1.e100; // 600.0; // Maximum time in seconds for total executio
 double bumperpower = 2.0; // Repulsion factor of bumpers
 double maxbumpcount = 25;
 char parametersfile[256] = ""; // File from which user parameters are read, if any
+double mass_luminosity_exponent = 4.0; // Mass-luminosity exponent for the sources
+double mass_radius_exponent = 0.9; // Mass-radius exponent for the sources
+double lens_mass_luminosity_exponent = 4.0; // Mass-luminosity exponent for the lenses
+bool stepchainsave = false;
 
 std::vector<std::vector<std::string>> parnames = { {"u0","tE","t0","rho"},
 					{"u0","tE","t0","rho","piN","piE"},
@@ -34,7 +38,8 @@ std::vector<std::vector<std::string>> parnames = { {"u0","tE","t0","rho"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz","sz_s","a_s3d"},
-					{"s","q","u0","alpha","rho","tE","t0","s2","q2","beta"} };
+					{"s","q","u0","alpha","rho","tE","t0","s2","q2","beta"},
+					{"s","q","u0","alpha","rho","tE","t0","s2","q2","beta","piN","piE"} };
 std::vector<std::string> astroparnames = { "muSDec", "muSRA", "piS", "thetaE" };
 
 std::vector<std::vector<int>> logposs = { {0, 1, 3},
@@ -45,6 +50,7 @@ std::vector<std::vector<int>> logposs = { {0, 1, 3},
 										{0, 1, 4, 5},
 										{0, 1, 4, 5},
 										{0, 1, 4, 5},
+										{0, 1, 4, 5, 7, 8},
 										{0, 1, 4, 5, 7, 8} };
 
 const double epsilon = 1.e-100;
@@ -56,6 +62,7 @@ LevMar::LevMar(int argc, char* argv[]) {
 	printf("******************************************\n\n\n");
 	printf("This program fits an event from specific initial conditions\n\n");
 	error = 0;
+	it0 = it02 = -1;
 	astrometric = false;
 	nlinpar = 2;
 	// Setting default values
@@ -148,7 +155,7 @@ LevMar::~LevMar() {
 		}
 
 	}
-	if (error < 10) {
+	if (error < 9) {
 		free(sigmapr);
 		free(leftlim);
 		free(rightlim);
@@ -211,6 +218,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 
 		// Read light curve
 		ReadCurve();
+		if (error) return;
 
 		// Establishing model to be fit
 		nps = (astrometric) ? 4 : 0;
@@ -220,10 +228,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			if (modelcode[1] == 'X') {
 				modnumber = 1;
 				nps += 6;
-				ReadOptions();
 				double presigmapr[] = { .5,1.0,5.,2.3,0.1,0.1,         1.0, 1.0, 0.1, 0.2 };
-				double preleftlim[] = { -13.,-6.9,-10.e100,-11.5,-10.,-10.,       -30.0, -30.0, 0.05, 0.001 };
-				double prerightlim[] = { .7,6.9,10.e100,0.0,10.,10.,          30.0, 30.0, 1.0, 30.0 };
+				double preleftlim[] = { -3.0,-6.9,-10.e100,-11.5,-10.,-10.,       -30.0, -30.0, 0.05, 0.001 };
+				double prerightlim[] = { 3.0,6.9,10.e100,0.0,10.,10.,          30.0, 30.0, 1.0, 30.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 2;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
@@ -231,10 +240,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			else {
 				modnumber = 0;
 				nps = 4;
-				ReadOptions();
 				double presigmapr[] = { 1.15,1.0,5.,2.3 };
-				double preleftlim[] = { -13.,-6.9,-10.e100,-11.5 };
-				double prerightlim[] = { .7,6.9,10.e100,0.0 };
+				double preleftlim[] = { -11.0,-6.9,-10.e100,-11.5 };
+				double prerightlim[] = { 1.0,6.9,10.e100,0.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 2;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
@@ -250,10 +260,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			if (modelcode[1] == 'O') {
 				modnumber = 3;
 				nps += 12;
-				ReadOptions();
 				double presigmapr[] = { 1.0,.5,0.5,0.5,1,1,0.5,0.03,0.03,0.01,0.01,0.01,          1.0, 1.0, 0.1, 0.2 };
 				double preleftlim[] = { -6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5,-3.,-3.,-1,-1,1.e-7,       -30.0, -30.0, 0.05, 0.001 };
 				double prerightlim[] = { 6.9,11.5,3.,3.,10.e100,10.e100,0.0,3.,3.,1.,1.,1.,          30.0, 30.0, 1.0, 30.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 4;
+				it02 = 5;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
@@ -262,10 +274,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			else {
 				modnumber = 2;
 				nps = 7;
-				ReadOptions();
 				double presigmapr[] = { 1.0,.5,0.5,0.5,1,1,0.5 };
 				double preleftlim[] = { -6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5 };
 				double prerightlim[] = { 6.9,11.5,3.,3.,10.e100,10.e100,0.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 4;
+				it02 = 5;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
@@ -281,10 +295,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			if (modelcode[1] == 'X') {
 				modnumber = 5;
 				nps += 9;
-				ReadOptions();
 				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,          1.0, 1.0, 0.1, 0.2 };
 				double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,       -30.0, -30.0, 0.05, 0.001 };
 				double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,          30.0, 30.0, 1.0, 30.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
@@ -295,10 +310,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				if (modelcode[1] == 'O') {
 					modnumber = 6;
 					nps += 12;
-					ReadOptions();
 					double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.01,0.01,0.01,          1.0, 1.0, 0.1, 0.2 };
 					double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7,       -30.0, -30.0, 0.05, 0.001 };
 					double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,          30.0, 30.0, 1.0, 30.0 };
+					ReadOptions(preleftlim, prerightlim, presigmapr);
+					it0 = 6;
 					error = InitCond(presigmapr, preleftlim, prerightlim);
 					pr[0] = log(pr[0]);
 					pr[1] = log(pr[1]);
@@ -309,10 +325,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					if (modelcode[1] == 'K') {
 						modnumber = 7;
 						nps += 14;
-						ReadOptions();
-						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.1, 0.1,          1.0, 1.0, 0.1, 0.2 };
+						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.01,0.01,0.01,0.1, 0.1,          1.0, 1.0, 0.1, 0.2 };
 						double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001,       -30.0, -30.0, 0.05, 0.001 };
 						double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,10,10,          30.0, 30.0, 1.0, 30.0 };
+						ReadOptions(preleftlim, prerightlim, presigmapr);
+						it0 = 6;
 						error = InitCond(presigmapr, preleftlim, prerightlim);
 						pr[0] = log(pr[0]);
 						pr[1] = log(pr[1]);
@@ -322,10 +339,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					else {
 						modnumber = 4;
 						nps = 7;
-						ReadOptions();
 						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5. };
 						double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100 };
 						double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100 };
+						ReadOptions(preleftlim, prerightlim, presigmapr);
+						it0 = 6;
 						error = InitCond(presigmapr, preleftlim, prerightlim);
 						pr[0] = log(pr[0]);
 						pr[1] = log(pr[1]);
@@ -339,10 +357,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			if (modelcode[1] == 'X') {
 				modnumber = 9;
 				nps += 12;
-				ReadOptions();
 				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,.1,.4,.1, 1.,1.,          1.0, 1.0, 0.1, 0.2 };
 				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56, -3.,-3.,       -30.0, -30.0, 0.05, 0.001 };
 				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.0, 11.5, 12.56, 3.,3.,          30.0, 30.0, 1.0, 30.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
@@ -354,10 +373,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			else {
 				modnumber = 8;
 				nps = 10;
-				ReadOptions();
 				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5., 0.3, 0.5, 0.3 };
 				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56 };
 				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.0, 11.5, 12.56 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
@@ -408,6 +428,11 @@ void LevMar::ReadCurve() {
 		for (int i = 0; i < np; i++) {
 			fscanf(f, "%d %lg %lg %lg %d %lg %lg %lg %lg", &(filter[i]), &(t[i]), &(y[i]), &(w[i]), &(satel[i]), &(cN[i]), &(wcN[i]), &(cE[i]), &(wcE[i]));
 			if (wcN[i] > 0) astrometric = true; // Check if astrometric set.
+			if (satel[i] > VBM->nsat) {
+				printf("\n! Satellite table %d not found in satellite dir \"%s\"", satel[i], satellitedir);
+				error = 9;
+				break;
+			}
 			if ((i != 0) && (filter[i] > filter[i - 1])) {
 				nfil++;
 			}
@@ -428,7 +453,7 @@ void LevMar::ReadCurve() {
 
 }
 
-void LevMar::ReadOptions() {
+void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presigmapr) {
 	char buffer[3200];
 	char command[256];
 	char value[256], value2[256], value3[256];
@@ -440,6 +465,28 @@ void LevMar::ReadOptions() {
 	if (exists("ini")) {
 		current_path("ini");
 
+		/* Reading parameters ranges */
+
+		f = fopen("Parameters_Ranges.ini", "r");
+		if (f != 0) {
+			strcpy(buffer, modelcode);
+			buffer[2] = 0;
+			while (!feof(f)) {
+				fscanf(f, "%s", command);
+				if (strcmp(buffer, command) == 0) {
+					int npp = (astrometric) ? nps - 4 : nps;
+					for (int i = 0; i < npp; i++) {
+						fscanf(f, "%lg %lg %lg", &preleftlim[i], &prerightlim[i], &presigmapr[i]);
+					}
+				}
+				if (astrometric && strcmp("astrometry", command) == 0) {
+					for (int i = nps - 4; i < nps; i++) {
+						fscanf(f, "%lg %lg %lg", &preleftlim[i], &prerightlim[i], &presigmapr[i]);
+					}
+				}
+			}
+			fclose(f);
+		}
 		/* Reading constraints */
 
 		f = fopen("Constraints.ini", "r");
@@ -577,6 +624,24 @@ void LevMar::ReadOptions() {
 				if (strcmp(command, "parametersfile") == 0) {
 					strcpy(parametersfile, value);
 				}
+				if (strcmp(command, "mass_luminosity_exponent") == 0) {
+					sscanf(value, "%lg", &mass_luminosity_exponent);
+				}
+				if (strcmp(command, "mass_radius_exponent") == 0) {
+					sscanf(value, "%lg", &mass_radius_exponent);
+				}
+				if (strcmp(command, "lens_mass_luminosity_exponent") == 0) {
+					sscanf(value, "%lg", &lens_mass_luminosity_exponent);
+				}
+				if (strcmp(command, "turn_off_secondary_lens") == 0 && strcmp(value, "True") == 0) {
+					VBM->turn_off_secondary_lens = true;
+				}
+				if (strcmp(command, "turn_off_secondary_source") == 0 && strcmp(value, "True") == 0) {
+					VBM->turn_off_secondary_source = true;
+				}
+				if (strcmp(command, "stepchainsave") == 0 && strcmp(value, "True") == 0) {
+					stepchainsave = true;
+				}
 			}
 			fclose(f);
 		}
@@ -584,6 +649,9 @@ void LevMar::ReadOptions() {
 			printf("\n\n- Default options:");
 		}
 	}
+	VBM->mass_luminosity_exponent = mass_luminosity_exponent;
+	VBM->mass_radius_exponent = mass_radius_exponent;
+	VBM->lens_mass_luminosity_exponent = lens_mass_luminosity_exponent;
 	current_path(eventname);
 }
 
@@ -615,9 +683,9 @@ int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim
 		leftlim[i] = preleftlim[i];
 		rightlim[i] = prerightlim[i];
 		fscanf(f, "%lg", &(pr[i]));
-		if (rightlim[i] > 1.e90) {
-			rightlim[i] = pr[i] + 300.0;
-			leftlim[i] = pr[i] - 300.0;
+		if (i == it0 || i == it02) {
+			rightlim[i] += pr[i];
+			leftlim[i] += pr[i];
 		}
 	}
 	fclose(f);
@@ -763,34 +831,19 @@ int LevMar::Run() {
 
 			if (!exists("PreModels")) create_directory("PreModels");
 			current_path("PreModels");
-			if (!exists(outdir)) create_directory(outdir);
-			current_path(outdir);
-			il = 0;
-			if (f = fopen("nlc.dat", "r")) {
-				int i1, i2;
-				fscanf(f, "%d %d", &i1, &i2);
-				if (i2 == i1 + 1) {
-					il = nlc;
+
+			// Removing all existing files
+			sprintf(filename, "%s.*", modelcode);
+			auto searchstring = regex(filename);
+			for (auto const& itr : directory_iterator(".")) {
+				string curfile = (itr).path().filename().string();
+				if (regex_match(curfile, searchstring)) {
+					remove(curfile);
 				}
-				fclose(f);
-			}
-			if (il == 0) {
-				// Removing all existing files
-				auto searchstring = regex(".*");
-				for (auto const& itr : directory_iterator(".")) {
-					string curfile = (itr).path().filename().string();
-					if (is_regular_file(curfile)) {
-						remove(curfile);
-					}
-				}
-				// nlc.dat contains the number of models calculated so far and the total number to be computed
-				f = fopen("nlc.dat", "w");
-				fprintf(f, "%d %d", -1, nlc);
-				fclose(f);
-				// minchi.dat contains the best chi square found so far in all kinds of models for this event
-				minchi = bestchi = 1.e100;
 			}
 
+			il = 0;
+			minchi = bestchi = 1.e100;
 
 			time_t ltime, rtime;
 			time(&ltime);
@@ -813,10 +866,11 @@ int LevMar::Run() {
 				c1 = ChiSquared(pr);
 				printf("\nStarting chi2 = %lf", c1);
 
-				// Saving to file
-				sprintf(filename, "%s-stepchain%d.dat", modelcode, il);
-				PrintFile(filename, c1, false);
-
+				// Saving to stepchain
+				if (stepchainsave) {
+					sprintf(filename, "%s-stepchain%d.dat", modelcode, il);
+					PrintFile(filename, il, c1, false);
+				}
 				// Initializing the main cycle
 
 				lambda = 3.;
@@ -829,7 +883,7 @@ int LevMar::Run() {
 					c0 = c1;
 					printf("\nStep %d\n", k++);
 					/* Calculation of the gradient */
-	//				getchar();
+		//			getchar();
 
 					Grad();
 
@@ -947,9 +1001,10 @@ int LevMar::Run() {
 					laststep = laststep->next;
 					laststep->Amp = c1;
 					// Saving to file
-					sprintf(filename, "%s-stepchain%d.dat", modelcode, il);
-					PrintFile(filename, c1, false);
-
+					if (stepchainsave) {
+						sprintf(filename, "%s-stepchain%d.dat", modelcode, il);
+						PrintFile(filename, il, c1, false);
+					}
 					// If new point's chi square is very close to previous one, ichi is increased.
 					// When ichi reaches 3, we declare convergence achieved.
 					//if (fabs(1 - c1 / c0) < 1.0e-3) {
@@ -1012,13 +1067,14 @@ int LevMar::Run() {
 
 
 
-					// Store model in a file named "(il).txt"
-					sprintf(filename, "%d.txt", il);
-					f = fopen(filename, "w");
-
-					// Print parameters to file
-
-					PrintFile(filename, c0, true);
+					// Store model in file
+					if (stepchainsave) {
+						sprintf(filename, "%s-%d.txt", modelcode, il);
+					}
+					else {
+						sprintf(filename, "%s.txt", modelcode);
+					}
+					PrintFile(filename, il, c0, true);
 
 					if (modelcode[0] == 'L' && il == nlc - offsetdegeneracy - 1) {
 						// Find best model found so far and fit offset degeneracy model
@@ -1103,23 +1159,23 @@ int LevMar::Run() {
 					//tm=Environment::TickCount;
 
 					// Updating the nlc.dat file
-					f = fopen("nlc.dat", "w");
-					fprintf(f, "%d %d", il, nlc);
-					fclose(f);
+					//f = fopen("nlc.dat", "w");
+					//fprintf(f, "%d %d", il, nlc);
+					//fclose(f);
 				}
 
 				il++;
 			}
 
-			// When terminating, update the Termination file, 
-			// so that subsequent programs know everything has been concluded with this fit
-			sprintf(filename, "t%s.dat", outdir);
-			f = fopen(filename, "w");
-			fprintf(f, "%d %d", il, nlc);
-			fclose(f);
+			//// When terminating, update the Termination file, 
+			//// so that subsequent programs know everything has been concluded with this fit
+			//sprintf(filename, "t%s.dat", outdir);
+			//f = fopen(filename, "w");
+			//fprintf(f, "%d %d", il, nlc);
+			//fclose(f);
 
 			// If this fit has found the best minimum so far, update minchi.dat
-			current_path("..");
+//			current_path("..");
 			strcpy(filename, "minchi.dat");
 			if (exists(filename)) {
 				f = fopen(filename, "r");
@@ -1202,7 +1258,12 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 		VBM->TripleLightCurve(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
 		break;
 	case 9:
-		VBM->TripleLightCurveParallax(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
+		if (astrometric) {
+			VBM->TripleAstroLightCurve(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, sizes[fl]);
+		}
+		else {
+			VBM->TripleLightCurveParallax(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
+		}
 		break;
 	}
 }
@@ -1512,14 +1573,14 @@ void LevMar::PrintOut(double* pr) {
 	}
 }
 
-void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
-	int npp = nps, ilog = 0, logsize = logposs[modnumber].size();
+void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
+	int npp = nps, ilog, logsize = logposs[modnumber].size();
 	double fl;
 	FILE* f;
-	f = (printerrors) ? fopen(filename, "w") : fopen(filename, "a");
+	f = fopen(filename, "a");
 	switch (modnumber) {
 	case 2:
-		if (pr[1] > 0) { // Invert sources
+		if (pr[1] > 0 && !VBM->turn_off_secondary_source) { // Invert sources
 			double sc;
 			pr[1] = -pr[1];
 			sc = pr[3];
@@ -1557,7 +1618,7 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 		}
 		break;
 	case 4:
-		if (pr[1] > 0) {
+		if (pr[1] > 0 && !VBM->turn_off_secondary_lens) {
 			pr[3] = pr[3] - M_PI;
 			pr[1] = -pr[1];
 			for (int k = 0; k < nps; k++) {
@@ -1579,7 +1640,7 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 		}
 		break;
 	case 5:
-		if (pr[1] > 0) {
+		if (pr[1] > 0 && !VBM->turn_off_secondary_lens) {
 			pr[3] = pr[3] - M_PI;
 			pr[1] = -pr[1];
 			for (int k = 0; k < nps; k++) {
@@ -1591,7 +1652,7 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 		while (pr[3] < 0) pr[3] += 2 * M_PI;
 		break;
 	case 6:
-		if (pr[1] > 0) {
+		if (pr[1] > 0 && !VBM->turn_off_secondary_lens) {
 			pr[3] = pr[3] - M_PI;
 			pr[1] = -pr[1];
 			for (int k = 0; k < nps; k++) {
@@ -1603,14 +1664,6 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 		while (pr[3] < 0) pr[3] += 2 * M_PI;
 		break;
 	case 8:
-		if (pr[1] > 0) {
-			pr[3] = pr[3] - M_PI;
-			pr[1] = -pr[1];
-			for (int k = 0; k < nps; k++) {
-				Cov[1 + nps * k] = -Cov[1 + nps * k];
-				Cov[k + nps * 1] = -Cov[k + nps * 1];
-			}
-		}
 		while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
 		while (pr[3] < 0) pr[3] += 2 * M_PI;
 		if (pr[2] < 0) {
@@ -1628,14 +1681,6 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 		while (pr[9] < 0) pr[9] += 2 * M_PI;
 		break;
 	case 9:
-		if (pr[1] > 0) {
-			pr[3] = pr[3] - M_PI;
-			pr[1] = -pr[1];
-			for (int k = 0; k < nps; k++) {
-				Cov[1 + nps * k] = -Cov[1 + nps * k];
-				Cov[k + nps * 1] = -Cov[k + nps * 1];
-			}
-		}
 		while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
 		while (pr[3] < 0) pr[3] += 2 * M_PI;
 
@@ -1645,6 +1690,15 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 	}
 
 	if (astrometric) npp -= 4;
+
+	if (printerrors) {
+		//Write model name
+		filename[strlen(filename) - 4] = 0;
+		fprintf(f, "%s-%d\n", filename, il);
+	}
+
+	// Write values of the parameters (without log)
+	ilog = 0;
 	for (int i = 0; i < npp; i++) {
 		if (ilog < logsize && i == logposs[modnumber][ilog]) {
 			fl = exp(pr[i]);
@@ -1655,6 +1709,7 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 		}
 		fprintf(f, "%.16le ", fl);
 	}
+	// Write astrometric parameters
 	if (astrometric) {
 		for (int i = 0; i < 4; i++) {
 			fprintf(f, "%.16le ", pr[npp + i]);
@@ -1664,9 +1719,12 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
 		fprintf(f, "%le ", pr[i]);
 	}
+	// Write chi square
 	fprintf(f, "%.16le\n", c0);
 
 	if (printerrors) {
+		// Write errors
+		ilog = 0;
 		for (int i = 0; i < npp; i++) {
 			if (ilog < logsize && i == logposs[modnumber][ilog]) {
 				fl = exp(pr[i]) * errs[i];
@@ -1677,19 +1735,20 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 			}
 			fprintf(f, "%.16le ", fl);
 		}
+		// Write astrometric errors
 		if (astrometric) {
 			for (int i = 0; i < 4; i++) {
 				fprintf(f, "%.16le ", errs[npp + i]);
 			}
 		}
+		// Write errors for fluxes
 		fprintf(f, "%le", errs[nps]);
 		for (int i = nps + 1; i < nps + nlinpar * nfil; i++) {
 			fprintf(f, " %le", errs[i]);
 		}
+		fprintf(f, "\n");
 
 		// Print covariance matrix to file
-
-		fprintf(f, "\n");
 		for (int i = 0; i < nps; i++) {
 			if (i > 0) fprintf(f, "\n");
 			fprintf(f, "%le", Cov[i]);
@@ -1697,6 +1756,7 @@ void LevMar::PrintFile(char* filename, double c0, bool printerrors) {
 				fprintf(f, " %le", Cov[i + nps * j]);
 			}
 		}
+		fprintf(f, "\n");
 	}
 	fclose(f);
 }

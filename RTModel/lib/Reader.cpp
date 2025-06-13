@@ -395,10 +395,12 @@ int main(int argc, char* argv[])
 				printf("\nSeasons other than peak season considered less significant in re-binning");
 				for (int ichunk = 0; ichunk < nchunks; ichunk++) {
 					if (ichunk != imaxdev) {
+						double fac;
 						//						double fac = (devs[ichunk]+1.e-10) /(maxdev + 1.e-10);
 						//						fac *= fac;
 						for (p = chunkfirst[ichunk]; p != chunklast[ichunk]->next; p = p->next) {
-							p->basesig = 1.0 / otherseasons;// fac;
+							fac = (p->t > chunklast[imaxdev]->t) ? (p->t > chunklast[imaxdev]->t) : (chunkfirst[imaxdev]->t - p->t);
+							p->basesig = 1.0 / otherseasons / fac;// fac;
 						}
 					}
 				}
