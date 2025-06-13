@@ -72,6 +72,8 @@ Astrometric information on a microlensing event can also be incorporated. The fo
 
 Some more miscellaneous functionalities can be useful for diagnostics and customization
 
+- [Perliminary models](PreliminaryModels.md)
+
 - [Animation of the fit process](Animation.md)
 
 - [Template library customization](TemplateLibraries.md)
