@@ -1,7 +1,7 @@
 
 # Documentation
 
-In this document we will describe all use cases of the `RTModel` library and provide ready-to-use examples that you can copy/paste to your code. 
+In this document we will describe all use cases of the `RTModel` package and provide ready-to-use examples that you can copy/paste to your code. 
 
 ## Quick start
 
