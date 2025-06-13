@@ -66,4 +66,8 @@ The constraints used in a given modeling run are stored in the file `Constraints
 
 The function `recover_options()` illustrated in [Archiving and updating models](Archive.md) recovers previously used constraints for a given event. These can be modified by manipulating the `rtm.constraints` object and will be used in the next modeling run. 
 
+## Parameters ranges
+
+Note that `RTModel` lets the parameters free to vary only within some pre-defined parameters ranges. So, even if you specify a very loose constraint, parameters will not be allowed to wander indefinitely. Parameters ranges are discussed in the [Fitting](Fitting.md) section.
+
 [Go to **Data pre-processing**](DataPreprocessing.md)
