@@ -12,7 +12,6 @@ Suppose you want to see how the binary-lens fit from the initial condition 190 w
 
 ```
 import RTModel.plotmodel as plm
-import matplotlib.pyplot as plt
 
 eventname = '/event001'
 model = 'LS0190'
