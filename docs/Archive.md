@@ -19,7 +19,7 @@ All consecutive archived runs are stored in directories with increasing number. 
 
 ## Previously found best models
 
-An important feature of archived runs is that the best models found in the most recent archived run (identified by its progressive number) are included in the set of initial conditions of the new run. In this way, `RTModel` will also have simple **updates of the previous best models** available in the model selection in the new run.
+An important feature of archived runs is that the best models found in the most recent archived run (identified by its progressive number) are included in the set of initial conditions of the new run. In this way, `RTModel` will also have simple **updates of the previous best models** available in the model selection in the new run. As described in [Initial Conditions](InitCond.md), it is possible to require only the update of models found in the latest run without performing another model search from scratch. This is useful if you already have a good model and just need one more run with some additional data.
 
 ## Re-using options from previous runs
 
