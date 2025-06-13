@@ -323,11 +323,12 @@ class RTModel:
                         # Here we have to append results to main model file
                         if(not self.LevMar_stepchainsave):
                             strmodel = modelcode + '{:0>4}'.format(str(procnumbers[i])) + ".txt"
-                            with open(self.eventname +'/PreModels/' + strmodel) as f:
-                                content = f.read()
-                            with open(self.eventname +'/PreModels/'+ modelcode + ".txt","a") as f:
-                                f.write(content)
-                            os.remove(self.eventname +'/PreModels/' + strmodel)
+                            if(os.path.exists(self.eventname +'/PreModels/' + strmodel)):
+                                with open(self.eventname +'/PreModels/' + strmodel) as f:
+                                    content = f.read()
+                                with open(self.eventname +'/PreModels/'+ modelcode + ".txt","a") as f:
+                                    f.write(content)
+                                os.remove(self.eventname +'/PreModels/' + strmodel)
                         processes.pop(i)
                         procnumbers.pop(i)
                         procepochs.pop(i)
