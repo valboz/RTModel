@@ -41,6 +41,8 @@ The content of the file should be in the form `HH:MM:SS.S +DD:PP:SS.S` for right
 
 ## Optional input files
 
-Other optional input files are observations from [satellite](Satellite.md), [limb darkening coefficients](LimbDarkening.md) and [normalizations for datasets](https://github.com/valboz/RTModel/blob/dev3.0/docs/DataPreprocessing.md#forcing-error-bar-normalization), described in the corresponding pages.
+Other optional input files are observations from [satellite](Satellite.md), [limb darkening coefficients](LimbDarkening.md) and [normalizations for datasets](DataPreprocessing.md#forcing-error-bar-normalization), described in the corresponding pages.
+
+[Astrophotometric datasetes](Astrophotometric.md) are also discussed in a separate page.
 
 [Go to **Modeling Run**](ModelingRun.md)
