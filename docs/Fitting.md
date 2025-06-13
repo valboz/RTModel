@@ -135,6 +135,6 @@ rtm.parameters_ranges['PS'][1][2] = math.log(10000)
 
 All single-lens-single-source fits following this line will be affected.
 
-Note that the [Constraints](Constraints.md) imposed by `set_constraints()` are gaussian constraints that will still respect the limits imposed by the parameters ranges here. So, the user has actually two different ways to control the parameter space in which the fit will move.
+Note that the [Constraints](Constraints.md) imposed by `set_constraints()` are gaussian constraints that will still respect the limits imposed by the parameters ranges specified here. So, the user has actually two different ways to control the parameter space in which the fit will move.
 
 [Go to **Model selection**](ModelSelection.md)
