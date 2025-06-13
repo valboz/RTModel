@@ -16,7 +16,8 @@ from tabulate import tabulate
 
 
 class plotmodel:
-    def __init__(self, eventname,model = '', tmin = '', tmax = '', referencephot = 0, timesteps = 300, \
+    def __init__(self, eventname,model = '', tmin = '', tmax = '', magmin = '', magmax = '', tlabel='t', maglabel='mag', reslabel = 'Res',
+                 referencephot = 0, timesteps = 300, 
                  modelfile = None, parameters = [], line = 0,printpars = True, animate = False,interval = 1000, 
                  satellitedir = '.', accuracy = 0.01, colors = None, satellitecolors = None):
         self.satellitedir = satellitedir
@@ -26,6 +27,11 @@ class plotmodel:
         self.model = model
         self.tmin = tmin
         self.tmax = tmax
+        self.inputmagmin = magmin
+        self.inputmagmax = magmax
+        self.tlabel = tlabel
+        self.maglabel = maglabel
+        self.reslabel = reslabel
         self.timesteps = timesteps
         self.referencephot = referencephot
         self.modelfile = modelfile
@@ -85,6 +91,7 @@ class plotmodel:
             self.animateplots(interval = interval)
         else:
             self.readdata()
+            self.readoptions()
             self.readparameters()
             self.calculate()
             self.showall()
@@ -129,13 +136,31 @@ class plotmodel:
                 self.telescopes = [tel.split('_')[0] for tel in self.telescopes]
             while(len(self.colors)<self.nfil):
                 self.colors.extend(self.colors)
-            if(os.path.exists(self.eventname + '\\Data\\LimbDarkening.txt')):
-                with open(self.eventname + '\\Data\\LimbDarkening.txt') as f:
+            if(os.path.exists(self.eventname + '/Data/LimbDarkening.txt')):
+                with open(self.eventname + '/Data/LimbDarkening.txt') as f:
                     lines = f.readlines()
                     self.limbdarkenings = [float(ld) for ld in lines]
             else:
                 self.limbdarkenings = [0 for t in self.telescopes]
 
+    # Reading options from LevMar.ini
+    def readoptions(self):
+        if(os.path.exists(self.eventname + '/ini/LevMar.ini')):
+            with open(self.eventname + '/ini/LevMar.ini') as f:
+                lines = f.readlines()
+                for line in lines:
+                    chunks = line.split()
+                    if(chunks[0] == 'turn_off_secondary_source' and chunks[2] == 'True'):
+                        self.vbm.turn_off_secondary_source = True
+                    elif(chunks[0] == 'turn_off_secondary_lens' and chunks[2] == 'True'):
+                        self.vbm.turn_off_secondary_lens = True
+                    elif(chunks[0] == 'mass_luminosity_exponent'):
+                        self.vbm.mass_luminosity_exponent = float(chunks[2])
+                    elif(chunks[0] == 'mass_radius_exponent'):
+                        self.vbm.mass_radius_exponent = float(chunks[2])
+                    elif(chunks[0] == 'lens_mass_luminosity_exponent'):
+                        self.vbm.lens_mass_luminosity_exponent = float(chunks[2])
+                        
     # Reading model parameters
     def readparameters(self):
         self.modnumber = self.modelcodes.index(self.model[0:2])
@@ -144,6 +169,8 @@ class plotmodel:
         if(self.parameters == []):
             with open(self.modelfile) as f:
                 lines = f.readlines()
+                if(not lines[0][0].isnumeric()):
+                    lines.pop(0)
                 self.maxlines = len(lines)
                 if(self.line>=self.maxlines):
                     return False
@@ -160,7 +187,7 @@ class plotmodel:
                     if(self.astrometric):
                         self.L0Dec = np.array([values[self.npars[self.modnumber]+i*self.nlinpars+2] for i in range(0,self.nfil)])
                         self.L0RA = np.array([values[self.npars[self.modnumber]+i*self.nlinpars+3] for i in range(0,self.nfil)])
-                    self.blendings = self.blends/self.sources
+                    self.blendings = self.blends/(self.sources+1.e-12*self.blends)
                     self.baselines = -2.5*np.log10(self.blends+self.sources)
                     self.chi2=values[-1]
                     #Errors
@@ -203,7 +230,7 @@ class plotmodel:
                 self.chi2 += ((lc[1] - self.blends[-1] - self.sources[-1]*f)**2/(lc[2]*lc[2])).sum()
                 L0N = L0E = 0
                 if(self.astrometric and self.lightcurves[i][4][0]>0):
-                    c12 =  self.vbm.CombineCentroids(self.results, self.blends[-1]/self.sources[-1])
+                    c12 =  self.vbm.CombineCentroids(self.results, self.blends[-1]/(self.sources[-1]+1.e-12*self.blends[-1]))
                     c1 = np.array(c12[0])
                     c2 = np.array(c12[1])
                     cc0 = self.lightcurves[i]
@@ -225,11 +252,11 @@ class plotmodel:
                     
             self.blends =np.array(self.blends)
             self.sources =np.array(self.sources)
-            self.blendings = self.blends/self.sources
+            self.blendings = self.blends/(self.sources+1.e-12*self.blends)
             self.baselines = -2.5*np.log10(self.blends+self.sources)
                 
     def lightcurve(self):
-        if(self.modnumber == 1 or self.modnumber > 4):
+        if(self.modnumber == 1 or self.modnumber == 3 or self.modnumber > 4):
             self.vbm.SetObjectCoordinates(glob.glob('Data/*.coordinates')[0],self.satellitedir)
             self.vbm.parallaxsystem = 1
         if(self.modnumber == 0):
@@ -266,7 +293,10 @@ class plotmodel:
         elif(self.modnumber == 8):
             self.results = self.vbm.TripleLightCurve(self.pars,self.t)
         elif(self.modnumber == 9):
-            self.results = self.vbm.TripleLightCurveParallax(self.pars,self.t)
+            if(self.astrometric):
+                self.results = self.vbm.TripleAstroLightCurve(self.pars,self.t)
+            else:
+                self.results = self.vbm.TripleLightCurveParallax(self.pars,self.t)
     
     def calculate(self):
         # Light curve calculation
@@ -288,12 +318,16 @@ class plotmodel:
             lc0 = self.lightcurves[i]
             lcarr = np.array(lc0[:7])
             lctran=np.transpose(lcarr)
-            lcsel = [x for x in lctran if(x[0]<self.tmax and x[0]>self.tmin and (x[1]-self.blends[i])/self.sources[i]*self.sources[self.referencephot] +self.blends[self.referencephot]>0)]
+            lcsel = [x for x in lctran if(x[0]<self.tmax and x[0]>self.tmin and ((x[1]-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot] +self.blends[self.referencephot]>0 or x[2] < 0))]
             lc = np.transpose(lcsel)
             if(len(lc)>0):
                 self.lctimes.append(lc[0])
-                self.lcmags.append(np.array([-2.5*math.log10((y-self.blends[i])/self.sources[i]*self.sources[self.referencephot]+self.blends[self.referencephot]) for y in lc[1]]))
-                self.lcerrs.append(lc[2]/lc[1]*2.5/math.log(10.0))
+                if(lc[2][0]>0):
+                    self.lcmags.append(np.array([-2.5*math.log10((y-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot]+self.blends[self.referencephot]) for y in lc[1]]))
+                    self.lcerrs.append(lc[2]/lc[1]*2.5/math.log(10.0))
+                else:
+                    self.lcmags.append([])
+                    self.lcerrs.append([])
                 self.centroids.append([np.array(lc[3]),np.array(lc[4]),np.array(lc[5]),np.array(lc[6])])
             else:
                 self.lctimes.append(np.array([]))
@@ -334,7 +368,7 @@ class plotmodel:
             self.vbm.satellite = satellite
             self.vbm.a1 = self.limbdarkenings[self.referencephot]
             self.lightcurve()        
-            self.mags = [-2.5*math.log10(self.sources[self.referencephot]*yi+self.blends[self.referencephot]) for yi in self.results[0]]
+            self.mags = [-2.5*math.log10(max(self.sources[self.referencephot]*yi+self.blends[self.referencephot], 1.e-100)) for yi in self.results[0]]
             if(self.astrometric):
                 self.magnifications.append(self.results[0])
                 self.c1s.append(self.results[1])
@@ -363,16 +397,23 @@ class plotmodel:
         margin = (self.maxmag-self.minmag)*0.1
         self.minmag -= margin
         self.maxmag += margin
+        if(self.inputmagmin != ''):
+            self.minmag = self.inputmagmin
+        if(self.inputmagmax != ''):
+            self.maxmag = self.inputmagmax
 
         self.lcress = []
         for i in range(self.nfil):
             self.t = self.lctimes[i]                
             self.vbm.satellite = self.satellites[i]
             self.vbm.a1 = self.limbdarkenings[i]
-            self.lightcurve()
-            self.mags = [-2.5*math.log10(self.sources[self.referencephot]*yi+self.blends[self.referencephot]) for yi in self.results[0]]
-            ress = self.mags-self.lcmags[i]
-            self.lcress.append(ress)
+            if(len(self.lcmags[i]))>0:
+                self.lightcurve()
+                self.mags = [-2.5*math.log10(max(self.sources[self.referencephot]*yi+self.blends[self.referencephot],1.e-100)) for yi in self.results[0]]
+                ress = self.mags-self.lcmags[i]
+                self.lcress.append(ress)
+            else:
+                self.lcress.append([])
 
     # Caustic plot preparation   
         self.rancau = max([self.maxy1-self.miny1,self.maxy2 - self.miny2])
@@ -403,6 +444,9 @@ class plotmodel:
         else:
             table = [[t,base, bl] for t,base,bl in zip(self.telescopes,self.baselines,self.blendings)]
             table.insert(0,['telescope','baseline', 'blending'])
+        for i in range(self.nfil,0,-1):
+            if(len(self.lcmags[i-1])==0):
+                del(table[i])
         self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
         print(self.parstring)
 
@@ -411,7 +455,8 @@ class plotmodel:
     
     def approx(self, i):
         exerr= self.fexp(self.parerrs[i])-1
-        return f'{self.parsprint[i]:.{max(0,-exerr)}f}' + ' +- ' + f'{self.parerrs[i]:.{max(0,-exerr)}f}'
+        expars= self.fexp(self.parsprint[i])-1
+        return f'{self.parsprint[i]:.{max(0,-exerr,-expars)}f}' + ' +- ' + f'{self.parerrs[i]:.{max(0,-exerr,-expars)}f}'
 
     def approxbaselines(self, i):
         exerr= self.fexp(self.baselineerrs[i])-1
@@ -423,10 +468,11 @@ class plotmodel:
 
     def axeslightcurve(self,ax):
         for i in range(0,self.nfil):
-            ax.errorbar(self.lctimes[i],self.lcmags[i],yerr=self.lcerrs[i],color=self.colors[i],fmt='.',label=self.telescopes[i])
+            if(len(self.lcmags[i])>0):
+                ax.errorbar(self.lctimes[i],self.lcmags[i],yerr=self.lcerrs[i],color=self.colors[i],fmt='.',label=self.telescopes[i])
         for i in range(len(self.usedsatellites)):
             ax.plot(self.magnitudes[i][0],self.magnitudes[i][1],self.satellitecolors[i],linewidth=0.5)
-        ax.set_ylabel('mag')
+        ax.set_ylabel(self.maglabel)
         ax.set_ylim([self.maxmag,self.minmag])
         ax.set_xlim([self.tmin,self.tmax])
         ax.xaxis.set_minor_locator(AutoMinorLocator())
@@ -437,9 +483,10 @@ class plotmodel:
     def axesresiduals(self,ax):
         ax.plot((self.tmin,self.tmax),(0,0),'k-',linewidth=0.5)
         for i in range(0,self.nfil):
-            ax.errorbar(self.lctimes[i],self.lcress[i],yerr=self.lcerrs[i],color=self.colors[i],fmt='.')
-        ax.set_xlabel('t')
-        ax.set_ylabel('Res')
+            if(len(self.lcress[i])>0):
+                ax.errorbar(self.lctimes[i],self.lcress[i],yerr=self.lcerrs[i],color=self.colors[i],fmt='.')
+        ax.set_xlabel(self.tlabel)
+        ax.set_ylabel(self.reslabel)
         ax.set_ylim([-0.1,0.1])
         ax.set_xlim([self.tmin,self.tmax])
         ax.xaxis.set_minor_locator(AutoMinorLocator())
@@ -556,7 +603,7 @@ class plotmodel:
     def axesastrometry(self,ax, i):
         if(i==None):
             for j in range(self.nfil):
-                if(self.centroids[j][1][0]>0):
+                if(len(self.centroids[j])>0 and self.centroids[j][1][0]>0):
                     i=j
                     break
             if(i==None):
@@ -586,7 +633,7 @@ class plotmodel:
     def axesastrometryRA(self,ax, i):
         if(i==None):
             for j in range(self.nfil):
-                if(self.centroids[j][1][0]>0):
+                if(len(self.centroids[j])>0 and self.centroids[j][1][0]>0):
                     i=j
                     break
             if(i==None):
@@ -595,7 +642,7 @@ class plotmodel:
         if(self.centroids[i][1][0]>0):          
             self.calculate_astrometry(i)
             ax.set_ylabel('RA')
-            ax.set_xlabel('t')
+            ax.set_xlabel(self.tlabel)
             ax.set_ylim([self.cenRA-self.ran,self.cenRA+self.ran])
             ax.xaxis.set_minor_locator(AutoMinorLocator())
             ax.yaxis.set_minor_locator(AutoMinorLocator())
@@ -615,7 +662,7 @@ class plotmodel:
     def axesastrometryDec(self,ax, i):
         if(i==None):
             for j in range(self.nfil):
-                if(self.centroids[j][1][0]>0):
+                if(len(self.centroids[j])>0 and self.centroids[j][1][0]>0):
                     i=j
                     break
             if(i==None):
@@ -624,7 +671,7 @@ class plotmodel:
         if(self.centroids[i][1][0]>0):          
             self.calculate_astrometry(i)
             ax.set_ylabel('Dec')
-            ax.set_xlabel('t')
+            ax.set_xlabel(self.tlabel)
             ax.set_ylim([self.cenDec-self.ran,self.cenDec+self.ran])
             ax.xaxis.set_minor_locator(AutoMinorLocator())
             ax.yaxis.set_minor_locator(AutoMinorLocator())
@@ -689,7 +736,7 @@ class plotmodel:
         
 def plotchain(eventname, model, par1, par2):
     chains = []
-    filenames = glob.glob(eventname+ '/PreModels/' + model + '/*step*')
+    filenames = glob.glob(eventname+ '/PreModels/' + model + '-step*')
     for fil in filenames:
         with open(fil) as f:
             chainstrings = f.readlines()
