@@ -114,4 +114,27 @@ An empty call to `config_LevMar()` with no parameters will reset all variables t
 
 In each modeling run, the options for `LevMar` are stored in the file `LevMar.ini` in the `/ini` subdirectory within the event directory for later reference. If the modeling run is [archived](Archive.md), also the whole `/ini` subdirectory is saved so that the user may check the options used in each modeling run. The function `recover_options()` can be used to load the options from a previous run.
 
+### Parameters ranges and step sizes
+
+Each parameter is left free to vary within a well-defined range. In addition, the maximum variation allowed for a parameter in an individual Levenberg-Marquardt step is also defined in `RTModel`. The values of minimum, maximum and step size for each parameter are stored in the property `parameters_ranges`. For example, if you want to check the default values for the `PS` model category, you may write
+
+```
+print(rtm.parameters_ranges['PS'])
+```
+
+The output will be
+```
+[[-11.0, 1.0, 1.0], [-4.6, 7.6, 1.0], [-300, 300, 5.0], [-11.5, 2.3, 2.3]]
+```
+This is a list of four triples (one for each parameter). Each triple contains the minimum value, the maximum value and the maximum step size for each parameter. The order of parameters is the same specified in [Model Categories](ModelCategories.md). If the parameter is fit through its logarithm, these values refer to the logarithm. For example, for the single-lens-single-source model here, the first parameter is `log_u0`.
+
+The user may freely change these values. For example, if you want to allow the fit to go as far as `tE = 10000`, you may add the line
+```
+rtm.parameters_ranges['PS'][1][2] = math.log(10000)
+```
+
+All single-lens-single-source fits following this line will be affected.
+
+Note that the [Constraints](Constraints.md) imposed by `set_constraints()` are gaussian constraints that will still respect the limits imposed by the parameters ranges here. So, the user has actually two different ways to control the parameter space in which the fit will move.
+
 [Go to **Model selection**](ModelSelection.md)
