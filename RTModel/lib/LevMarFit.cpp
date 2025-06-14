@@ -262,7 +262,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				nps += 12;
 				double presigmapr[] = { 1.0,.5,0.5,0.5,1,1,0.5,0.03,0.03,0.01,0.01,0.01,          1.0, 1.0, 0.1, 0.2 };
 				double preleftlim[] = { -6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5,-3.,-3.,-1,-1,1.e-7,       -30.0, -30.0, 0.05, 0.001 };
-				double prerightlim[] = { 6.9,11.5,3.,3.,10.e100,10.e100,0.0,3.,3.,1.,1.,1.,          30.0, 30.0, 1.0, 30.0 };
+				double prerightlim[] = { 6.9,0.0,3.,3.,10.e100,10.e100,0.0,3.,3.,1.,1.,1.,          30.0, 30.0, 1.0, 30.0 };
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 4;
 				it02 = 5;
@@ -276,7 +276,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				nps = 7;
 				double presigmapr[] = { 1.0,.5,0.5,0.5,1,1,0.5 };
 				double preleftlim[] = { -6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5 };
-				double prerightlim[] = { 6.9,11.5,3.,3.,10.e100,10.e100,0.0 };
+				double prerightlim[] = { 6.9,0.0,3.,3.,10.e100,10.e100,0.0 };
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 4;
 				it02 = 5;
@@ -883,7 +883,7 @@ int LevMar::Run() {
 					c0 = c1;
 					printf("\nStep %d\n", k++);
 					/* Calculation of the gradient */
-		//			getchar();
+					getchar();
 
 					Grad();
 
@@ -1579,44 +1579,44 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 	FILE* f;
 	f = fopen(filename, "a");
 	switch (modnumber) {
-	case 2:
-		if (pr[1] > 0 && !VBM->turn_off_secondary_source) { // Invert sources
-			double sc;
-			pr[1] = -pr[1];
-			sc = pr[3];
-			pr[3] = pr[2];
-			pr[2] = sc;
-			sc = pr[5];
-			pr[5] = pr[4];
-			pr[4] = sc;
-			sc = errs[3];
-			errs[3] = errs[2];
-			errs[2] = sc;
-			sc = errs[5];
-			errs[5] = errs[4];
-			errs[4] = sc;
-			for (int k = 0; k < nps; k++) {
-				Cov[1 + nps * k] = -Cov[1 + nps * k];
-				Cov[k + nps * 1] = -Cov[k + nps * 1];
-			}
-			for (int k = 0; k < nps; k++) {
-				sc = Cov[2 + nps * k];
-				Cov[2 + nps * k] = Cov[3 + nps * k];
-				Cov[3 + nps * k] = sc;
-				sc = Cov[5 + nps * k];
-				Cov[5 + nps * k] = Cov[4 + nps * k];
-				Cov[4 + nps * k] = sc;
-			}
-			for (int k = 0; k < nps; k++) {
-				sc = Cov[k + nps * 2];
-				Cov[k + nps * 2] = Cov[k + nps * 3];
-				Cov[k + nps * 3] = sc;
-				sc = Cov[k + nps * 5];
-				Cov[k + nps * 5] = Cov[k + nps * 4];
-				Cov[k + nps * 4] = sc;
-			}
-		}
-		break;
+		//case 2:
+		//	if (pr[1] > 0 && !VBM->turn_off_secondary_source) { // Invert sources
+		//		double sc;
+		//		pr[1] = -pr[1];
+		//		sc = pr[3];
+		//		pr[3] = pr[2];
+		//		pr[2] = sc;
+		//		sc = pr[5];
+		//		pr[5] = pr[4];
+		//		pr[4] = sc;
+		//		sc = errs[3];
+		//		errs[3] = errs[2];
+		//		errs[2] = sc;
+		//		sc = errs[5];
+		//		errs[5] = errs[4];
+		//		errs[4] = sc;
+		//		for (int k = 0; k < nps; k++) {
+		//			Cov[1 + nps * k] = -Cov[1 + nps * k];
+		//			Cov[k + nps * 1] = -Cov[k + nps * 1];
+		//		}
+		//		for (int k = 0; k < nps; k++) {
+		//			sc = Cov[2 + nps * k];
+		//			Cov[2 + nps * k] = Cov[3 + nps * k];
+		//			Cov[3 + nps * k] = sc;
+		//			sc = Cov[5 + nps * k];
+		//			Cov[5 + nps * k] = Cov[4 + nps * k];
+		//			Cov[4 + nps * k] = sc;
+		//		}
+		//		for (int k = 0; k < nps; k++) {
+		//			sc = Cov[k + nps * 2];
+		//			Cov[k + nps * 2] = Cov[k + nps * 3];
+		//			Cov[k + nps * 3] = sc;
+		//			sc = Cov[k + nps * 5];
+		//			Cov[k + nps * 5] = Cov[k + nps * 4];
+		//			Cov[k + nps * 4] = sc;
+		//		}
+		//	}
+		//	break;
 	case 4:
 		if (pr[1] > 0 && !VBM->turn_off_secondary_lens) {
 			pr[3] = pr[3] - M_PI;
