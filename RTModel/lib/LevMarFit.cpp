@@ -25,25 +25,32 @@ double maxtime = 1.e100; // 600.0; // Maximum time in seconds for total executio
 double bumperpower = 2.0; // Repulsion factor of bumpers
 double maxbumpcount = 25;
 char parametersfile[256] = ""; // File from which user parameters are read, if any
+double mass_luminosity_exponent = 4.0; // Mass-luminosity exponent for the sources
+double mass_radius_exponent = 0.9; // Mass-radius exponent for the sources
+double lens_mass_luminosity_exponent = 4.0; // Mass-luminosity exponent for the lenses
+bool stepchainsave = false;
 
 std::vector<std::vector<std::string>> parnames = { {"u0","tE","t0","rho"},
 					{"u0","tE","t0","rho","piN","piE"},
 					{"tE","FR","u01","u02","t0","t02","rho"},
-					{"u0","t0","tE","rho","xi1","xi2","om","inc","phi","qs"},
+					{"tE","FR","u01","u02","t0","t02","rho","piN","piE","gamma1","gamma2","gamma3"},
 					{"s","q","u0","alpha","rho","tE","t0"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz"},
 					{"s","q","u0","alpha","rho","tE","t0","piN","piE","gamma1","gamma2","gammaz","sz_s","a_s3d"},
-					{"s","q","u0","alpha","rho","tE","t0","s2","q2","beta"} };
+					{"s","q","u0","alpha","rho","tE","t0","s2","q2","beta"},
+					{"s","q","u0","alpha","rho","tE","t0","s2","q2","beta","piN","piE"} };
+std::vector<std::string> astroparnames = { "muSDec", "muSRA", "piS", "thetaE" };
 
 std::vector<std::vector<int>> logposs = { {0, 1, 3},
 										{1, 3},
 										{0, 1, 6},
-										{2, 3, 9},
+										{0, 1, 6},
 										{0, 1, 4, 5},
 										{0, 1, 4, 5},
 										{0, 1, 4, 5},
 										{0, 1, 4, 5},
+										{0, 1, 4, 5, 7, 8},
 										{0, 1, 4, 5, 7, 8} };
 
 const double epsilon = 1.e-100;
@@ -55,6 +62,9 @@ LevMar::LevMar(int argc, char* argv[]) {
 	printf("******************************************\n\n\n");
 	printf("This program fits an event from specific initial conditions\n\n");
 	error = 0;
+	it0 = it02 = -1;
+	astrometric = false;
+	nlinpar = 2;
 	// Setting default values
 	Tol = 1.e-2;
 	VBM = new VBMicrolensing;
@@ -73,6 +83,8 @@ LevMar::~LevMar() {
 		free(t);
 		free(y);
 		free(w);
+		free(y1a);
+		free(y2a);
 		free(satel);
 		free(filter);
 		free(delta);
@@ -93,7 +105,27 @@ LevMar::~LevMar() {
 		free(sumf);
 		free(sumf2);
 		free(limbdarks);
+		free(starts);
+		free(sizes);
 		free(dFdp);
+		free(cN);
+		free(cE);
+		free(wcN);
+		free(wcE);
+		free(c1l);
+		free(c2l);
+		free(c1s);
+		free(c2s);
+		if (astrometric) {
+
+			free(sumsigmaN);
+			free(sumsigmaE);
+			free(sumcN);
+			free(sumcE);
+			free(sumc1);
+			free(sumc2);
+		}
+
 		for (int i = 0; i < nps; i++) {
 			free(Gr[i]);
 		}
@@ -123,7 +155,7 @@ LevMar::~LevMar() {
 		}
 
 	}
-	if (error < 10) {
+	if (error < 9) {
 		free(sigmapr);
 		free(leftlim);
 		free(rightlim);
@@ -131,8 +163,6 @@ LevMar::~LevMar() {
 }
 
 void LevMar::ReadFiles(int argc, char* argv[]) {
-	FILE* f;
-	char initcondfile[256];
 
 	try {
 
@@ -186,38 +216,39 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 
 		current_path(eventname);
 
+		// Read light curve
+		ReadCurve();
+		if (error) return;
+
 		// Establishing model to be fit
+		nps = (astrometric) ? 4 : 0;
 		strcpy(modelcode, outdir);
 		switch (modelcode[0]) {
 		case 'P':
 			if (modelcode[1] == 'X') {
 				modnumber = 1;
-				model = &VBMicrolensing::ESPLLightCurveParallax;
-				nps = 6;
-				ReadOptions();
-				double presigmapr[] = { .5,1.0,5.,2.3,0.1,0.1 };
-				double preleftlim[] = { -13.,-6.9,-10.e100,-11.5,-10.,-10. };
-				double prerightlim[] = { .7,6.9,10.e100,0.0,10.,10. };
+				nps += 6;
+				double presigmapr[] = { .5,1.0,5.,2.3,0.1,0.1,         1.0, 1.0, 0.1, 0.2 };
+				double preleftlim[] = { -3.0,-6.9,-10.e100,-11.5,-10.,-10.,       -30.0, -30.0, 0.05, 0.001 };
+				double prerightlim[] = { 3.0,6.9,10.e100,0.0,10.,10.,          30.0, 30.0, 1.0, 30.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 2;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
-				PrintOut = &LevMar::PrintOutPX;
-				PrintFile = &LevMar::PrintFilePX;
 			}
 			else {
 				modnumber = 0;
-				model = &VBMicrolensing::ESPLLightCurve;
 				nps = 4;
-				ReadOptions();
 				double presigmapr[] = { 1.15,1.0,5.,2.3 };
-				double preleftlim[] = { -13.,-6.9,-10.e100,-11.5 };
-				double prerightlim[] = { .7,6.9,10.e100,0.0 };
+				double preleftlim[] = { -11.0,-6.9,-10.e100,-11.5 };
+				double prerightlim[] = { 1.0,6.9,10.e100,0.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 2;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
-				PrintOut = &LevMar::PrintOutPS;
-				PrintFile = &LevMar::PrintFilePS;
 			}
 			current_path(exedir);
 			current_path("..");
@@ -228,33 +259,31 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		case 'B':
 			if (modelcode[1] == 'O') {
 				modnumber = 3;
-				model = &VBMicrolensing::BinSourceSingleLensXallarap;
-				nps = 10;
-				ReadOptions();
-				double presigmapr[] = { 0.1,1,1,0.5,0.3,0.3,0.1,0.3,0.3, 2.3 };
-				double preleftlim[] = { -3.,-1.e100,-6.9,-11.5,-3.,-3.,0,-3,-6,-4.6 };
-				double prerightlim[] = { 3.,1.e100,6.9,0.,3.,3.,1,3,6,1,+4.6 };
-				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[2] = log(pr[2]);
-				pr[3] = log(pr[3]);
-				pr[9] = log(pr[9]);
-				PrintOut = &LevMar::PrintOutBO;
-				PrintFile = &LevMar::PrintFileBO;
-			}
-			else {
-				modnumber = 2;
-				model = &VBMicrolensing::BinSourceExtLightCurve;
-				nps = 7;
-				ReadOptions();
-				double presigmapr[] = { 1.0,.5,0.5,0.5,1,1,0.5 };
-				double preleftlim[] = { -6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5 };
-				double prerightlim[] = { 6.9,11.5,3.,3.,10.e100,10.e100,0.0 };
+				nps += 12;
+				double presigmapr[] = { 1.0,.5,0.5,0.5,1,1,0.5,0.03,0.03,0.01,0.01,0.01,          1.0, 1.0, 0.1, 0.2 };
+				double preleftlim[] = { -6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5,-3.,-3.,-1,-1,1.e-7,       -30.0, -30.0, 0.05, 0.001 };
+				double prerightlim[] = { 6.9,0.0,3.,3.,10.e100,10.e100,0.0,3.,3.,1.,1.,1.,          30.0, 30.0, 1.0, 30.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 4;
+				it02 = 5;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
 				pr[6] = log(pr[6]);
-				PrintOut = &LevMar::PrintOutBS;
-				PrintFile = &LevMar::PrintFileBS;
+			}
+			else {
+				modnumber = 2;
+				nps = 7;
+				double presigmapr[] = { 1.0,.5,0.5,0.5,1,1,0.5 };
+				double preleftlim[] = { -6.9,-11.5,0.,0.,-10.e100,-10.e100,-11.5 };
+				double prerightlim[] = { 6.9,0.0,3.,3.,10.e100,10.e100,0.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 4;
+				it02 = 5;
+				error = InitCond(presigmapr, preleftlim, prerightlim);
+				pr[0] = log(pr[0]);
+				pr[1] = log(pr[1]);
+				pr[6] = log(pr[6]);
 			}
 			current_path(exedir);
 			current_path("..");
@@ -265,69 +294,61 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		case 'L':
 			if (modelcode[1] == 'X') {
 				modnumber = 5;
-				model = &VBMicrolensing::BinaryLightCurveParallax;
-				nps = 9;
-				ReadOptions();
-				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03 };
-				double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3. };
-				double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3. };
+				nps += 9;
+				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,          1.0, 1.0, 0.1, 0.2 };
+				double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,       -30.0, -30.0, 0.05, 0.001 };
+				double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,          30.0, 30.0, 1.0, 30.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
 				pr[4] = log(pr[4]);
 				pr[5] = log(pr[5]);
-				PrintOut = &LevMar::PrintOutLX;
-				PrintFile = &LevMar::PrintFileLX;
 			}
 			else {
 				if (modelcode[1] == 'O') {
 					modnumber = 6;
-					model = &VBMicrolensing::BinaryLightCurveOrbital;
-					nps = 12;
-					ReadOptions();
-					double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.01,0.01,0.01 };
-					double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7 };
-					double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1 };
+					nps += 12;
+					double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.01,0.01,0.01,          1.0, 1.0, 0.1, 0.2 };
+					double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7,       -30.0, -30.0, 0.05, 0.001 };
+					double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,          30.0, 30.0, 1.0, 30.0 };
+					ReadOptions(preleftlim, prerightlim, presigmapr);
+					it0 = 6;
 					error = InitCond(presigmapr, preleftlim, prerightlim);
 					pr[0] = log(pr[0]);
 					pr[1] = log(pr[1]);
 					pr[4] = log(pr[4]);
 					pr[5] = log(pr[5]);
-					PrintOut = &LevMar::PrintOutLO;
-					PrintFile = &LevMar::PrintFileLO;
 				}
 				else {
 					if (modelcode[1] == 'K') {
 						modnumber = 7;
-						model = &VBMicrolensing::BinaryLightCurveKepler;
-						nps = 14;
-						ReadOptions();
-						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.1, 0.1 };
-						double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001 };
-						double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,10,10 };
+						nps += 14;
+						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5.,0.03,0.03,0.01,0.01,0.01,0.1, 0.1,          1.0, 1.0, 0.1, 0.2 };
+						double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100,-3.,-3.,-1,-1,1.e-7, -10,0.5001,       -30.0, -30.0, 0.05, 0.001 };
+						double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100,3.,3.,1,1,1,10,10,          30.0, 30.0, 1.0, 30.0 };
+						ReadOptions(preleftlim, prerightlim, presigmapr);
+						it0 = 6;
 						error = InitCond(presigmapr, preleftlim, prerightlim);
 						pr[0] = log(pr[0]);
 						pr[1] = log(pr[1]);
 						pr[4] = log(pr[4]);
 						pr[5] = log(pr[5]);
-						PrintOut = &LevMar::PrintOutLK;
-						PrintFile = &LevMar::PrintFileLK;
 					}
 					else {
 						modnumber = 4;
-						model = &VBMicrolensing::BinaryLightCurve;
 						nps = 7;
-						ReadOptions();
 						double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5. };
 						double preleftlim[] = { -4.0,-16.1,-3.,-12.56,-11.5,-6.9,-10.e100 };
 						double prerightlim[] = { 3.0,16.1,3.,12.56,-2.5,7.6,10.e100 };
+						ReadOptions(preleftlim, prerightlim, presigmapr);
+						it0 = 6;
 						error = InitCond(presigmapr, preleftlim, prerightlim);
 						pr[0] = log(pr[0]);
 						pr[1] = log(pr[1]);
 						pr[4] = log(pr[4]);
 						pr[5] = log(pr[5]);
-						PrintOut = &LevMar::PrintOutLS;
-						PrintFile = &LevMar::PrintFileLS;
 					}
 				}
 			}
@@ -335,12 +356,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		case 'T':
 			if (modelcode[1] == 'X') {
 				modnumber = 9;
-				model = &VBMicrolensing::TripleLightCurveParallax;
-				nps = 12;
-				ReadOptions();
-				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,.1,.4,.1, 1.,1. };
-				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56, -3.,-3. };
-				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.0, 11.5, 12.56, 3.,3. };
+				nps += 12;
+				double presigmapr[] = { .1,.4,.1,.1,4.6,.1,1.,.1,.4,.1, 1.,1.,          1.0, 1.0, 0.1, 0.2 };
+				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56, -3.,-3.,       -30.0, -30.0, 0.05, 0.001 };
+				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.0, 11.5, 12.56, 3.,3.,          30.0, 30.0, 1.0, 30.0 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
@@ -348,17 +369,15 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[5] = log(pr[5]);
 				pr[7] = log(pr[7]);
 				pr[8] = log(pr[8]);
-				PrintOut = &LevMar::PrintOutTX;
-				PrintFile = &LevMar::PrintFileTX;
 			}
 			else {
 				modnumber = 8;
-				model = &VBMicrolensing::TripleLightCurve;
 				nps = 10;
-				ReadOptions();
 				double presigmapr[] = { .1,0.5,.1,.1,0.3,.6,5., 0.3, 0.5, 0.3 };
 				double preleftlim[] = { -4.0,-11.5,-3.,-12.56,-11.5,-6.9,-10.e100,-4.0,-11.5,-12.56 };
 				double prerightlim[] = { 3.0,11.5,3.,12.56,-2.5,7.6,10.e100,3.0, 11.5, 12.56 };
+				ReadOptions(preleftlim, prerightlim, presigmapr);
+				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
@@ -366,8 +385,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[5] = log(pr[5]);
 				pr[7] = log(pr[7]);
 				pr[8] = log(pr[8]);
-				PrintOut = &LevMar::PrintOutTS;
-				PrintFile = &LevMar::PrintFileTS;
 			}
 			break;
 		}
@@ -381,12 +398,62 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 
 	if (!error) {
 		// Reading Light Curve
-		ReadCurve();
+		ReadAncillary();
 	}
 
 }
 
-void LevMar::ReadOptions() {
+void LevMar::ReadCurve() {
+	FILE* f;
+
+	try {
+		printf("\n\n- Reading data \n");
+
+		f = fopen("LCToFit.txt", "r");
+		fscanf(f, "%d", &np);
+		filter = (int*)malloc(sizeof(int) * np);
+		t = (double*)malloc(sizeof(double) * np);
+		y = (double*)malloc(sizeof(double) * np);
+		w = (double*)malloc(sizeof(double) * np);
+		y1a = (double*)malloc(sizeof(double) * np);
+		y2a = (double*)malloc(sizeof(double) * np);
+		satel = (int*)malloc(sizeof(int) * np);
+		cN = (double*)malloc(sizeof(double) * np);
+		cE = (double*)malloc(sizeof(double) * np);
+		wcN = (double*)malloc(sizeof(double) * np);
+		wcE = (double*)malloc(sizeof(double) * np);
+
+
+		nfil = 1;
+		for (int i = 0; i < np; i++) {
+			fscanf(f, "%d %lg %lg %lg %d %lg %lg %lg %lg", &(filter[i]), &(t[i]), &(y[i]), &(w[i]), &(satel[i]), &(cN[i]), &(wcN[i]), &(cE[i]), &(wcE[i]));
+			if (wcN[i] > 0) astrometric = true; // Check if astrometric set.
+			if (satel[i] > VBM->nsat) {
+				printf("\n! Satellite table %d not found in satellite dir \"%s\"", satel[i], satellitedir);
+				error = 9;
+				break;
+			}
+			if ((i != 0) && (filter[i] > filter[i - 1])) {
+				nfil++;
+			}
+			w[i] = 1 / (w[i]);
+			wcN[i] = 1 / (wcN[i]);
+			wcE[i] = 1 / (wcE[i]);
+		}
+		fclose(f);
+		if (astrometric) {
+			nlinpar = 4;
+			VBM->astrometry = true;
+		}
+
+	}
+	catch (...) {
+		error = 9;
+	}
+
+}
+
+void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presigmapr) {
 	char buffer[3200];
 	char command[256];
 	char value[256], value2[256], value3[256];
@@ -398,6 +465,28 @@ void LevMar::ReadOptions() {
 	if (exists("ini")) {
 		current_path("ini");
 
+		/* Reading parameters ranges */
+
+		f = fopen("Parameters_Ranges.ini", "r");
+		if (f != 0) {
+			strcpy(buffer, modelcode);
+			buffer[2] = 0;
+			while (!feof(f)) {
+				fscanf(f, "%s", command);
+				if (strcmp(buffer, command) == 0) {
+					int npp = (astrometric) ? nps - 4 : nps;
+					for (int i = 0; i < npp; i++) {
+						fscanf(f, "%lg %lg %lg", &preleftlim[i], &prerightlim[i], &presigmapr[i]);
+					}
+				}
+				if (astrometric && strcmp("astrometry", command) == 0) {
+					for (int i = nps - 4; i < nps; i++) {
+						fscanf(f, "%lg %lg %lg", &preleftlim[i], &prerightlim[i], &presigmapr[i]);
+					}
+				}
+			}
+			fclose(f);
+		}
 		/* Reading constraints */
 
 		f = fopen("Constraints.ini", "r");
@@ -428,7 +517,7 @@ void LevMar::ReadOptions() {
 					strcpy(buffer, command);
 					int flaglog = 0, flaglog2 = 0;
 					buffer[4] = 0;
-					for (int i = 0; i < parnames[modnumber].size(); i++) {
+					for (int i = 0; i < (int)parnames[modnumber].size(); i++) {
 						if (strcmp(buffer, "log_") == 0) { // Log parameter
 							if (strcmp(parnames[modnumber][i].c_str(), &command[4]) == 0) {
 								consindex[conscurrent] = i;
@@ -441,8 +530,22 @@ void LevMar::ReadOptions() {
 							}
 						}
 					}
-					for (int j = 0; j < logposs[modnumber].size(); j++) {
+					for (int j = 0; j < (int)logposs[modnumber].size(); j++) {
 						if (logposs[modnumber][j] == consindex[conscurrent]) flaglog2 = 1;
+					}
+
+					for (int i = 0; i < (int)astroparnames.size(); i++) { // Astrometric parameters
+						if (strcmp(buffer, "log_") == 0) { // Log parameter
+							if (strcmp(astroparnames[i].c_str(), &command[4]) == 0) {
+								consindex[conscurrent] = 100 + i;
+								flaglog = 1;
+							}
+						}
+						else {
+							if (strcmp(astroparnames[i].c_str(), command) == 0) {
+								consindex[conscurrent] = 100 + i;
+							}
+						}
 					}
 
 					if (command[0] == 'g' && command[1] == '_') { // Blending
@@ -521,6 +624,24 @@ void LevMar::ReadOptions() {
 				if (strcmp(command, "parametersfile") == 0) {
 					strcpy(parametersfile, value);
 				}
+				if (strcmp(command, "mass_luminosity_exponent") == 0) {
+					sscanf(value, "%lg", &mass_luminosity_exponent);
+				}
+				if (strcmp(command, "mass_radius_exponent") == 0) {
+					sscanf(value, "%lg", &mass_radius_exponent);
+				}
+				if (strcmp(command, "lens_mass_luminosity_exponent") == 0) {
+					sscanf(value, "%lg", &lens_mass_luminosity_exponent);
+				}
+				if (strcmp(command, "turn_off_secondary_lens") == 0 && strcmp(value, "True") == 0) {
+					VBM->turn_off_secondary_lens = true;
+				}
+				if (strcmp(command, "turn_off_secondary_source") == 0 && strcmp(value, "True") == 0) {
+					VBM->turn_off_secondary_source = true;
+				}
+				if (strcmp(command, "stepchainsave") == 0 && strcmp(value, "True") == 0) {
+					stepchainsave = true;
+				}
 			}
 			fclose(f);
 		}
@@ -528,6 +649,9 @@ void LevMar::ReadOptions() {
 			printf("\n\n- Default options:");
 		}
 	}
+	VBM->mass_luminosity_exponent = mass_luminosity_exponent;
+	VBM->mass_radius_exponent = mass_radius_exponent;
+	VBM->lens_mass_luminosity_exponent = lens_mass_luminosity_exponent;
 	current_path(eventname);
 }
 
@@ -559,9 +683,9 @@ int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim
 		leftlim[i] = preleftlim[i];
 		rightlim[i] = prerightlim[i];
 		fscanf(f, "%lg", &(pr[i]));
-		if (rightlim[i] > 1.e90) {
-			rightlim[i] = pr[i] + 300.0;
-			leftlim[i] = pr[i] - 300.0;
+		if (i == it0 || i == it02) {
+			rightlim[i] += pr[i];
+			leftlim[i] += pr[i];
 		}
 	}
 	fclose(f);
@@ -569,21 +693,35 @@ int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim
 	return 0;
 }
 
-void LevMar::ReadCurve() {
+
+void LevMar::ReadAncillary() {
 	FILE* f;
 	int k;
 	double* normfacs;
 
 	try {
-		printf("\n\n- Reading data \n");
+		sumf = (double*)malloc(sizeof(double) * nfil);
+		sumf2 = (double*)malloc(sizeof(double) * nfil);
+		sumfy = (double*)malloc(sizeof(double) * nfil);
+		sumy = (double*)malloc(sizeof(double) * nfil);
+		sumy2 = (double*)malloc(sizeof(double) * nfil);
+		sumsigma = (double*)malloc(sizeof(double) * nfil);
 
-		f = fopen("LCToFit.txt", "r");
-		fscanf(f, "%d", &np);
-		filter = (int*)malloc(sizeof(int) * np);
-		t = (double*)malloc(sizeof(double) * np);
-		y = (double*)malloc(sizeof(double) * np);
-		w = (double*)malloc(sizeof(double) * np);
-		satel = (int*)malloc(sizeof(int) * np);
+		if (astrometric) {
+			sumsigmaN = (double*)malloc(sizeof(double) * nfil);
+			sumsigmaE = (double*)malloc(sizeof(double) * nfil);
+			sumcN = (double*)malloc(sizeof(double) * nfil);
+			sumcE = (double*)malloc(sizeof(double) * nfil);
+			sumc1 = (double*)malloc(sizeof(double) * nfil);
+			sumc2 = (double*)malloc(sizeof(double) * nfil);
+		}
+
+		starts = (int*)malloc(sizeof(int) * nfil);
+		sizes = (int*)malloc(sizeof(int) * nfil);
+		pr = (double*)realloc(pr, sizeof(double) * (nps + nlinpar * nfil));
+		prn = (double*)malloc(sizeof(double) * (nps + nlinpar * nfil));
+		errs = (double*)malloc(sizeof(double) * (nps + nlinpar * nfil));
+		dFdp = (double*)malloc(sizeof(double) * nlinpar * nfil * nps);
 		delta = (double*)malloc(sizeof(double) * nps);
 		maxdelta = (double*)malloc(sizeof(double) * nps);
 		B = (double*)malloc(sizeof(double) * nps);
@@ -592,32 +730,14 @@ void LevMar::ReadCurve() {
 		Curv = (double*)malloc(sizeof(double) * nps * nps);
 		Cov = (double*)malloc(sizeof(double) * nps * nps);
 		fb = (double*)malloc(sizeof(double) * np * (nps + 1));
-
-
-		nfil = 1;
-		for (int i = 0; i < np; i++) {
-			fscanf(f, "%d %lf %lf %lf %d", &(filter[i]), &(t[i]), &(y[i]), &(w[i]), &(satel[i]));
-			if ((i != 0) && (filter[i] > filter[i - 1])) {
-				nfil++;
-			}
-			w[i] = 1 / (w[i]);
-		}
-		fclose(f);
-
-		sumf = (double*)malloc(sizeof(double) * nfil);
-		sumf2 = (double*)malloc(sizeof(double) * nfil);
-		sumfy = (double*)malloc(sizeof(double) * nfil);
-		sumy = (double*)malloc(sizeof(double) * nfil);
-		sumy2 = (double*)malloc(sizeof(double) * nfil);
-		sumsigma = (double*)malloc(sizeof(double) * nfil);
-		pr = (double*)realloc(pr, sizeof(double) * (nps + 2 * nfil));
-		prn = (double*)malloc(sizeof(double) * (nps + 2 * nfil));
-		errs = (double*)malloc(sizeof(double) * (nps + 2 * nfil));
-		dFdp = (double*)malloc(sizeof(double) * 2 * nfil * nps);
+		c1l = (double*)malloc(sizeof(double) * np * (nps + 1));
+		c2l = (double*)malloc(sizeof(double) * np * (nps + 1));
+		c1s = (double*)malloc(sizeof(double) * np * (nps + 1));
+		c2s = (double*)malloc(sizeof(double) * np * (nps + 1));
 
 		Gr = (double**)malloc(sizeof(double*) * nps);
 		for (int i = 0; i < nps; i++) {
-			Gr[i] = (double*)malloc(sizeof(double) * np);
+			Gr[i] = (double*)malloc(sizeof(double) * np * (nlinpar - 1));
 		}
 
 		current_path("Data");
@@ -639,16 +759,31 @@ void LevMar::ReadCurve() {
 
 		k = 0;
 		sumsigma[k] = sumy[k] = sumy2[k] = 0;
+		if (astrometric) sumcN[k] = sumcE[k] = sumsigmaN[k] = sumsigmaE[k] = 0;
+		starts[k] = 0;
 		for (int i = 0; i < np; i++) {
 			w[i] /= normfacs[filter[i]];
 			if ((i != 0) && (filter[i] > filter[i - 1])) {
+				sizes[k] = i - starts[k];
 				k++;
 				sumsigma[k] = sumy[k] = sumy2[k] = 0;
+				if (astrometric) sumcN[k] = sumcE[k] = sumsigmaN[k] = sumsigmaE[k] = 0;
+				starts[k] = i;
 			}
 			sumsigma[k] += w[i] * w[i];
 			sumy[k] += w[i] * w[i] * y[i];
 			sumy2[k] += w[i] * w[i] * y[i] * y[i];
+
+			if (astrometric) {
+				wcN[i] /= normfacs[filter[i]];
+				wcE[i] /= normfacs[filter[i]];
+				sumsigmaN[k] += wcN[i] * wcN[i];
+				sumsigmaE[k] += wcE[i] * wcE[i];
+				sumcN[k] += wcN[i] * wcN[i] * cN[i];
+				sumcE[k] += wcE[i] * wcE[i] * cE[i];
+			}
 		}
+		sizes[k] = np - starts[k];
 
 		for (int i = 0; i < nps; i++) {
 			maxdelta[i] = sigmapr[i];
@@ -669,32 +804,11 @@ void LevMar::ReadCurve() {
 		}
 		current_path("..");
 
-		//jfile=_findfirst("ZeroBlending.txt",&str2file); // Option for fitting with zero blending, to be elaborated
-		//if(jfile!=-1){
-
-		//	f=fopen("FilterToData.txt","r");
-		//	k=0;
-		//	while(k>=0){
-		//		k++;
-		//		fscanf(f,"%s",filnum);
-		//		if(filnum[0]=='O'){
-		//			OGLE=k;
-		//			k=-1;
-		//		}
-		//		if(feof(f)) k=-1;
-		//	}
-		//	fclose(f);
-		//	OGLE--;
-		//}else{
-		//	OGLE=-1;
-		//}
-
 	}
 	catch (...) {
 		error = 9;
 	}
 	free(normfacs);
-
 }
 
 int LevMar::Run() {
@@ -717,34 +831,19 @@ int LevMar::Run() {
 
 			if (!exists("PreModels")) create_directory("PreModels");
 			current_path("PreModels");
-			if (!exists(outdir)) create_directory(outdir);
-			current_path(outdir);
-			il = 0;
-			if (f = fopen("nlc.dat", "r")) {
-				int i1, i2;
-				fscanf(f, "%d %d", &i1, &i2);
-				if (i2 == i1 + 1) {
-					il = nlc;
+
+			// Removing all existing files
+			sprintf(filename, "%s.*", modelcode);
+			auto searchstring = regex(filename);
+			for (auto const& itr : directory_iterator(".")) {
+				string curfile = (itr).path().filename().string();
+				if (regex_match(curfile, searchstring)) {
+					remove(curfile);
 				}
-				fclose(f);
-			}
-			if (il == 0) {
-				// Removing all existing files
-				auto searchstring = regex(".*");
-				for (auto const& itr : directory_iterator(".")) {
-					string curfile = (itr).path().filename().string();
-					if (is_regular_file(curfile)) {
-						remove(curfile);
-					}
-				}
-				// nlc.dat contains the number of models calculated so far and the total number to be computed
-				f = fopen("nlc.dat", "w");
-				fprintf(f, "%d %d", -1, nlc);
-				fclose(f);
-				// minchi.dat contains the best chi square found so far in all kinds of models for this event
-				minchi = bestchi = 1.e100;
 			}
 
+			il = 0;
+			minchi = bestchi = 1.e100;
 
 			time_t ltime, rtime;
 			time(&ltime);
@@ -761,19 +860,17 @@ int LevMar::Run() {
 				}
 				bumpcounter = 0;
 
-				(this->*PrintOut)(pr);
+				PrintOut(pr);
 				/* Chi Squared at initial conditions */
 
 				c1 = ChiSquared(pr);
 				printf("\nStarting chi2 = %lf", c1);
 
-				// Saving to file
-				sprintf(filename, "%s-stepchain%d.dat", modelcode, il);
-				f = fopen(filename, "a");
-				(this->*PrintFile)(f, c1, false);
-				fprintf(f, "\n");
-				fclose(f);
-
+				// Saving to stepchain
+				if (stepchainsave) {
+					sprintf(filename, "%s-stepchain%d.dat", modelcode, il);
+					PrintFile(filename, il, c1, false);
+				}
 				// Initializing the main cycle
 
 				lambda = 3.;
@@ -785,8 +882,8 @@ int LevMar::Run() {
 				while ((ichi < 3) && (lambda < 1.e10) && (k <= maxsteps)) {
 					c0 = c1;
 					printf("\nStep %d\n", k++);
-
 					/* Calculation of the gradient */
+					getchar();
 
 					Grad();
 
@@ -849,7 +946,7 @@ int LevMar::Run() {
 							}
 						}
 						// Current parameters, current chi square and current lambda are displayed
-						(this->*PrintOut)(prn);
+						PrintOut(prn);
 						c1 = ChiSquared(prn);
 						printf("\nilam= %d lambda= %lf\nc1 = %lf prec=%le", ilam, lambda, c1, Tol);
 
@@ -861,7 +958,7 @@ int LevMar::Run() {
 
 					// if new point is better than previous, pr is updated.
 					if (ilam < 20) {
-						for (int i = 0; i < nps + 2 * nfil; i++) {
+						for (int i = 0; i < nps + nlinpar * nfil; i++) {
 							pr[i] = prn[i];
 						}
 					}
@@ -877,8 +974,9 @@ int LevMar::Run() {
 								printf("\nBumped!");
 								bumpcounter++;
 								for (int i = 0; i < nps; i++) {
-									fac = 2.0 * bumperpower / sqrt(fac);
-									prn[i] = pr[i] - fac * scanbumper->dp[i];
+									//fac = 2.0 * bumperpower / sqrt(fac);
+									//prn[i] = pr[i] - fac * scanbumper->dp[i];
+									prn[i] = scanbumper->p0[i] - bumperpower * (laststep->p0[i] - scanbumper->p0[i]);
 									if (prn[i] > rightlim[i]) {
 										prn[i] = 0.99 * rightlim[i] + 0.01 * pr[i];
 									}
@@ -889,7 +987,7 @@ int LevMar::Run() {
 								}
 								scanbumper->UpdateCurvature(bumperpower);
 								flag = 1;
-								(this->*PrintOut)(pr);
+								PrintOut(pr);
 							}
 						}
 						if (bumpcounter >= maxbumpcount) break;
@@ -901,16 +999,16 @@ int LevMar::Run() {
 					// Add new point to stepchain 
 					laststep->next = new bumper(pr, nps);
 					laststep = laststep->next;
+					laststep->Amp = c1;
 					// Saving to file
-					sprintf(filename, "%s-stepchain%d.dat", modelcode, il);
-					f = fopen(filename, "a");
-					(this->*PrintFile)(f, c1, false);
-					fprintf(f, "\n");
-					fclose(f);
-
+					if (stepchainsave) {
+						sprintf(filename, "%s-stepchain%d.dat", modelcode, il);
+						PrintFile(filename, il, c1, false);
+					}
 					// If new point's chi square is very close to previous one, ichi is increased.
 					// When ichi reaches 3, we declare convergence achieved.
-					if (fabs(1 - c1 / c0) < 1.0e-3) {
+					//if (fabs(1 - c1 / c0) < 1.0e-3) {
+					if (fabs(c0 - c1) * np < c0) {
 						ichi++;
 					}
 					else {
@@ -920,7 +1018,7 @@ int LevMar::Run() {
 					// Also close if bumpcounter has reached maxbumpcount
 					time(&rtime);
 					if (difftime(rtime, ltime) > maxtime || bumpcounter >= maxbumpcount) {
-						ichi = 3;
+						ichi = 10;
 						nlc = il;
 						printf("\n---- Time limit has been reached. Exiting...");
 					}
@@ -969,25 +1067,14 @@ int LevMar::Run() {
 
 
 
-					// Store model in a file named "(il).txt"
-					sprintf(filename, "%d.txt", il);
-					f = fopen(filename, "w");
-
-					// Print parameters to file
-
-					(this->*PrintFile)(f, c0, true);
-
-					// Print covariance matrix to file
-					fprintf(f, "\n");
-					for (int i = 0; i < nps; i++) {
-						if (i > 0) fprintf(f, "\n");
-						fprintf(f, "%le", Cov[i]);
-						for (int j = 1; j < nps; j++) {
-							fprintf(f, " %le", Cov[i + nps * j]);
-						}
+					// Store model in file
+					if (stepchainsave) {
+						sprintf(filename, "%s-%d.txt", modelcode, il);
 					}
-					fclose(f);
-
+					else {
+						sprintf(filename, "%s.txt", modelcode);
+					}
+					PrintFile(filename, il, c0, true);
 
 					if (modelcode[0] == 'L' && il == nlc - offsetdegeneracy - 1) {
 						// Find best model found so far and fit offset degeneracy model
@@ -1023,12 +1110,16 @@ int LevMar::Run() {
 
 						// Finding the last step outside any bumper
 						k = 1;
+						bumper* closestbumper = stepchain, * tentbumper = laststep;
 						for (scanbumper = stepchain; scanbumper && (scanbumper->next); scanbumper = scanbumper->next) {
 							k++;
 							fac = 1.e100;
 							for (scanbumper2 = bumperlist; scanbumper2; scanbumper2 = scanbumper2->next) {
 								fac2 = scanbumper2->distance(scanbumper->next->p0);
-								if (fac2 < fac) fac = fac2;
+								if (fac2 < fac) {
+									fac = fac2;
+									tentbumper = scanbumper2;
+								}
 							}
 							printf("\n%d %lf", k, fac);
 							if (fac < 1.) {
@@ -1043,7 +1134,24 @@ int LevMar::Run() {
 								laststep->next = 0;
 								scanbumper = laststep;
 							}
+							else closestbumper = tentbumper;
 						}
+						//						if (closestbumper != stepchain) {
+													// Start next chain on the other side of closest bumper
+						for (int i = 0; i < nps; i++) {
+							prn[i] = closestbumper->p0[i] - bumperpower * (laststep->p0[i] - closestbumper->p0[i]);
+							if (prn[i] > rightlim[i]) {
+								prn[i] = 0.99 * rightlim[i] + 0.01 * pr[i];
+							}
+							else if (prn[i] < leftlim[i]) {
+								prn[i] = 0.99 * leftlim[i] + 0.01 * pr[i];
+							}
+							pr[i] = prn[i];
+
+						}
+						laststep->next = new bumper(pr, nps);
+						laststep = laststep->next;
+						//						}
 					}
 					// Updating time count
 					//printf("\npartial time=%lf secs\n",(Environment::TickCount-tm)/1000.0);
@@ -1051,23 +1159,23 @@ int LevMar::Run() {
 					//tm=Environment::TickCount;
 
 					// Updating the nlc.dat file
-					f = fopen("nlc.dat", "w");
-					fprintf(f, "%d %d", il, nlc);
-					fclose(f);
+					//f = fopen("nlc.dat", "w");
+					//fprintf(f, "%d %d", il, nlc);
+					//fclose(f);
 				}
 
 				il++;
 			}
 
-			// When terminating, update the Termination file, 
-			// so that subsequent programs know everything has been concluded with this fit
-			sprintf(filename, "t%s.dat", outdir);
-			f = fopen(filename, "w");
-			fprintf(f, "%d %d", il, nlc);
-			fclose(f);
+			//// When terminating, update the Termination file, 
+			//// so that subsequent programs know everything has been concluded with this fit
+			//sprintf(filename, "t%s.dat", outdir);
+			//f = fopen(filename, "w");
+			//fprintf(f, "%d %d", il, nlc);
+			//fclose(f);
 
 			// If this fit has found the best minimum so far, update minchi.dat
-			current_path("..");
+//			current_path("..");
 			strcpy(filename, "minchi.dat");
 			if (exists(filename)) {
 				f = fopen(filename, "r");
@@ -1088,64 +1196,164 @@ int LevMar::Run() {
 	return error;
 }
 
-double LevMar::ChiSquared(double* pr) {
-	double chi2 = 0, chi0, chi1, p1;
-	int fl;
-
-	fl = 0;
-	sumf[0] = sumfy[0] = sumf2[0] = 0;
-	for (int i = 0; i < np; i++) {
-		if (filter[i] != fl) {
-			fl++;
-			sumf[fl] = sumfy[fl] = sumf2[fl] = 0;
-		}
-		VBM->satellite = satel[i];
-		VBM->a1 = limbdarks[fl];
-		fb[i] = (VBM->*model)(pr, t[i]);
-		sumf[fl] += w[i] * w[i] * fb[i];
-		sumf2[fl] += w[i] * w[i] * fb[i] * fb[i];
-		sumfy[fl] += w[i] * w[i] * fb[i] * y[i];
-	}
-	for (int i = 0; i <= fl; i++) {
-#ifndef NOgOGLE
-		p1 = sumf[i] * sumf[i] - sumf2[i] * sumsigma[i] + epsilon;
-		pr[nps + i * 2] = (sumf[i] * sumfy[i] - sumf2[i] * sumy[i]) / p1;
-		pr[nps + 1 + i * 2] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
-		//chi2+=fabs(sumy2[i]+(sumfy[i]*sumfy[i]*sumsigma[i]+sumf2[i]*sumy[i]*sumy[i]-2*sumf[i]*sumy[i]*sumfy[i])/p1);
-#else
-		if (i == OGLE) {
-			pr[nps + i * 2] = 0.;
-			pr[nps + 1 + i * 2] = sumfy[i] / sumf2[i];
-			chi2 += fabs(sumy2[i] - sumfy[i] * pr[nps + 1 + i * 2]);
+void LevMar::EvaluateModel(double* pr, int fl, int ips) {
+	double* tfl, * fbfl, * c1sfl, * c2sfl, * c1lfl, * c2lfl;
+	tfl = &(t[starts[fl]]);
+	fbfl = &(fb[starts[fl] + np * ips]);
+	c1sfl = &(c1s[starts[fl] + np * ips]);
+	c2sfl = &(c2s[starts[fl] + np * ips]);
+	c1lfl = &(c1l[starts[fl] + np * ips]);
+	c2lfl = &(c2l[starts[fl] + np * ips]);
+	switch (modnumber) {
+	case 0:
+		VBM->ESPLLightCurve(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
+		break;
+	case 1:
+		if (astrometric) {
+			VBM->ESPLAstroLightCurve(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, sizes[fl]);
 		}
 		else {
-			p1 = sumf[i] * sumf[i] - sumf2[i] * sumsigma[i] + epsilon;
-			pr[nps + i * 2] = (sumf[i] * sumfy[i] - sumf2[i] * sumy[i]) / p1;
-			pr[nps + 1 + i * 2] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
-			chi2 += fabs(sumy2[i] + (sumfy[i] * sumfy[i] * sumsigma[i] + sumf2[i] * sumy[i] * sumy[i] - 2 * sumf[i] * sumy[i] * sumfy[i]) / p1);
+			VBM->ESPLLightCurveParallax(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
 		}
-#endif
-		if (pr[nps + 1 + i * 2] < 0) {
-			pr[nps + 1 + i * 2] = 0;
+		break;
+	case 2:
+		VBM->BinSourceExtLightCurve(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
+		break;
+	case 3:
+		if (astrometric) {
+			VBM->BinSourceAstroLightCurveXallarap(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, y1a, y2a, sizes[fl]);
+		}
+		else {
+			VBM->BinSourceExtLightCurveXallarap(pr, tfl, fbfl, y1a, y2a, y1a, y2a, sizes[fl]);
+		}
+		break;
+	case 4:
+		VBM->BinaryLightCurve(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
+		break;
+	case 5:
+		if (astrometric) {
+			VBM->BinaryAstroLightCurve(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, sizes[fl]);
+		}
+		else {
+			VBM->BinaryLightCurveParallax(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
+		}
+		break;
+	case 6:
+		if (astrometric) {
+			VBM->BinaryAstroLightCurveOrbital(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, y1a, sizes[fl]);
+		}
+		else {
+			VBM->BinaryLightCurveOrbital(pr, tfl, fbfl, y1a, y2a, y1a, sizes[fl]);
+		}
+		break;
+	case 7:
+		if (astrometric) {
+			VBM->BinaryAstroLightCurveKepler(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, y1a, sizes[fl]);
+		}
+		else {
+			VBM->BinaryLightCurveKepler(pr, tfl, fbfl, y1a, y2a, y1a, sizes[fl]);
+		}
+		break;
+	case 8:
+		VBM->TripleLightCurve(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
+		break;
+	case 9:
+		if (astrometric) {
+			VBM->TripleAstroLightCurve(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, sizes[fl]);
+		}
+		else {
+			VBM->TripleLightCurveParallax(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
+		}
+		break;
+	}
+}
+
+double LevMar::ChiSquared(double* pr) {
+	double chi2 = 0, chi0, chia, p1;
+
+	for (int fl = 0; fl < nfil; fl++) {
+		VBM->satellite = satel[starts[fl]];
+		VBM->a1 = limbdarks[fl];
+		EvaluateModel(pr, fl, 0); // Populates fb[starts[fl]] with magnifications for given parameters
+		// For astrometric datasets, populates also source and lens centroids
+		sumf[fl] = sumfy[fl] = sumf2[fl] = 0;
+		for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+			sumf[fl] += w[i] * w[i] * fb[i];
+			sumf2[fl] += w[i] * w[i] * fb[i] * fb[i];
+			sumfy[fl] += w[i] * w[i] * fb[i] * y[i];
+		}
+	}
+	for (int i = 0; i < nfil; i++) {
+		if (w[starts[i]] > 0) {
+			p1 = sumf[i] * sumf[i] - sumf2[i] * sumsigma[i] + epsilon;
+			pr[nps + i * nlinpar] = (sumf[i] * sumfy[i] - sumf2[i] * sumy[i]) / p1;
+			pr[nps + 1 + i * nlinpar] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
+			//chi2+=fabs(sumy2[i]+(sumfy[i]*sumfy[i]*sumsigma[i]+sumf2[i]*sumy[i]*sumy[i]-2*sumf[i]*sumy[i]*sumfy[i])/p1);
+
+			if (pr[nps + 1 + i * nlinpar] < 0) {
+				pr[nps + 1 + i * nlinpar] = 0;
+			}
+		}
+		else {
+			if (w[starts[i]] > -0.75) { // Lens astrometry
+				pr[nps + i * nlinpar] = 1;
+				pr[nps + 1 + i * nlinpar] = 0;
+			}
+			else {					// Source astrometry
+				pr[nps + i * nlinpar] = 0;
+				pr[nps + 1 + i * nlinpar] = 1;
+			}
 		}
 
 	}
-	chi2 = 0.;
-	chi0 = 0;
-	flagblending = 0;
-	for (int i = 0; i < np; i++) {
-		p1 = (y[i] - pr[nps + filter[i] * 2] - pr[nps + 1 + filter[i] * 2] * fb[i]) * w[i] * w[i] * pr[nps + 1 + filter[i] * 2] * Tol;
-		chi0 += p1 * p1;
-		p1 = (y[i] - pr[nps + filter[i] * 2] - pr[nps + 1 + filter[i] * 2] * fb[i]) * w[i];
-		chi2 += p1 * p1;
-		if (pr[nps + 1 + filter[i] * 2] > 2 * y[i]) {
-			flagblending++;
-			chi2 += (pr[nps + 1 + filter[i] * 2] - 2 * y[i]) * (pr[nps + 1 + filter[i] * 2] - 2 * y[i]) * w[i] * w[i];
+	chi2 = chi0 = chia = 0;
+
+	if (astrometric) { // Astrometric chi square
+		double g;
+		for (int fl = 0; fl < nfil; fl++) {
+			if (wcN[starts[fl]] > 1.e-90) { // Only calculate for datasets with astrometric data
+				g = pr[nps + fl * nlinpar] / (pr[nps + fl * nlinpar + 1] + pr[nps + fl * nlinpar] * 1.e-8); // Blending for this dataset
+				sumc1[fl] = sumc2[fl] = 0;
+				for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+					c1s[i] = (c1s[i] * fb[i] + c1l[i] * g) / (fb[i] + g); // Weighted centroid
+					c2s[i] = (c2s[i] * fb[i] + c2l[i] * g) / (fb[i] + g);
+					sumc1[fl] += wcN[i] * wcN[i] * c1s[i];
+					sumc2[fl] += wcE[i] * wcE[i] * c2s[i];
+				}
+				pr[nps + fl * nlinpar + 2] = (sumcN[fl] - sumc1[fl]) / sumsigmaN[fl]; // Origin shift
+				pr[nps + fl * nlinpar + 3] = (sumcE[fl] - sumc2[fl]) / sumsigmaE[fl];
+				for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+					p1 = (cN[i] - pr[nps + fl * nlinpar + 2] - c1s[i]) * wcN[i];
+					chia += p1 * p1;
+					p1 = (cE[i] - pr[nps + fl * nlinpar + 3] - c2s[i]) * wcE[i];
+					chia += p1 * p1;
+
+				}
+			}
+			else {
+				pr[nps + fl * nlinpar + 2] = pr[nps + fl * nlinpar + 3] = 0;
+			}
 		}
 	}
-	chi0 = sqrt(2 * chi0);
+
+	// Photometric chi square
+	flagblending = 0;
+	for (int i = 0; i < np; i++) {
+		if (w[i] > 0) {
+			p1 = (y[i] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) * w[i] * w[i] * pr[nps + 1 + filter[i] * nlinpar] * Tol;
+			chi0 += p1 * p1;
+			p1 = (y[i] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) * w[i];
+			chi2 += p1 * p1;
+			if (pr[nps + 1 + filter[i] * nlinpar] > 2 * y[i]) {
+				flagblending++;
+				chi2 += (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * w[i] * w[i];
+			}
+		}
+	}
+	chi0 = sqrt(2 * chi0); // Error in chi square
 	if (chi0 / chi2 > 0.1) Tol *= 0.5;
 	if (chi0 / chi2 < 0.01 && Tol < .99e-2) Tol *= 2;
+	chi2 += chia; // Add astrometric chi square
 
 	// Constraints
 	for (int icons = 0; icons < consnumber; icons++) {
@@ -1160,45 +1368,92 @@ double LevMar::ChiSquared(double* pr) {
 
 void LevMar::Grad() {
 	static double inc = 1.0e-3, p1;
-	int fl;
-	for (int i = 0; i < nps + nfil * 2; i++) {
+	for (int i = 0; i < nps + nfil * nlinpar; i++) {
 		prn[i] = pr[i];
 	}
 	for (int j = 0; j < nps; j++) {
 		printf("%d ", j);
 		prn[j] += inc;
-		fl = 0;
-		sumf[0] = sumfy[0] = sumf2[0] = 0;
-		for (int i = 0; i < np; i++) {
-			if (filter[i] != fl) {
-				fl++;
-				sumf[fl] = sumfy[fl] = sumf2[fl] = 0;
-			}
-			VBM->satellite = satel[i];
+		for (int fl = 0; fl < nfil; fl++) {
+			VBM->satellite = satel[starts[fl]];
 			VBM->a1 = limbdarks[fl];
-			fb[i + np * (j + 1)] = (VBM->*model)(prn, t[i]);
-			sumf[fl] += w[i] * w[i] * fb[i + np * (j + 1)];
-			sumf2[fl] += w[i] * w[i] * fb[i + np * (j + 1)] * fb[i + np * (j + 1)];
-			sumfy[fl] += w[i] * w[i] * fb[i + np * (j + 1)] * y[i];
+			EvaluateModel(prn, fl, j + 1); // Populates fb[starts[fl]] with magnifications for given parameters
+			// For astrometric datasets, populates also source and lens centroids
+			sumf[fl] = sumfy[fl] = sumf2[fl] = 0;
+			for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+				sumf[fl] += w[i] * w[i] * fb[i + np * (j + 1)];
+				sumf2[fl] += w[i] * w[i] * fb[i + np * (j + 1)] * fb[i + np * (j + 1)];
+				sumfy[fl] += w[i] * w[i] * fb[i + np * (j + 1)] * y[i];
+			}
 		}
-		for (int i = 0; i <= fl; i++) {
-			p1 = sumf[i] * sumf[i] - sumf2[i] * sumsigma[i] + epsilon;
-			prn[nps + i * 2] = (sumf[i] * sumfy[i] - sumf2[i] * sumy[i]) / p1;
-			prn[nps + 1 + i * 2] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
+		for (int i = 0; i < nfil; i++) {
+			if (w[starts[i]] > 0) {
+				p1 = sumf[i] * sumf[i] - sumf2[i] * sumsigma[i] + epsilon;
+				prn[nps + i * nlinpar] = (sumf[i] * sumfy[i] - sumf2[i] * sumy[i]) / p1;
+				prn[nps + 1 + i * nlinpar] = (sumf[i] * sumy[i] - sumsigma[i] * sumfy[i]) / p1;
 
-			if (prn[nps + 1 + i * 2] < 0)  prn[nps + 1 + i * 2] = 0;
-			dFdp[(1 + 2 * i) * nps + j] = -1.08574 * ((prn[nps + i * 2] + prn[nps + 1 + i * 2]) / (pr[nps + i * 2] + pr[nps + 1 + i * 2]) - 1) / inc;  // error on baseline -2.5log(FB+FS)/log(10) expanded to first order
-			dFdp[(2 * i) * nps + j] = (prn[nps + i * 2] / prn[nps + 1 + i * 2] - pr[nps + i * 2] / pr[nps + 1 + i * 2]) / inc;    // error on blending FB/FS
+				if (prn[nps + 1 + i * nlinpar] < 0)  prn[nps + 1 + i * nlinpar] = 0;
+			}
+			else {
+				if (w[starts[i]] > -0.75) { // Lens astrometry
+					prn[nps + i * nlinpar] = 1;
+					prn[nps + 1 + i * nlinpar] = 0;
+				}
+				else {					// Source astrometry
+					prn[nps + i * nlinpar] = 0;
+					prn[nps + 1 + i * nlinpar] = 1;
+				}
+			}
+			dFdp[(1 + nlinpar * i) * nps + j] = -1.08574 * ((prn[nps + i * nlinpar] + prn[nps + 1 + i * nlinpar]) / (pr[nps + i * nlinpar] + pr[nps + 1 + i * nlinpar]) - 1) / inc;  // error on baseline -2.5log(FB+FS)/log(10) expanded to first order
+			dFdp[(nlinpar * i) * nps + j] = (prn[nps + i * nlinpar] / prn[nps + 1 + i * nlinpar] - pr[nps + i * nlinpar] / pr[nps + 1 + i * nlinpar]) / inc;    // error on blending FB/FS
 		}
+
+		if (astrometric) { // Astrometric calculations
+			double g;
+			for (int fl = 0; fl < nfil; fl++) {
+				if (wcN[starts[fl]] > 1.e-90) { // Only calculate for datasets with astrometric data
+					g = prn[nps + fl * nlinpar] / (prn[nps + fl * nlinpar + 1] + 1.e-12 * prn[nps + fl * nlinpar]); // Blending for this dataset
+					sumc1[fl] = sumc2[fl] = 0;
+					for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+						c1s[i + np * (j + 1)] = (c1s[i + np * (j + 1)] * fb[i + np * (j + 1)] + c1l[i + np * (j + 1)] * g) / (fb[i + np * (j + 1)] + g); // Weighted centroid
+						c2s[i + np * (j + 1)] = (c2s[i + np * (j + 1)] * fb[i + np * (j + 1)] + c2l[i + np * (j + 1)] * g) / (fb[i + np * (j + 1)] + g);
+						sumc1[fl] += wcN[i] * wcN[i] * c1s[i + np * (j + 1)];
+						sumc2[fl] += wcE[i] * wcE[i] * c2s[i + np * (j + 1)];
+					}
+					prn[nps + fl * nlinpar + 2] = (sumcN[fl] - sumc1[fl]) / sumsigmaN[fl]; // Origin shift
+					prn[nps + fl * nlinpar + 3] = (sumcE[fl] - sumc2[fl]) / sumsigmaE[fl];
+					dFdp[(2 + nlinpar * fl) * nps + j] = (prn[nps + fl * nlinpar + 2] - pr[nps + fl * nlinpar + 2]) / inc;
+					dFdp[(3 + nlinpar * fl) * nps + j] = (prn[nps + fl * nlinpar + 3] - pr[nps + fl * nlinpar + 3]) / inc;
+				}
+				else {
+					prn[nps + fl * nlinpar + 2] = prn[nps + fl * nlinpar + 3] = 0;
+				}
+			}
+		}
+
 		for (int icons = 0; icons < consnumber; icons++) { // Gradient of constraints
 			consvars[icons + (j + 1) * consnumber] = ComputeConstraint(prn, icons);
 			p1 = (consvars[icons] - constraints[icons]);
 			consvars[icons + (j + 1) * consnumber] = (consvars[icons + (j + 1) * consnumber] - consvars[icons]) / (((p1 > 0) ? consright[icons] : consleft[icons]) * inc);
 		}
 		prn[j] -= inc;
+		//		double errgrad = 0,errterm, grad=0;
 		for (int i = 0; i < np; i++) {
-			Gr[j][i] = w[i] * (prn[nps + filter[i] * 2] + prn[nps + 1 + filter[i] * 2] * fb[i + np * (j + 1)] - pr[nps + filter[i] * 2] - pr[nps + 1 + filter[i] * 2] * fb[i]) / inc;
+			if (w[i] > 0) {
+				Gr[j][i] = w[i] * (prn[nps + filter[i] * nlinpar] + prn[nps + 1 + filter[i] * nlinpar] * fb[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) / inc;
+				//errterm = w[i] / inc * Tol * pr[nps + 1 + filter[i] * nlinpar];
+				//errgrad += errterm * errterm;
+				//grad += Gr[j][i] * Gr[j][i];
+			}
+			if (wcN[i] > 0) {
+				Gr[j][i + np] = wcN[i] * (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 2] - c1s[i]) / inc;
+				Gr[j][i + np * 2] = wcE[i] * (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 3] - c2s[i]) / inc;
+				//errterm= (50* exp(pr[3])*Tol*pr[9]) / inc;
+				//errgrad += errterm * errterm * (wcN[i] * wcN[i] + wcE[i] * wcE[i]);
+				//grad += Gr[j][i+np] * Gr[j][i+np] + Gr[j][i+2*np] * Gr[j][i + 2 * np];
+			}
 		}
+		//printf("%d ", j);
 	}
 	printf("OK\n");
 	// Curvature matrix
@@ -1206,7 +1461,13 @@ void LevMar::Grad() {
 		for (int i = 0; i < nps; i++) {
 			Curv[i * nps + j] = 0;
 			for (int k = 0; k < np; k++) {
-				Curv[i * nps + j] += Gr[i][k] * Gr[j][k];
+				if (w[k] > 0) {
+					Curv[i * nps + j] += Gr[i][k] * Gr[j][k];
+				}
+				if (wcN[k] > 0) {
+					Curv[i * nps + j] += Gr[i][k + np] * Gr[j][k + np];
+					Curv[i * nps + j] += Gr[i][k + np * 2] * Gr[j][k + np * 2];
+				}
 			}
 			// Constraints in curvature
 			for (int icons = 0; icons < consnumber; icons++) {
@@ -1219,7 +1480,13 @@ void LevMar::Grad() {
 	for (int i = 0; i < nps; i++) {
 		p1 = 0;
 		for (int k = 0; k < np; k++) {
-			p1 += w[k] * Gr[i][k] * (y[k] - pr[nps + filter[k] * 2] - pr[nps + 1 + filter[k] * 2] * fb[k]);
+			if (w[k] > 0) {
+				p1 += w[k] * Gr[i][k] * (y[k] - pr[nps + filter[k] * nlinpar] - pr[nps + 1 + filter[k] * nlinpar] * fb[k]);
+			}
+			if (wcN[k] > 0) {
+				p1 += wcN[k] * Gr[i][k + np] * (cN[k] - pr[nps + filter[k] * nlinpar + 2] - c1s[k]);
+				p1 += wcE[k] * Gr[i][k + np * 2] * (cE[k] - pr[nps + filter[k] * nlinpar + 3] - c2s[k]);
+			}
 		}
 		B0[i] = p1;
 		for (int icons = 0; icons < consnumber; icons++) {
@@ -1232,8 +1499,11 @@ void LevMar::Grad() {
 
 inline double LevMar::ComputeConstraint(double* pr, int ic) {
 	int i = consindex[ic];
-	if (i < 10000) {
+	if (i < 100) {
 		return pr[i];
+	}
+	if (i < 10000) {
+		return pr[(i - 100) + nps - 4];
 	}
 	if (i < 20000) {
 		return pr[nps + (i - 10000) * 2] / pr[nps + (i - 10000) * 2 + 1];
@@ -1259,26 +1529,11 @@ inline double LevMar::ComputeConstraint(double* pr, int ic) {
 }
 
 void LevMar::Covariance() {
-	//double p1;
-	//int j1,k1;
-	//p1=Determinant(Curv,nps);
-	//for(int i=0;i<nps;i++){
-	//	for(int i2=0;i2<nps;i2++){
-	//		for(int j=0;j<nps-1;j++){
-	//			for(int k=0;k<nps-1;k++){
-	//				j1=(j<i2)? j : j+1;
-	//				k1=(k<i)? k : k+1;
-	//				A[j*(nps-1)+k]=Curv[j1*nps+k1];
-	//			}
-	//		}
-	//		Cov[i*nps+i2]=Determinant(A,nps-1)/p1*(((i+i2)%2)? -1 : 1);
-	//	}
-	//}
 	Inverse(Curv, Cov, nps);
 	for (int i = 0; i < nps; i++) {
 		errs[i] = sqrt(fabs(Cov[i * nps + i]));
 	}
-	for (int i = 0; i < 2 * nfil; i++) {
+	for (int i = 0; i < nlinpar * nfil; i++) {
 		errs[i + nps] = 0;
 		for (int j1 = 0; j1 < nps; j1++) {
 			for (int j2 = 0; j2 < nps; j2++) {
@@ -1290,313 +1545,218 @@ void LevMar::Covariance() {
 	}
 }
 
-void LevMar::PrintOutPS(double* pr) {
-	printf("\nu0=%lf tE=%lf t0=%lf RS=%lf", exp(pr[0]), exp(pr[1]), pr[2], exp(pr[3]));
-}
-
-void LevMar::PrintOutPX(double* pr) {
-	printf("\nu0=%lf tE=%lf t0=%lf RS=%lf pai1=%lf pai2=%lf", exp(pr[0]), exp(pr[1]), pr[2], exp(pr[3]), pr[4], pr[5]);
-}
-
-void LevMar::PrintOutBS(double* pr) {
-	printf("\ntE=%lf FR=%lf u1=%lf u2=%lf t1=%lf t2=%lf rho=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], pr[4], pr[5], exp(pr[6]));
-}
-
-void LevMar::PrintOutBO(double* pr) {
-	printf("\nu0=%lf t0=%lf tE=%lf rho=%lf xi1=%lf xi2=%lf\nom=%lf inc=%lf phi=%lf qs=%lf", pr[0], pr[1], exp(pr[2]), exp(pr[3]), pr[4], pr[5], pr[6], pr[7], pr[8], exp(pr[9]));
-}
-
-void LevMar::PrintOutLS(double* pr) {
-	printf("\na=%lf q=%lf uc=%lf th=%lf RS=%lf\ntE=%lf tc=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6]);
-}
-
-void LevMar::PrintOutLX(double* pr) {
-	printf("\na=%lf q=%lf u0=%lf th=%lf RS=%lf\ntE=%lf t0=%lf pai1=%lf pai2=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8]);
-}
-
-void LevMar::PrintOutLO(double* pr) {
-	printf("\na=%lf q=%lf u0=%lf th=%lf RS=%lf\ntE=%lf t0=%lf pai1=%lf pai2=%lf\ndsdt=%lf dthdt=%lf w3=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11]);
-}
-
-void LevMar::PrintOutLK(double* pr) {
-	printf("\na=%lf q=%lf u0=%lf th=%lf RS=%lf\ntE=%lf t0=%lf pai1=%lf pai2=%lf\ndsdt=%lf dthdt=%lf w3=%lf sz_s=%lf a_s3d=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11], pr[12], pr[13]);
-}
-
-void LevMar::PrintOutTS(double* pr) {
-	printf("\na=%lf q=%lf uc=%lf th=%lf RS=%lf\ntE=%lf tc=%lf s2=%lf q2=%lf beta=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], exp(pr[7]), exp(pr[8]), pr[9]);
-}
-
-void LevMar::PrintOutTX(double* pr) {
-	printf("\na=%lf q=%lf uc=%lf th=%lf RS=%lf\ntE=%lf tc=%lf s2=%lf q2=%lf beta=%lf pai1=%lf pai2=%lf", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], exp(pr[7]), exp(pr[8]), pr[9], pr[10], pr[11]);
-}
 
 
-void LevMar::PrintFilePS(FILE* f, double c0, bool printerrors) {
-	fprintf(f, "%.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], exp(pr[3]));
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
+void LevMar::PrintOut(double* pr) {
+	int npp = nps, ilog = 0, logsize = logposs[modnumber].size();
+	double fl;
+	if (astrometric) npp -= 4;
+
+	for (int i = 0; i < npp; i++) {
+		if (i % 4 == 0) {
+			printf("\n");
+		}
+		if (ilog < logsize && i == logposs[modnumber][ilog]) {
+			fl = exp(pr[i]);
+			ilog++;
+		}
+		else {
+			fl = pr[i];
+		}
+		printf("%s=%lf ", parnames[modnumber][i].c_str(), fl);
 	}
-	fprintf(f, " %.16le", c0);
+	if (astrometric) {
+		printf("\n");
+		for (int i = 0; i < 4; i++) {
+			printf("%s=%lf ", astroparnames[i].c_str(), pr[npp + i]);
+		}
+	}
+}
+
+void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
+	int npp = nps, ilog, logsize = logposs[modnumber].size();
+	double fl;
+	FILE* f;
+	f = fopen(filename, "a");
+	switch (modnumber) {
+		//case 2:
+		//	if (pr[1] > 0 && !VBM->turn_off_secondary_source) { // Invert sources
+		//		double sc;
+		//		pr[1] = -pr[1];
+		//		sc = pr[3];
+		//		pr[3] = pr[2];
+		//		pr[2] = sc;
+		//		sc = pr[5];
+		//		pr[5] = pr[4];
+		//		pr[4] = sc;
+		//		sc = errs[3];
+		//		errs[3] = errs[2];
+		//		errs[2] = sc;
+		//		sc = errs[5];
+		//		errs[5] = errs[4];
+		//		errs[4] = sc;
+		//		for (int k = 0; k < nps; k++) {
+		//			Cov[1 + nps * k] = -Cov[1 + nps * k];
+		//			Cov[k + nps * 1] = -Cov[k + nps * 1];
+		//		}
+		//		for (int k = 0; k < nps; k++) {
+		//			sc = Cov[2 + nps * k];
+		//			Cov[2 + nps * k] = Cov[3 + nps * k];
+		//			Cov[3 + nps * k] = sc;
+		//			sc = Cov[5 + nps * k];
+		//			Cov[5 + nps * k] = Cov[4 + nps * k];
+		//			Cov[4 + nps * k] = sc;
+		//		}
+		//		for (int k = 0; k < nps; k++) {
+		//			sc = Cov[k + nps * 2];
+		//			Cov[k + nps * 2] = Cov[k + nps * 3];
+		//			Cov[k + nps * 3] = sc;
+		//			sc = Cov[k + nps * 5];
+		//			Cov[k + nps * 5] = Cov[k + nps * 4];
+		//			Cov[k + nps * 4] = sc;
+		//		}
+		//	}
+		//	break;
+	case 4:
+		if (pr[1] > 0 && !VBM->turn_off_secondary_lens) {
+			pr[3] = pr[3] - M_PI;
+			pr[1] = -pr[1];
+			for (int k = 0; k < nps; k++) {
+				Cov[1 + nps * k] = -Cov[1 + nps * k];
+				Cov[k + nps * 1] = -Cov[k + nps * 1];
+			}
+		}
+		while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
+		while (pr[3] < 0) pr[3] += 2 * M_PI;
+		if (pr[2] < 0) {
+			pr[3] = 2 * M_PI - pr[3];
+			pr[2] = -pr[2];
+			for (int k = 0; k < nps; k++) {
+				Cov[2 + nps * k] = -Cov[2 + nps * k];
+				Cov[k + nps * 2] = -Cov[k + nps * 2];
+				Cov[3 + nps * k] = -Cov[3 + nps * k];
+				Cov[k + nps * 3] = -Cov[k + nps * 3];
+			}
+		}
+		break;
+	case 5:
+		if (pr[1] > 0 && !VBM->turn_off_secondary_lens) {
+			pr[3] = pr[3] - M_PI;
+			pr[1] = -pr[1];
+			for (int k = 0; k < nps; k++) {
+				Cov[1 + nps * k] = -Cov[1 + nps * k];
+				Cov[k + nps * 1] = -Cov[k + nps * 1];
+			}
+		}
+		while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
+		while (pr[3] < 0) pr[3] += 2 * M_PI;
+		break;
+	case 6:
+		if (pr[1] > 0 && !VBM->turn_off_secondary_lens) {
+			pr[3] = pr[3] - M_PI;
+			pr[1] = -pr[1];
+			for (int k = 0; k < nps; k++) {
+				Cov[1 + nps * k] = -Cov[1 + nps * k];
+				Cov[k + nps * 1] = -Cov[k + nps * 1];
+			}
+		}
+		while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
+		while (pr[3] < 0) pr[3] += 2 * M_PI;
+		break;
+	case 8:
+		while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
+		while (pr[3] < 0) pr[3] += 2 * M_PI;
+		if (pr[2] < 0) {
+			pr[3] = 2 * M_PI - pr[3];
+			pr[2] = -pr[2];
+			for (int k = 0; k < nps; k++) {
+				Cov[2 + nps * k] = -Cov[2 + nps * k];
+				Cov[k + nps * 2] = -Cov[k + nps * 2];
+				Cov[3 + nps * k] = -Cov[3 + nps * k];
+				Cov[k + nps * 3] = -Cov[k + nps * 3];
+			}
+		}
+
+		while (pr[9] > 2 * M_PI) pr[9] -= 2 * M_PI;
+		while (pr[9] < 0) pr[9] += 2 * M_PI;
+		break;
+	case 9:
+		while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
+		while (pr[3] < 0) pr[3] += 2 * M_PI;
+
+		while (pr[9] > 2 * M_PI) pr[9] -= 2 * M_PI;
+		while (pr[9] < 0) pr[9] += 2 * M_PI;
+		break;
+	}
+
+	if (astrometric) npp -= 4;
+
 	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3] * exp(pr[3]));
-		for (int i = nps; i < nps + 2 * nfil; i++) {
+		//Write model name
+		filename[strlen(filename) - 4] = 0;
+		fprintf(f, "%s-%d\n", filename, il);
+	}
+
+	// Write values of the parameters (without log)
+	ilog = 0;
+	for (int i = 0; i < npp; i++) {
+		if (ilog < logsize && i == logposs[modnumber][ilog]) {
+			fl = exp(pr[i]);
+			ilog++;
+		}
+		else {
+			fl = pr[i];
+		}
+		fprintf(f, "%.16le ", fl);
+	}
+	// Write astrometric parameters
+	if (astrometric) {
+		for (int i = 0; i < 4; i++) {
+			fprintf(f, "%.16le ", pr[npp + i]);
+		}
+	}
+	for (int i = nps; i < nps + nlinpar * nfil; i++) {
+		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
+		fprintf(f, "%le ", pr[i]);
+	}
+	// Write chi square
+	fprintf(f, "%.16le\n", c0);
+
+	if (printerrors) {
+		// Write errors
+		ilog = 0;
+		for (int i = 0; i < npp; i++) {
+			if (ilog < logsize && i == logposs[modnumber][ilog]) {
+				fl = exp(pr[i]) * errs[i];
+				ilog++;
+			}
+			else {
+				fl = errs[i];
+			}
+			fprintf(f, "%.16le ", fl);
+		}
+		// Write astrometric errors
+		if (astrometric) {
+			for (int i = 0; i < 4; i++) {
+				fprintf(f, "%.16le ", errs[npp + i]);
+			}
+		}
+		// Write errors for fluxes
+		fprintf(f, "%le", errs[nps]);
+		for (int i = nps + 1; i < nps + nlinpar * nfil; i++) {
 			fprintf(f, " %le", errs[i]);
 		}
-	}
-}
+		fprintf(f, "\n");
 
-void LevMar::PrintFilePX(FILE* f, double c0, bool printerrors) {
-	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le", pr[0], exp(pr[1]), pr[2], exp(pr[3]), pr[4], pr[5]);
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
-	}
-	fprintf(f, " %.16le", c0);
-	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le %le %le", errs[0], errs[1] * exp(pr[1]), errs[2], errs[3] * exp(pr[3]), errs[4], errs[5]);
-		for (int i = nps; i < nps + 2 * nfil; i++) {
-			fprintf(f, " %le", errs[i]);
+		// Print covariance matrix to file
+		for (int i = 0; i < nps; i++) {
+			if (i > 0) fprintf(f, "\n");
+			fprintf(f, "%le", Cov[i]);
+			for (int j = 1; j < nps; j++) {
+				fprintf(f, " %le", Cov[i + nps * j]);
+			}
 		}
+		fprintf(f, "\n");
 	}
-}
-
-void LevMar::PrintFileBS(FILE* f, double c0, bool printerrors) {
-	if (pr[1] > 0) { // Invert sources
-		double sc;
-		pr[1] = -pr[1];
-		sc = pr[3];
-		pr[3] = pr[2];
-		pr[2] = sc;
-		sc = pr[5];
-		pr[5] = pr[4];
-		pr[4] = sc;
-		sc = errs[3];
-		errs[3] = errs[2];
-		errs[2] = sc;
-		sc = errs[5];
-		errs[5] = errs[4];
-		errs[4] = sc;
-		for (int k = 0; k < nps; k++) {
-			Cov[1 + nps * k] = -Cov[1 + nps * k];
-			Cov[k + nps * 1] = -Cov[k + nps * 1];
-		}
-		for (int k = 0; k < nps; k++) {
-			sc = Cov[2 + nps * k];
-			Cov[2 + nps * k] = Cov[3 + nps * k];
-			Cov[3 + nps * k] = sc;
-			sc = Cov[5 + nps * k];
-			Cov[5 + nps * k] = Cov[4 + nps * k];
-			Cov[4 + nps * k] = sc;
-		}
-		for (int k = 0; k < nps; k++) {
-			sc = Cov[k + nps * 2];
-			Cov[k + nps * 2] = Cov[k + nps * 3];
-			Cov[k + nps * 3] = sc;
-			sc = Cov[k + nps * 5];
-			Cov[k + nps * 5] = Cov[k + nps * 4];
-			Cov[k + nps * 4] = sc;
-		}
-	}
-
-	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], pr[3], pr[4], pr[5], exp(pr[6]));
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
-	}
-	fprintf(f, " %.16le", c0);
-	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4], errs[5], errs[6] * exp(pr[6]));
-		for (int i = nps; i < nps + 2 * nfil; i++) {
-			fprintf(f, " %le", errs[i]);
-		}
-	}
-}
-
-void LevMar::PrintFileBO(FILE* f, double c0, bool printerrors) {
-	fprintf(f, "%.16lf %.16lf %.16lf %.16lf %.16lf %.16lf %.16lf %.16lf %.16lf %.16lf", pr[0], pr[1], exp(pr[2]), exp(pr[3]), pr[4], pr[5], pr[6], pr[7], pr[8], exp(pr[9]));
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
-	}
-	fprintf(f, " %.16le", c0);
-	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le %le %le %le %le %le %le", errs[0], errs[1], errs[2] * exp(pr[2]), errs[3] * exp(pr[3]), errs[4], errs[5], errs[6], errs[7], errs[8], errs[9] * exp(pr[9]));
-		for (int i = nps; i < nps + 2 * nfil; i++) {
-			fprintf(f, " %le", errs[i]);
-		}
-	}
-}
-
-void LevMar::PrintFileLS(FILE* f, double c0, bool printerrors) {
-	if (pr[1] > 0) {
-		pr[3] = pr[3] - M_PI;
-		pr[1] = -pr[1];
-		for (int k = 0; k < nps; k++) {
-			Cov[1 + nps * k] = -Cov[1 + nps * k];
-			Cov[k + nps * 1] = -Cov[k + nps * 1];
-		}
-	}
-	while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
-	while (pr[3] < 0) pr[3] += 2 * M_PI;
-	if (pr[2] < 0) {
-		pr[3] = 2 * M_PI - pr[3];
-		pr[2] = -pr[2];
-		for (int k = 0; k < nps; k++) {
-			Cov[2 + nps * k] = -Cov[2 + nps * k];
-			Cov[k + nps * 2] = -Cov[k + nps * 2];
-			Cov[3 + nps * k] = -Cov[3 + nps * k];
-			Cov[k + nps * 3] = -Cov[k + nps * 3];
-		}
-	}
-
-	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6]);
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
-	}
-	fprintf(f, " %.16le", c0);
-	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6]);
-		for (int i = nps; i < nps + 2 * nfil; i++) {
-			fprintf(f, " %le", errs[i]);
-		}
-	}
-}
-
-void LevMar::PrintFileLX(FILE* f, double c0, bool printerrors) {
-	if (pr[1] > 0) {
-		pr[3] = pr[3] - M_PI;
-		pr[1] = -pr[1];
-		for (int k = 0; k < nps; k++) {
-			Cov[1 + nps * k] = -Cov[1 + nps * k];
-			Cov[k + nps * 1] = -Cov[k + nps * 1];
-		}
-	}
-	while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
-	while (pr[3] < 0) pr[3] += 2 * M_PI;
-
-	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8]);
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
-	}
-	fprintf(f, " %.16le", c0);
-	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6], errs[7], errs[8]);
-		for (int i = nps; i < nps + 2 * nfil; i++) {
-			fprintf(f, " %le", errs[i]);
-		}
-	}
-}
-
-void LevMar::PrintFileLO(FILE* f, double c0, bool printerrors) {
-	if (pr[1] > 0) {
-		pr[3] = pr[3] - M_PI;
-		pr[1] = -pr[1];
-		for (int k = 0; k < nps; k++) {
-			Cov[1 + nps * k] = -Cov[1 + nps * k];
-			Cov[k + nps * 1] = -Cov[k + nps * 1];
-		}
-	}
-	while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
-	while (pr[3] < 0) pr[3] += 2 * M_PI;
-
-	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11]);
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
-	}
-	fprintf(f, " %.16le", c0);
-	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le %le %le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6], errs[7], errs[8], errs[9], errs[10], errs[11]);
-		for (int i = nps; i < nps + 2 * nfil; i++) {
-			fprintf(f, " %le", errs[i]);
-		}
-	}
-}
-
-
-void LevMar::PrintFileLK(FILE* f, double c0, bool printerrors) {
-	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11], pr[12], pr[13]);
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
-	}
-	fprintf(f, " %.16le", c0);
-	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le %le %le %le %le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6], errs[7], errs[8], errs[9], errs[10], errs[11], errs[12], errs[13]);
-		for (int i = nps; i < nps + 2 * nfil; i++) {
-			fprintf(f, " %le", errs[i]);
-		}
-	}
-}
-
-void LevMar::PrintFileTS(FILE* f, double c0, bool printerrors) {
-	if (pr[1] > 0) {
-		pr[3] = pr[3] - M_PI;
-		pr[1] = -pr[1];
-		for (int k = 0; k < nps; k++) {
-			Cov[1 + nps * k] = -Cov[1 + nps * k];
-			Cov[k + nps * 1] = -Cov[k + nps * 1];
-		}
-	}
-	while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
-	while (pr[3] < 0) pr[3] += 2 * M_PI;
-	if (pr[2] < 0) {
-		pr[3] = 2 * M_PI - pr[3];
-		pr[2] = -pr[2];
-		for (int k = 0; k < nps; k++) {
-			Cov[2 + nps * k] = -Cov[2 + nps * k];
-			Cov[k + nps * 2] = -Cov[k + nps * 2];
-			Cov[3 + nps * k] = -Cov[3 + nps * k];
-			Cov[k + nps * 3] = -Cov[k + nps * 3];
-		}
-	}
-
-	while (pr[9] > 2 * M_PI) pr[9] -= 2 * M_PI;
-	while (pr[9] < 0) pr[9] += 2 * M_PI;
-
-	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], exp(pr[7]), exp(pr[8]), pr[9]);
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
-	}
-	fprintf(f, " %.16le", c0);
-	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6], errs[7] * exp(pr[7]), errs[8] * exp(pr[8]), errs[9]);
-		for (int i = nps; i < nps + 2 * nfil; i++) {
-			fprintf(f, " %le", errs[i]);
-		}
-	}
-}
-
-
-void LevMar::PrintFileTX(FILE* f, double c0, bool printerrors) {
-	if (pr[1] > 0) {
-		pr[3] = pr[3] - M_PI;
-		pr[1] = -pr[1];
-		for (int k = 0; k < nps; k++) {
-			Cov[1 + nps * k] = -Cov[1 + nps * k];
-			Cov[k + nps * 1] = -Cov[k + nps * 1];
-		}
-	}
-	while (pr[3] > 2 * M_PI) pr[3] -= 2 * M_PI;
-	while (pr[3] < 0) pr[3] += 2 * M_PI;
-
-	while (pr[9] > 2 * M_PI) pr[9] -= 2 * M_PI;
-	while (pr[9] < 0) pr[9] += 2 * M_PI;
-
-	fprintf(f, "%.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le %.16le", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], exp(pr[7]), exp(pr[8]), pr[9], pr[10], pr[11]);
-	for (int i = nps; i < nps + 2 * nfil; i++) {
-		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
-		fprintf(f, " %le", pr[i]);
-	}
-	fprintf(f, " %.16le", c0);
-	if (printerrors) {
-		fprintf(f, "\n%le %le %le %le %le %le %le %le %le %le %le %le", errs[0] * exp(pr[0]), errs[1] * exp(pr[1]), errs[2], errs[3], errs[4] * exp(pr[4]), errs[5] * exp(pr[5]), errs[6], errs[7] * exp(pr[7]), errs[8] * exp(pr[8]), errs[9], errs[10], errs[11]);
-		for (int i = nps; i < nps + 2 * nfil; i++) {
-			fprintf(f, " %le", errs[i]);
-		}
-	}
+	fclose(f);
 }

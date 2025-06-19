@@ -103,7 +103,6 @@ Additional partial products of modeling are stored in the event directory. At th
 Data/                    # Directory containing the original input data files as described in data preparation
 ini/                     # Directory containing text files specifying the options for individual modules
 InitCond/                # Directory containing the text files with the initial conditions for fitting
-PreModels/               # Directory containing subdirectories with all models calculated by all fits
 Models/                  # Directory containing selected models for each category
 FinalModels/             # Directory containing the best models as proposed in the final assessment (see above)
 LCToFit.txt              # Text file containing the formatted and pre-processed data points
@@ -112,20 +111,9 @@ spline.txt               # List of points in the spline approximation used for i
 nature.txt               # Text file containing the final assessment on the event and the list of best models
 ```
 
-These files will be explained in the following chapters in due time. They can be useful for careful diagnostics of the modeling process. You may vision an event with a completed run among the provided examples: [event001done.zip](/events/event001done.zip).
+In addition, a temporary folder `PreModels/` containing the [preliminary models](PreliminaryModels.md) is deleted at the end of the modeling run.
 
-### Saving disk space
-
-The preliminary models calculated by `RTModel` may occupy 30MB of disk space in nearly 10000 files. Unless you need some specific debugging or some deeper investigation, we suggest to cleanup the event directory from the directory `/PreModels`, thus saving 99% disk space. You may do it after the modeling run by executing the following line:
-
-```
-rtm.cleanup_preliminary_models()
-```
-
-In alternative, you may including the `cleanup = True` option when you call the `run()` function in order to request a cleanup at the end of the modeling run:
-```
-rtm.run('/event002', cleanup = True)
-```
+These files will be explained in the following chapters in due time. You may vision an event with a completed run among the provided examples: [event001done.zip](/events/event001done.zip).
 
 ## Structure of a modeling run
 

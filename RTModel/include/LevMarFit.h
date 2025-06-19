@@ -24,16 +24,20 @@ class LevMar {
 	int error;
 	int flagblending;
 	path exedir;
+	bool astrometric;
+	int nlinpar;
 
 	double tim0, tm;
 
-	double (VBMicrolensing::* model)(double*, double);
 	int nps;
 	double* sigmapr, * leftlim, * rightlim;
 
-	int* filter, * satel, nfil, np, OGLE;
-	double* t, * y, * w, * delta, * maxdelta, * Curv, * A, * B, * B0, * Cov, * fb, ** Gr, * dFdp, * errs;
+	int* filter, * satel, nfil, np, OGLE, it0, it02;
+	double* t, * y, * w, *y1a, *y2a, * delta, * maxdelta, * Curv, * A, * B, * B0, * Cov, * fb, ** Gr, * dFdp, * errs;
+	double* cN, * cE, * wcN, * wcE, *c1s, *c2s, *c1l, *c2l;
 	double* pr, * prn, * sumy, * sumy2, * sumsigma, * sumfy, * sumf, * sumf2, * limbdarks;
+	double* sumsigmaN, * sumsigmaE, * sumcN, * sumcE, * sumc1, * sumc2;
+	int* sizes, * starts;
 
 	int consnumber, *consindex;
 	double* constraints, * consleft, * consright, *consvars;
@@ -41,8 +45,10 @@ class LevMar {
 
 	double Tol;
 
-	void (LevMar::* PrintOut)(double*);
-	void (LevMar::* PrintFile)(FILE*, double, bool);
+//	void (LevMar::* PrintOut)(double*);
+//	void (LevMar::* PrintFile)(FILE*, double, bool);
+	void PrintOut(double*);
+	void PrintFile(char *filename, int, double, bool);
 
 	bumper* stepchain, * bumperlist, * laststep;
 
@@ -54,34 +60,14 @@ public:
 	void ReadFiles(int, char**);
 	int InitCond(double* presigmapr, double* preleftlim, double* prerightlim);
 	void ReadCurve();
-	void ReadOptions();
-	void Run();
+	void ReadAncillary();
+	void ReadOptions(double *,double *, double *);
+	int Run();
 	double ChiSquared(double*);
 	void Grad();
+	void EvaluateModel(double *pr, int filter, int ips);
 	void Covariance();
 	double ComputeConstraint(double *pr, int i);
-
-	void PrintOutPS(double*);
-	void PrintOutPX(double*);
-	void PrintOutBS(double*);
-	void PrintOutBO(double*);
-	void PrintOutLS(double*);
-	void PrintOutLX(double*);
-	void PrintOutLO(double*);
-	void PrintOutLK(double*);
-	void PrintOutTS(double*);
-	void PrintOutTX(double*);
-
-	void PrintFilePS(FILE*, double, bool);
-	void PrintFilePX(FILE*, double, bool);
-	void PrintFileBS(FILE*, double, bool);
-	void PrintFileBO(FILE*, double, bool);
-	void PrintFileLS(FILE*, double, bool);
-	void PrintFileLX(FILE*, double, bool);
-	void PrintFileLO(FILE*, double, bool);
-	void PrintFileLK(FILE*, double, bool);
-	void PrintFileTS(FILE*, double, bool);
-	void PrintFileTX(FILE*, double, bool);
 
 };
 

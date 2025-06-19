@@ -4,6 +4,8 @@
 #ifndef _bumper
 #define _bumper
 
+#include<stdio.h>
+
 // Bumper class is the penalty function to be used to fill minima in chi square
 class bumper{
 public:
@@ -13,6 +15,7 @@ public:
 	double Amp;
 	int nps;
 	char modelcode[16];
+	char *buffer;
 	int il;
 	bool duplicate;
 	bumper(double *,int);
@@ -23,6 +26,7 @@ public:
 	void signCovariance(int);
 	void flipCovariance(int, int);
 	double distance(double *);
+	void SetBuffer(FILE*, int, int);
 	bumper *next;
 };
 

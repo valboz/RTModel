@@ -15,7 +15,7 @@ rtm.InitCond()
 
 With this code, we first perform the data pre-processing by `Reader` and then we set the initial conditions by `InitCond`. In the `/event001` directory you will see that the following products appear:
 - In the subfolder `ini/`, the file `InitCond.ini` appears, which contains the current options with which `InitCond` has been launched.
-- A new subdirectory called `InitCond/` is created. In this subdirectory there are several text files named `InitCondXX.txt` and some `PreInitCondXX.txt`, with XX replaced by the label of the corresponding [model category](ModelCategories.md).
+- A new subdirectory called `InitCond/` is created. In this subdirectory there are several text files named `InitCondXX.txt`, with XX replaced by the label of the corresponding [model category](ModelCategories.md).
 - Each `InitCondXX.txt` contains the number of initial conditions and the parameters of each initial conditions line by line.
 - A file `spline.txt` in the base event folder containing the points of the spline models built by `InitCond` for each dataset.
 
@@ -43,7 +43,8 @@ The user may specify his/her own options to drive the initial conditions to the 
 ```
 import RTModel
 rtm = RTModel.RTModel('/event001')
-rtm.config_InitCond(npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0)
+rtm.config_InitCond(npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None,
+                    nostatic = False, onlyorbital = False, usesatellite = 0, onlyupdate = False)
 rtm.run()
 ```
 

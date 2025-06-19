@@ -19,7 +19,7 @@ myplot = plm.plotmodel(eventname = event, modelfile = model)
 
 The output will look like this
 
-<img src="plotmodel_fig1.png" width = 900>
+<img src="figs/plotmodel_fig1.png" width = 900>
 
 On the left, we have the model light curve with the data points. Residuals are also shown below. the source trajectory and the caustics are shown on the right. The plots are followed by the list of parameters with their errors. For each telescope we also have the blending fraction $F_{background}/F_{source}$ and the baseline magnitude. Finally, the chi square for the model is displayed.
 
@@ -32,9 +32,11 @@ Here is a list of arguments available for the `plotmodel` function:
 - `parameters = []`: parameters of a user-defined model. The order and meaning of the parameters depends on the model chosen through the argument `model` (see [Model categories](ModelCategories.md)).
 - `tmin = None`, `tmax = None`: Minimum and maximum time for the plot in units of HJD-2450000. If not specified, the plot is made between t0-2tE and t0+2tE.
 - `timesteps = 300`: Number of steps in time axis.
+- `magmin = None`, `magmax = None`: Minimum and maximum magnitude in the light curve plot. If not specified, these are deduced from the light curve model.
+- `tlabel = 't'`, `maglabel = 'mag'`, `reslabel = 'Res'`: Labels for the axes in the light curve plot.
 - `referencephot = 0`: Dataset to be used as photometric reference for the magnitude axis. All other datasets are rescaled to magnitudes in the system of the chosen dataset. By default the first dataset is chosen.
 - `printpars = True`: If left True, the parameters are printed below the figure, otherwise only the figure is shown.
-- 'accuracy = 0.01`: The accuracy of magnification calculations in the plot.
+- `accuracy = 0.01`: The accuracy of magnification calculations in the plot.
 
 ## Properties of the ```plotmodel``` object
 

@@ -31,6 +31,8 @@ bool onlyupdate = false; // No model search, but only update of previously found
 int usesatellite = 0; // Satellite to be used for initial conditions. Ground telescopes by default.
 char templatelibrary[256] = ""; // User-specified template library
 char modelcategories[256] = "PSPXBSBOLSLXLO";
+char astroini[256] = "0.0 0.0 0.125 1.0";
+
 //double tau = 0.5; // Provisional!!! Exclude peaks shorter than tau
 
 // Structure datapoint: stores time (t), flux (y), error (yerr), significance (sig), time range for the uncertainty (tl-tr)
@@ -62,15 +64,16 @@ int main(int argc, char* argv[])
 	char command[256], buffer[256];
 	char value[256];
 	double value2;
-	double tv, yv, errv, t0, tE, t1, t2, tasy, mean, sw;
+	double tv, yv, errv, Decv, errDecv, RAv, errRAv, ncolumns, t0, tE, t1, t2, tasy, mean, sw;
 	double* t, * y, * err, * tt, * yy, * eerr;
 	double maxdev, curdev, asydev = 0, w1, w2;
 	double thigh, highdev;
 	FILE* f;
-	int flag, np, nps, npc, * nnp, nfil, ifil, dn, satellite;
+	int flag, np, nps, npsold, npc, * nnp, nfil, ifil, dn, satellite;
 	double fint;
 	dataset** peaklist, * cpeaks, * newpeaks;
 	datapoint* p, * pm, * pmm, * pl, * pr, * pasy = 0, * highestpeak, * minimum, * startsection, * endsection, * sectionpeak;
+	bool astrometric = false, astrometricold = false;
 
 	setbuf(stdout, nullptr);
 
@@ -114,21 +117,6 @@ int main(int argc, char* argv[])
 	}
 	current_path(eventname);
 
-	// Look for previous runs to include previously found best models
-
-	auto searchstring = regex("run.*");
-	int lastrun = -1;
-	string runstring = "";
-	for (auto const& itr : directory_iterator(".")) {
-		string curfile = (itr).path().filename().string();
-		if (regex_match(curfile, searchstring)) {
-			int currun = atoi(curfile.c_str() + 4);
-			if (currun > lastrun) {
-				lastrun = currun;
-				runstring = curfile;
-			}
-		}
-	}
 
 
 	// Reading InitCond.ini and set parameters accordingly
@@ -190,12 +178,49 @@ int main(int argc, char* argv[])
 		current_path(eventname);
 	}
 
+	/* Checking the curve to fit */
+
+	printf("\n\n- Reading data \n");
+
+	f = fopen("LCToFit.txt", "r");
+	fscanf(f, "%d", &np);
+	if (np == 0) {
+		printf("\n! No data !");
+		return -1;
+	}
+
+	nfil = 1;
+	dn = 0;
+	for (int i = 0; i < np; i++) {
+		fscanf(f, "%d %lg %lg %lg %d %lg %lg %lg %lg", &(ifil), &(tv), &(yv), &(errv), &(satellite), &Decv, &errDecv, &RAv, &errRAv);
+		if (errDecv > 0) astrometric = true;  // Check if dataset contains astrometric data
+		if (satellite != usesatellite) {
+			np--;
+			i--;
+		}
+		else {
+			if ((i != 0) && (ifil != dn)) {
+				nfil++;
+			}
+		}
+		dn = ifil;
+	}
+	fclose(f);
+	if (np == 0) {
+		printf("\n! No datasets match the chosen satellite!\n  Check your usesatellite option.");
+		return -1;
+	}
+	np++;
+	if (astrometric) nostatic = true; // If astrometric data are present, we have to include parallax
+
+
 	printf("\nNumber of peaks to be considered in light curve %d", nobspeaks);
 	printf("\nThreshold for peak identification %lf", peakthr);
 	sigmathr = peakthr * 0.5;
 	printf("\nOld models to be included in next run %d", maxoldmodels);
 	if (onlyorbital) printf("\nOnly orbital motion models will be initialized");
 	if (nostatic && !onlyorbital) printf("\nStatic models will not be initialized");
+
 
 	if (nostatic) {
 		char* prm, * pfol;
@@ -254,36 +279,6 @@ int main(int argc, char* argv[])
 
 			/* Reading the curve to fit */
 
-			printf("\n\n- Reading data \n");
-
-			f = fopen("LCToFit.txt", "r");
-			fscanf(f, "%d", &np);
-			if (np == 0) {
-				printf("\n! No data !");
-				return -1;
-			}
-
-			nfil = 1;
-			dn = 0;
-			for (int i = 0; i < np; i++) {
-				fscanf(f, "%d %lf %lf %lf %d", &(ifil), &(tv), &(yv), &(errv), &(satellite));
-				if (satellite != usesatellite) {
-					np--;
-					i--;
-				}
-				else {
-					if ((i != 0) && (ifil != dn)) {
-						nfil++;
-					}
-				}
-				dn = ifil;
-			}
-			fclose(f);
-			if (np == 0) {
-				printf("\n! No datasets match the chosen satellite!\n  Check your usesatellite option.");
-				return -1;
-			}
-			np++;
 
 			tt = (double*)malloc(sizeof(double) * np);
 			yy = (double*)malloc(sizeof(double) * np);
@@ -297,7 +292,7 @@ int main(int argc, char* argv[])
 			nfil = 0;
 			dn = 0;
 			for (int i = 0; i < np; i++) {
-				fscanf(f, "%d %lf %lf %lf %d", &(ifil), &(tt[i]), &(yy[i]), &(eerr[i]), &(satellite));
+				fscanf(f, "%d %lg %lg %lg %d %lg %lg %lg %lg", &(ifil), &(tt[i]), &(yy[i]), &(eerr[i]), &(satellite), &Decv, &errDecv, &RAv, &errRAv);
 				if (satellite != usesatellite) {
 					np--;
 					i--;
@@ -863,15 +858,40 @@ int main(int argc, char* argv[])
 		}
 	}
 	// At this point, newpeaks contains the list of peaks to be used to generate initial conditions ordered by significance
-	// We are ready for matching to the template library
 
-	// Reading old best models, if any
-	// This block is used by to include the best models from previous run in the set of initial conditions for the next run.
-	// Conventions
-	// First letter: P for single-source-single-lens, L for binary lens, B for binary source
-	// Second letter: S for static, X for parallax, O for orbital motion
-	// Three numbers for models sorted by increasing chi square
-	// .txt
+	// Look for previous runs to include previously found best models
+
+	auto searchstring = regex("run.*");
+	int lastrun = -1;
+	string runstring = "";
+	for (auto const& itr : directory_iterator(".")) {
+		string curfile = (itr).path().filename().string();
+		if (regex_match(curfile, searchstring)) {
+			int currun = atoi(curfile.c_str() + 4);
+			if (currun > lastrun) {
+				lastrun = currun;
+				runstring = curfile;
+			}
+		}
+	}
+	if (exists(path(runstring))) {
+		sprintf(buffer, "%s/LCToFit.txt", runstring.c_str());
+		FILE* f = fopen(buffer, "r");
+		int npold;
+		if (f != 0) {
+			fscanf(f, "%f", &npold);
+			for (int i = 0; i < np; i++) {
+				fscanf(f, "%d %lg %lg %lg %d %lg %lg %lg %lg", &(ifil), &(tv), &(yv), &(errv), &(satellite), &Decv, &errDecv, &RAv, &errRAv);
+				if (errDecv > 0) {// Check if dataset contains astrometric data
+					astrometricold = true;
+					break;
+				}
+			}
+			fclose(f);
+		}
+		else maxoldmodels = 0;
+	}
+	else maxoldmodels = 0;
 
 	current_path(eventname);
 	if (!exists("InitCond"))	create_directory("InitCond");
@@ -894,7 +914,7 @@ int main(int argc, char* argv[])
 	if (strstr(modelcategories, "PS") != 0) {
 		filebest = regex("PS.*\\.txt");
 		strcpy(fileinit, "InitCondPS.txt");
-		nps = 4;
+		nps = npsold = 4;
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
 		if (exists(path(runstring) / path("Models"))) {
 			current_path(path(runstring) / path("Models"));
@@ -903,7 +923,7 @@ int main(int argc, char* argv[])
 				string curfile = (itr).path().filename().string();
 				if (regex_match(curfile, filebest)) {
 					f = fopen(curfile.c_str(), "r");
-					for (int j = 0; j < nps; j++) {
+					for (int j = 0; j < npsold; j++) {
 						fscanf(f, "%le", &tt[dn * nps + j]);
 					}
 					fclose(f);
@@ -953,9 +973,11 @@ int main(int argc, char* argv[])
 	if (strstr(modelcategories, "PX") != 0) {
 		filebest = regex("PX.*\\.txt");
 		strcpy(fileinit, "InitCondPX.txt");
-		nps = 6;
+		nps = npsold = 6;
+		if (astrometric) nps += 4;
+		if (astrometricold && astrometric) npsold += 4;
 
-		tt = (double*)malloc(sizeof(double) * 6 * maxoldmodels);
+		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
 		if (exists(path(runstring) / path("Models"))) {
 			current_path(path(runstring) / path("Models"));
 			for (auto const& itr : directory_iterator(".")) {
@@ -963,8 +985,11 @@ int main(int argc, char* argv[])
 				string curfile = (itr).path().filename().string();
 				if (regex_match(curfile, filebest)) {
 					f = fopen(curfile.c_str(), "r");
-					for (int j = 0; j < 6; j++) {
-						fscanf(f, "%le", &tt[dn * 6 + j]);
+					for (int j = 0; j < npsold; j++) {
+						if (fscanf(f, "%le", &tt[dn * nps + j]) < 1) {
+							sscanf(astroini, "%lf %lf %lf %lf", &(tt[dn * nps + j]), &(tt[dn * nps + j + 1]), &(tt[dn * nps + j + 2]), &(tt[dn * nps + j + 3]));
+							break;
+						}
 					}
 					fclose(f);
 					dn++;
@@ -992,6 +1017,7 @@ int main(int argc, char* argv[])
 			for (int j = 0; j < nps; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
+			if (npsold < nps) fprintf(f, "%s", astroini);
 			fprintf(f, "\n");
 		}
 
@@ -1002,8 +1028,14 @@ int main(int argc, char* argv[])
 					for (int itE = 0; itE < ntE; itE++) {
 						for (int ir = 0; ir < nrho; ir++) {
 							//			{u0, tE, t0, Rs}
-							fprintf(f, "%le %le %le %le 0.0 0.0\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
-							fprintf(f, "%le %le %le %le 0.0 0.0\n", -pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
+							if (astrometric) {
+								fprintf(f, "%le %le %le %le 0.0 0.0 %s\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir), astroini);
+								fprintf(f, "%le %le %le %le 0.0 0.0 %s\n", -pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir), astroini);
+							}
+							else {
+								fprintf(f, "%le %le %le %le 0.0 0.0\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
+								fprintf(f, "%le %le %le %le 0.0 0.0\n", -pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
+							}
 						}
 					}
 				}
@@ -1022,7 +1054,7 @@ int main(int argc, char* argv[])
 	if (strstr(modelcategories, "BS") != 0) {
 		filebest = regex("BS.*\\.txt");
 		strcpy(fileinit, "InitCondBS.txt");
-		nps = 7;
+		nps = npsold = 7;
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
 		if (exists(path(runstring) / path("Models"))) {
 			current_path(path(runstring) / path("Models"));
@@ -1031,7 +1063,7 @@ int main(int argc, char* argv[])
 				string curfile = (itr).path().filename().string();
 				if (regex_match(curfile, filebest)) {
 					f = fopen(curfile.c_str(), "r");
-					for (int j = 0; j < nps; j++) {
+					for (int j = 0; j < npsold; j++) {
 						fscanf(f, "%le", &tt[dn * nps + j]);
 					}
 					fclose(f);
@@ -1085,7 +1117,9 @@ int main(int argc, char* argv[])
 	if (strstr(modelcategories, "BO") != 0) {
 		filebest = regex("BO.*\\.txt");
 		strcpy(fileinit, "InitCondBO.txt");
-		nps = 10;
+		nps = npsold = 12;
+		if (astrometric) nps += 4;
+		if (astrometricold && astrometric) npsold += 4;
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
 		if (exists(path(runstring) / path("Models"))) {
 			current_path(path(runstring) / path("Models"));
@@ -1094,8 +1128,11 @@ int main(int argc, char* argv[])
 				string curfile = (itr).path().filename().string();
 				if (regex_match(curfile, filebest)) {
 					f = fopen(curfile.c_str(), "r");
-					for (int j = 0; j < nps; j++) {
-						fscanf(f, "%le", &tt[dn * nps + j]);
+					for (int j = 0; j < npsold; j++) {
+						if (fscanf(f, "%le", &tt[dn * nps + j]) < 1) {
+							sscanf(astroini, "%lf %lf %lf %lf", &(tt[dn * nps + j]), &(tt[dn * nps + j + 1]), &(tt[dn * nps + j + 2]), &(tt[dn * nps + j + 3]));
+							break;
+						}
 					}
 					fclose(f);
 					dn++;
@@ -1128,6 +1165,7 @@ int main(int argc, char* argv[])
 			for (int j = 0; j < nps; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
+			if (npsold < nps) fprintf(f, "%s", astroini);
 			fprintf(f, "\n");
 		}
 		// Here we write the initial conditions by matching the newpeaks
@@ -1139,13 +1177,23 @@ int main(int argc, char* argv[])
 							for (int iu2 = 0; iu2 < nu0; iu2++) {
 								for (int itE = 0; itE < ntE; itE++) {
 									for (int iFR = 0; iFR < nFR; iFR++) {
+										if (astrometric) {
+											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
+											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
+											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
+											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
+										}
+										else {
+											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
+											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
+											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
+											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
+
+										}
+										// Old parameterization
 										//{u0, t0, log_tE, log_Rs, xi1, xi2, omega, inc, phi, log_qs}
-										double u01 = pow(10., -2. + iu);
-										double u02 = pow(10., -2. + iu2);
-										double tE = pow(10., -1. + itE);
-										double qs = pow(10., (-1. + iFR) / 4.0);
-										fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (-u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
-										fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
+										//fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (-u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
+										//fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
 									}
 								}
 							}
@@ -1185,7 +1233,7 @@ int main(int argc, char* argv[])
 	if (strstr(modelcategories, "LS") != 0) {
 		filebest = regex("LS.*\\.txt");
 		strcpy(fileinit, "InitCondLS.txt");
-		nps = 7;
+		nps = npsold = 7;
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
 		if (exists(path(runstring) / path("Models"))) {
 			current_path(path(runstring) / path("Models"));
@@ -1194,7 +1242,7 @@ int main(int argc, char* argv[])
 				string curfile = (itr).path().filename().string();
 				if (regex_match(curfile, filebest)) {
 					f = fopen(curfile.c_str(), "r");
-					for (int j = 0; j < nps; j++) {
+					for (int j = 0; j < npsold; j++) {
 						fscanf(f, "%le", &tt[dn * nps + j]);
 					}
 					fclose(f);
@@ -1260,7 +1308,9 @@ int main(int argc, char* argv[])
 	if (strstr(modelcategories, "LX") != 0) {
 		filebest = regex("LX.*\\.txt");
 		strcpy(fileinit, "InitCondLX.txt");
-		nps = 9;
+		nps = npsold = 9;
+		if (astrometric) nps += 4;
+		if (astrometricold && astrometric) npsold += 4;
 
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
 		if (exists(path(runstring) / path("Models"))) {
@@ -1270,8 +1320,11 @@ int main(int argc, char* argv[])
 				string curfile = (itr).path().filename().string();
 				if (regex_match(curfile, filebest)) {
 					f = fopen(curfile.c_str(), "r");
-					for (int j = 0; j < nps; j++) {
-						fscanf(f, "%le", &tt[dn * nps + j]);
+					for (int j = 0; j < npsold; j++) {
+						if (fscanf(f, "%le", &tt[dn * nps + j]) < 1) {
+							sscanf(astroini, "%lf %lf %lf %lf", &(tt[dn * nps + j]), &(tt[dn * nps + j + 1]), &(tt[dn * nps + j + 2]), &(tt[dn * nps + j + 3]));
+							break;
+						}
 					}
 					fclose(f);
 					dn++;
@@ -1300,6 +1353,7 @@ int main(int argc, char* argv[])
 			for (int j = 0; j < nps; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
+			if (npsold < nps) fprintf(f, "%s", astroini);
 			fprintf(f, "\n");
 		}
 		// Here we write the initial conditions by matching the newpeaks to the peaks recorded in the template library
@@ -1317,6 +1371,7 @@ int main(int argc, char* argv[])
 							}
 							fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 
 							// Reflected initial condition for nostatic
@@ -1327,9 +1382,7 @@ int main(int argc, char* argv[])
 							}
 							fprintf(f, "%le %le", tE, t0);
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
-							if (onlyorbital) {
-								fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
-							}
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 
 							tE = (t1 - t2) / (yy[i * 7 + 6] - yy[i * 7 + 5]); // We also include the time-reverse matching
@@ -1342,6 +1395,7 @@ int main(int argc, char* argv[])
 							}
 							fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 
 							// Reflected initial condition for nostatic
@@ -1352,9 +1406,7 @@ int main(int argc, char* argv[])
 							}
 							fprintf(f, "%le %le", tE, t0);
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
-							if (onlyorbital) {
-								fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
-							}
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 						}
 					}
@@ -1370,7 +1422,9 @@ int main(int argc, char* argv[])
 	if (strstr(modelcategories, "LO") != 0) {
 		filebest = regex("LO.*\\.txt");
 		strcpy(fileinit, "InitCondLO.txt");
-		nps = 12;
+		nps = npsold = 12;
+		if (astrometric) nps += 4;
+		if (astrometricold && astrometric) npsold += 4;
 
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
 		if (exists(path(runstring) / path("Models"))) {
@@ -1380,8 +1434,11 @@ int main(int argc, char* argv[])
 				string curfile = (itr).path().filename().string();
 				if (regex_match(curfile, filebest)) {
 					f = fopen(curfile.c_str(), "r");
-					for (int j = 0; j < nps; j++) {
-						fscanf(f, "%le", &tt[dn * nps + j]);
+					for (int j = 0; j < npsold; j++) {
+						if (fscanf(f, "%le", &tt[dn * nps + j]) < 1) {
+							sscanf(astroini, "%lf %lf %lf %lf", &(tt[dn * nps + j]), &(tt[dn * nps + j + 1]), &(tt[dn * nps + j + 2]), &(tt[dn * nps + j + 3]));
+							break;
+						}
 					}
 					fclose(f);
 					dn++;
@@ -1409,6 +1466,7 @@ int main(int argc, char* argv[])
 			for (int j = 0; j < nps; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
+			if (npsold < nps) fprintf(f, "%s", astroini);
 			fprintf(f, "\n");
 		}
 
@@ -1428,6 +1486,7 @@ int main(int argc, char* argv[])
 							fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
 							fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 
 							// Reflected initial condition for nostatic
@@ -1439,6 +1498,7 @@ int main(int argc, char* argv[])
 							fprintf(f, "%le %le", tE, t0);
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
 							fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 
 							tE = (t1 - t2) / (yy[i * 7 + 6] - yy[i * 7 + 5]); // We also include the time-reverse matching
@@ -1452,6 +1512,7 @@ int main(int argc, char* argv[])
 							fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
 							fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 
 							// Reflected initial condition for nostatic
@@ -1463,6 +1524,7 @@ int main(int argc, char* argv[])
 							fprintf(f, "%le %le", tE, t0);
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
 							fprintf(f, " 0.0 0.0 0.0001"); // starting parameters for orbital motion
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 						}
 					}
@@ -1477,7 +1539,9 @@ int main(int argc, char* argv[])
 	if (strstr(modelcategories, "LK") != 0) {
 		filebest = regex("LK.*\\.txt");
 		strcpy(fileinit, "InitCondLK.txt");
-		nps = 14;
+		nps = npsold = 14;
+		if (astrometric) nps += 4;
+		if (astrometricold && astrometric) npsold += 4;
 
 		tt = (double*)malloc(sizeof(double) * nps * maxoldmodels);
 		if (exists(path(runstring) / path("Models"))) {
@@ -1487,8 +1551,11 @@ int main(int argc, char* argv[])
 				string curfile = (itr).path().filename().string();
 				if (regex_match(curfile, filebest)) {
 					f = fopen(curfile.c_str(), "r");
-					for (int j = 0; j < nps; j++) {
-						fscanf(f, "%le", &tt[dn * nps + j]);
+					for (int j = 0; j < npsold; j++) {
+						if (fscanf(f, "%le", &tt[dn * nps + j]) < 1) {
+							sscanf(astroini, "%lf %lf %lf %lf", &(tt[dn * nps + j]), &(tt[dn * nps + j + 1]), &(tt[dn * nps + j + 2]), &(tt[dn * nps + j + 3]));
+							break;
+						}
 					}
 					fclose(f);
 					dn++;
@@ -1516,6 +1583,7 @@ int main(int argc, char* argv[])
 			for (int j = 0; j < nps; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
+			if (npsold < nps) fprintf(f, "%s", astroini);
 			fprintf(f, "\n");
 		}
 
@@ -1535,6 +1603,7 @@ int main(int argc, char* argv[])
 							fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
 							fprintf(f, " 0.0 0.0 0.0001 1.0 1.0"); // starting parameters for orbital motion
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 
 							// Reflected initial condition for nostatic
@@ -1546,6 +1615,7 @@ int main(int argc, char* argv[])
 							fprintf(f, "%le %le", tE, t0);
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
 							fprintf(f, " 0.0 0.0 0.0001 1.0 1.0"); // starting parameters for orbital motion
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 
 							tE = (t1 - t2) / (yy[i * 7 + 6] - yy[i * 7 + 5]); // We also include the time-reverse matching
@@ -1559,6 +1629,7 @@ int main(int argc, char* argv[])
 							fprintf(f, "%le %le", tE, t0); // and use tE and t0 from the time matching
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
 							fprintf(f, " 0.0 0.0 0.0001 1.0 1.0"); // starting parameters for orbital motion
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 
 							// Reflected initial condition for nostatic
@@ -1570,6 +1641,7 @@ int main(int argc, char* argv[])
 							fprintf(f, "%le %le", tE, t0);
 							fprintf(f, " 0.0 0.0"); // parallax for nostatic
 							fprintf(f, " 0.0 0.0 0.0001 1.0 1.0"); // starting parameters for orbital motion
+							if (astrometric) fprintf(f, " %s", astroini);
 							fprintf(f, "\n");
 						}
 					}
