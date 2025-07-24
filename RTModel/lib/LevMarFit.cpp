@@ -883,7 +883,7 @@ int LevMar::Run() {
 					c0 = c1;
 					printf("\nStep %d\n", k++);
 					/* Calculation of the gradient */
-					getchar();
+					//getchar();
 
 					Grad();
 
