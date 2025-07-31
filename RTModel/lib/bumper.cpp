@@ -6,6 +6,7 @@
 #include "bumper.h"
 #include <cmath>
 #include <cstdlib>
+#include <stdio.h>
 
 const double epsilon = 1.e-99;
 
@@ -19,6 +20,7 @@ bumper::bumper(double* pr, int ns) {
 	curv = cov = 0;
 	duplicate = false;
 
+	buffer = 0;
 	next = 0;
 }
 
@@ -27,6 +29,7 @@ bumper::~bumper() {
 	free(dp);
 	if (curv) free(curv);
 	if (cov) free(cov);
+	if (buffer) free(buffer);
 }
 
 void bumper::SetCurvature(double* sr, double nrm) {
@@ -85,6 +88,16 @@ void bumper::flipCovariance(int i, int j) {
 		cov[i * nps + k] = cov[j * nps + k];
 		cov[j * nps + k] = sc;
 	}
+}
+
+void bumper::SetBuffer(FILE *f, int start, int end) {
+	buffer = (char*)malloc(sizeof(char) * (end-start+1));
+	fseek(f, start, SEEK_SET);
+	il = 0;
+	while(ftell(f)!=end){
+		buffer[il++] = fgetc(f);
+	}
+	buffer[il] = 0;
 }
 
 double Determinant(double* A, int n) {

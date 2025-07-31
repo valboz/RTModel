@@ -1,4 +1,4 @@
-[Back to **Animating fits**](Animation.md)
+[Back to **Animaton of the Fit process**](Animation.md)
 
 # Template libraries
 
@@ -81,7 +81,7 @@ The most useful tool in the `RTModel.templates` subpackage is the `show_template
 ```
 newtemplates = tmpl.show_template(mytemplates[0], tmin = -1, tmax = +1, tstep = 0.00001, accuracy = 0.001)
 ```
-<img src="Template.png" width = 1000>
+<img src="figs/Template.png" width = 1000>
 
 The  `show_template(mytemplate)` function calculates and shows the lightcurve corresponding to the parameters found in `mytemplate`, which is a standard list containing at least 5 values for $s$ $q$ $u_0$ $\alpha$ $\rho$. The light curve is shown in units of $t/t_E$ with $t_0=0$ from `tmin` to `tmax` (default values are -3 and +3 respectively). The time step for the plot is specified by `tstep` (default value is 0.001) and the accuracy in the magnification calculation is given by `accuracy` (default value is 0.01). The source trajectory and the caustic are shown in the right panel.
 

@@ -1,10 +1,10 @@
-[Back to **Final assessment**](FinalAssessment.md)
+[Back to **Preliminary Models**](PreliminaryModels.md)
 
-# Animating fits
+# Animation of the Fit process
 
 It is sometimes useful to analyze the fitting process by simple visualization tools. This is possible by the `RTModel.plotmodel` subpackage, which also includes the possibility to show an animation of the fitting process.
 
-Note that the functions in this section access the `PreModels/` directory. It is not possible to see the animation of the fit if you have already deleted the directory with `cleanup_preliminary_models()` function. 
+Note that the functions in this section access the `PreModels/` directory. It is not possible to see the animation of the fit if you have not decided to keep this directory by the `cleanup = False` option, as explained in [Preliminary Models](PreliminaryModels.md). 
 
 ## Visualizing the step chain in the parameter space
 
@@ -12,7 +12,6 @@ Suppose you want to see how the binary-lens fit from the initial condition 190 w
 
 ```
 import RTModel.plotmodel as plm
-import matplotlib.pyplot as plt
 
 eventname = '/event001'
 model = 'LS0190'
@@ -23,7 +22,7 @@ plm.plotchain(eventname,model,parameter1,parameter2)
 
 The output will look like this
 
-<img src="plotchain.png" width = 400>
+<img src="figs/plotchain.png" width = 400>
 
 The `plotchain()` function shows the chains of steps taken by the Levenberg-Marquardt fit from the initial condition to the minima found. The blue line is the first fit, while the following fits after the bumping mechanism described in [Fitting](Fitting.md) are shown with different colors. Each minimum is marked by a filled circle. The parameter space is identified by the two values given as `parameter1,parameter2`. The order of parameters is the one specified in [Model categories](ModelCategories.md).
 
@@ -32,13 +31,13 @@ The `plotchain()` function shows the chains of steps taken by the Levenberg-Marq
 The fit process can be animated by the following code
 
 ```
-stepchainfile = 'PreModels/LS0190/LS0190-stepchain0.dat'
+stepchainfile = 'PreModels/LS0190-stepchain0.dat'
 plm.plotmodel(eventname = eventname, modelfile = stepchainfile, printpars = False, animate = 1,interval = 800)
 ```
 
 The output is a gif file `ani.gif` generated in the directory `/event001` which looks like this
 
-<img src="ani.gif" width = 900>
+<img src="figs/ani.gif" width = 900>
 
 The individual frames are contained in a subdirectory `/tmpssteps`.
 
@@ -50,7 +49,7 @@ If you want to show the gif file in a Jupyter notebook you may use the following
 
 ```
 from IPython.display import Image
-Image(filename = 'ani.gif')
+Image(filename = 'figs/ani.gif')
 ```
 
 [Go to **Template libraries**](TemplateLibraries.md)

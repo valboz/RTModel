@@ -2,7 +2,7 @@
 
 # Satellite datasets
 
-Observations from satellites, if available, are identified through their photometry filename ending with a number, e.g. `Spitzer1.dat`. Each satellite is identified by a different number that is used to select the correct ephemerides table. All other files ending by anything that is not a number is considered as taken from a ground telescope.
+Observations from satellites, if available, are identified through their photometry filename ending with a number, e.g. `Spitzer1.dat`. Each satellite is identified by a different number that is used to select the correct ephemerides table. All other files ending by anything that is not a number are considered as taken from a ground telescope.
 
 In all models without parallax ('PS', 'BS', 'BO', 'LS' (see [Model categories](ModelCategories.md))), satellite datasets are treated in the same way as ground datasets. For models including parallax ('PX', 'LX', 'LO', 'LK'), the position of the satellite in space is taken into account through its respective ephemerides table. This leads to a different source trajectory with respect to the caustics for the event as seen from the satellite. Therefore, the light curve model for the satellite data can be profoundly different. This difference is extremely useful to fix the parallax parameters and retrieve physical information on the lens distance.
 
@@ -68,7 +68,7 @@ plm.plotmodel(eventname = event, modelfile = model, satellitedir = '/satellitedi
 
 The plots will include the light curves for ground datasets and for satellite datasets with different colors. The same colors are used to represent the source trajectories as seen from ground and satellite in the plot on the right:
 
-<img src="plotmodel_fig2.png" width = 900>
+<img src="figs/plotmodel_fig2.png" width = 900>
 
 
 [Go to **Limb darkening**](LimbDarkening.md)

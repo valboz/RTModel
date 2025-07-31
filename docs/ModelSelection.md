@@ -42,7 +42,7 @@ The `ModelSelector` module sorts all preliminary model of the chosen category by
 
 ### The `config_ModelSelector()` function
 
-The user may specify his/her own options to drive the initial conditions to the desired result by calling the `config_ModelSelector()` function with the proper options:
+The user may specify his/her own options in model selection by calling the `config_ModelSelector()` function with the proper options:
 
 ```
 import RTModel

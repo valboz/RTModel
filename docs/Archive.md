@@ -17,16 +17,11 @@ In this code the function `archive_run()` moves all the files and subdirectories
 
 All consecutive archived runs are stored in directories with increasing number. Optionally, the user may specify a different archive directory by `rtm.archive_run(destination = 'myarchive')`.
 
-We note that if you have not cleaned up your event directory from the preliminary models, you will rapidly exhaust your disk space if you archive runs still including them. We suggest to clean up the directory before archiving 
-```
-rtm.cleanup_preliminary_models()
-rtm.archive_run()
-```
-
-
 ## Previously found best models
 
-An important feature of archived runs is that the best models found in the most recent archived run (identified by its progressive number) are included in the set of initial conditions of the new run. In this way, `RTModel` will also have simple **updates of the previous best models** available in the model selection in the new run.
+An important feature of archived runs is that the best models found in the most recent archived run (identified by its progressive number) are included in the set of initial conditions of the new run. In this way, `RTModel` will also have simple **updates of the previous best models** available in the model selection in the new run. 
+
+As described in [Initial Conditions](InitCond.md), it is possible to require only the update of models found in the latest run without performing another model search from scratch. This is useful if you already have a good model and just need one more run with some additional data.
 
 ## Re-using options from previous runs
 

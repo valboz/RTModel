@@ -6,7 +6,7 @@ It is possible to impose constraints on the fit parameters or some pre-defined c
 
 $\tilde\chi^2 =\chi^2 + \left(\frac{f(\mathbf{p})-f_0}{\sigma}\right)^2$
 
-The modified $\tilde\chi^2$ including a gaussian constraint on $f$ is then used in minimization. In `RTModel` it is also possible to consider asymmetric constraints with difference tolerances on either side of $f_0$ following he form 
+The modified $\tilde\chi^2$ including a gaussian constraint on $f$ is then used in minimization. In `RTModel` it is also possible to consider asymmetric constraints with different tolerances on either side of $f_0$ following the form 
 
 $\tilde\chi^2 =\chi^2 + \left(\frac{f(\mathbf{p})-f_0}{\sigma_l}\right)^2\Theta(f_0-f(\mathbf{p})) + \left(\frac{f(\mathbf{p})-f_0}{\sigma_r}\right)^2\Theta(f(\mathbf{p})-f_0)$
 
@@ -65,5 +65,9 @@ $t_E \rho_* =t_*$
 The constraints used in a given modeling run are stored in the file `Constraints.ini` in the subdirectory `/ini` in the event directory.
 
 The function `recover_options()` illustrated in [Archiving and updating models](Archive.md) recovers previously used constraints for a given event. These can be modified by manipulating the `rtm.constraints` object and will be used in the next modeling run. 
+
+## Parameters ranges
+
+Note that `RTModel` lets the parameters free to vary only within some pre-defined parameters ranges. So, even if you specify a very loose constraint, parameters will not be allowed to wander indefinitely. Parameters ranges are discussed in the [Fitting](Fitting.md) section.
 
 [Go to **Data pre-processing**](DataPreprocessing.md)
