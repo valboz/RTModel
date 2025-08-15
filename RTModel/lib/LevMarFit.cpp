@@ -5,8 +5,7 @@
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include "C:\\Users\\valboz\\Personali\\source\\Projects\\VBMicrolensing\\VBMicrolensing\\VBMicrolensingLibrary.h"
-//#include <VBMicrolensingLibrary.h>
+#include <VBMicrolensingLibrary.h>
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
