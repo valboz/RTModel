@@ -169,7 +169,7 @@ class plotmodel:
         if(self.parameters == []):
             with open(self.modelfile) as f:
                 lines = f.readlines()
-                if(not lines[0][0].isnumeric()):
+                if(not (lines[0][0].isnumeric() or lines[0][0]=='-')):
                     lines.pop(0)
                 self.maxlines = len(lines)
                 if(self.line>=self.maxlines):

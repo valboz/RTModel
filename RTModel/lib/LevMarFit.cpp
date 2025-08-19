@@ -15,7 +15,8 @@
 #include <regex>
 #include <filesystem>
 
-using namespace std;
+//using namespace std;
+using std::regex, std::string, std::regex_match;
 using namespace std::filesystem;
 
 int nlc = 6; // Number of models to be calculated from the same initial condition using the bumper method
@@ -236,6 +237,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
+				current_path(exedir);
+				current_path("..");
+				current_path("data");
+				VBM->LoadSunTable("SunEphemeris.txt");
+				current_path(eventname);
 			}
 			else {
 				modnumber = 0;
@@ -270,6 +276,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
 				pr[6] = log(pr[6]);
+				current_path(exedir);
+				current_path("..");
+				current_path("data");
+				VBM->LoadSunTable("SunEphemeris.txt");
+				current_path(eventname);
 			}
 			else {
 				modnumber = 2;
@@ -305,6 +316,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[4] = log(pr[4]);
 				pr[5] = log(pr[5]);
+				current_path(exedir);
+				current_path("..");
+				current_path("data");
+				VBM->LoadSunTable("SunEphemeris.txt");
+				current_path(eventname);
 			}
 			else {
 				if (modelcode[1] == 'O') {
@@ -320,6 +336,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					pr[1] = log(pr[1]);
 					pr[4] = log(pr[4]);
 					pr[5] = log(pr[5]);
+					current_path(exedir);
+					current_path("..");
+					current_path("data");
+					VBM->LoadSunTable("SunEphemeris.txt");
+					current_path(eventname);
 				}
 				else {
 					if (modelcode[1] == 'K') {
@@ -335,6 +356,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						pr[1] = log(pr[1]);
 						pr[4] = log(pr[4]);
 						pr[5] = log(pr[5]);
+						current_path(exedir);
+						current_path("..");
+						current_path("data");
+						VBM->LoadSunTable("SunEphemeris.txt");
+						current_path(eventname);
 					}
 					else {
 						modnumber = 4;
@@ -369,6 +395,11 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[5] = log(pr[5]);
 				pr[7] = log(pr[7]);
 				pr[8] = log(pr[8]);
+				current_path(exedir);
+				current_path("..");
+				current_path("data");
+				VBM->LoadSunTable("SunEphemeris.txt");
+				current_path(eventname);
 			}
 			else {
 				modnumber = 8;
