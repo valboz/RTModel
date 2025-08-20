@@ -1009,7 +1009,7 @@ int LevMar::Run() {
 								for (int i = 0; i < nps; i++) {
 									//fac = 2.0 * bumperpower / sqrt(fac);
 									//prn[i] = pr[i] - fac * scanbumper->dp[i];
-									prn[i] = scanbumper->p0[i] - bumpcounter * bumperpower * (laststep->p0[i] - scanbumper->p0[i]) / sqrt(fac);
+									prn[i] = scanbumper->p0[i] - 2.0 * bumperpower * (laststep->p0[i] - scanbumper->p0[i]) / sqrt(fac);
 									if (prn[i] > rightlim[i]) {
 										prn[i] = 0.99 * rightlim[i] + 0.01 * pr[i];
 									}
@@ -1793,3 +1793,4 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 	}
 	fclose(f);
 }
+
