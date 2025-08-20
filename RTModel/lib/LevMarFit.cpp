@@ -86,6 +86,7 @@ LevMar::~LevMar() {
 		free(w);
 		free(y1a);
 		free(y2a);
+		free(seps);
 		free(satel);
 		free(filter);
 		free(delta);
@@ -765,6 +766,7 @@ void LevMar::ReadAncillary() {
 		c2l = (double*)malloc(sizeof(double) * np * (nps + 1));
 		c1s = (double*)malloc(sizeof(double) * np * (nps + 1));
 		c2s = (double*)malloc(sizeof(double) * np * (nps + 1));
+		seps = (double*)malloc(sizeof(double) * np);
 
 		Gr = (double**)malloc(sizeof(double*) * nps);
 		for (int i = 0; i < nps; i++) {
@@ -1007,7 +1009,7 @@ int LevMar::Run() {
 								for (int i = 0; i < nps; i++) {
 									//fac = 2.0 * bumperpower / sqrt(fac);
 									//prn[i] = pr[i] - fac * scanbumper->dp[i];
-									prn[i] = scanbumper->p0[i] - bumperpower * (laststep->p0[i] - scanbumper->p0[i]);
+									prn[i] = scanbumper->p0[i] - bumpcounter * bumperpower * (laststep->p0[i] - scanbumper->p0[i]) / sqrt(fac);
 									if (prn[i] > rightlim[i]) {
 										prn[i] = 0.99 * rightlim[i] + 0.01 * pr[i];
 									}
@@ -1271,18 +1273,18 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 		break;
 	case 6:
 		if (astrometric) {
-			VBM->BinaryAstroLightCurveOrbital(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, y1a, sizes[fl]);
+			VBM->BinaryAstroLightCurveOrbital(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, seps, sizes[fl]);
 		}
 		else {
-			VBM->BinaryLightCurveOrbital(pr, tfl, fbfl, y1a, y2a, y1a, sizes[fl]);
+			VBM->BinaryLightCurveOrbital(pr, tfl, fbfl, y1a, y2a, seps, sizes[fl]);
 		}
 		break;
 	case 7:
 		if (astrometric) {
-			VBM->BinaryAstroLightCurveKepler(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, y1a, sizes[fl]);
+			VBM->BinaryAstroLightCurveKepler(pr, tfl, fbfl, c1sfl, c2sfl, c1lfl, c2lfl, y1a, y2a, seps, sizes[fl]);
 		}
 		else {
-			VBM->BinaryLightCurveKepler(pr, tfl, fbfl, y1a, y2a, y1a, sizes[fl]);
+			VBM->BinaryLightCurveKepler(pr, tfl, fbfl, y1a, y2a, seps, sizes[fl]);
 		}
 		break;
 	case 8:
