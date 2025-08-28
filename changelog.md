@@ -1,3 +1,4 @@
+- **v3.2** - 2025/09/?? - Scatter assessment in data pre-processing upgraded to second order and using median residual.
 - **v3.1** - 2025/08/21 - Upgraded to VBMicrolensing 5.3: parallax calculations based on lookup table. Corrected a bug in LevMar and removed an ambiguous reference for compilation in c++23. Slight revision of bumping mechanism. Corrected small bug in plotmodel.
 - **v3.0** - 2025/06/19 - Astrophotometric fits and Image-constrained fits with deep re-structuring of the whole code. Possibility to change parameters ranges in fits; possibility to fit for binary systems with dark companions or change mass-luminosity-radius relations. plotmodel updated with plots for centroid trajectory. A few bugs corrected in Reader, with peak season identified by consecutive positive deviations.
 - **v2.4.2** - 2025/05/08 - Corrected a bug causing hanging in the call to InitCond for nostatic.
