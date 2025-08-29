@@ -202,7 +202,7 @@ class RTModel:
 
     def config_LevMar(self, nfits = 6, offsetdegeneracy = 3, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0, \
                       mass_luminosity_exponent = None, mass_radius_exponent = None, lens_mass_luminosity_exponent = None, \
-                     turn_off_secondary_source = False, turn_off_secondary_lens = False):
+                     turn_off_secondary_source = False, turn_off_secondary_lens = False, stepchainsave=False):
         self.LevMar_nfits = nfits # Number of models to be calculated from the same initial condition using the bumper method
         self.LevMar_offsetdegeneracy = offsetdegeneracy # Number of models to be fit after applying offset degeneracy to best model found so far
         self.LevMar_maxsteps = maxsteps # Maximum number of steps in each fit
@@ -213,7 +213,7 @@ class RTModel:
         self.LevMar_lens_mass_luminosity_exponent = lens_mass_luminosity_exponent # mass-luminosity exponent for binary lenses
         self.LevMar_turn_off_secondary_lens = turn_off_secondary_lens # Option for dark secondary lenses
         self.LevMar_turn_off_secondary_source = turn_off_secondary_source # Option for dark secondary sources
-        self.LevMar_stepchainsave = False # If True, step chains are saved
+        self.LevMar_stepchainsave = stepchainsave # If True, step chains are saved
     
     def LevMar(self,strmodel, parameters_file = None, parameters = None):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
