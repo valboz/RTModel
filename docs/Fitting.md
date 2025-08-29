@@ -103,6 +103,7 @@ Here we describe the options for `LevMar` in detail indicating their default val
 - `mass_luminosity_exponent = 4.0`: in binary source models it is used to relate the flux ratio parameter with the mass ratio.
 - `mass_radius_exponent = 0.9`: in binary source models it is used to relate the mass ratio with the radius ratio.
 - `lens_mass_luminosity_exponent = 4.0`: affects the calculation of the center of light in astrometric trajectories for binary lens models.
+- `stepchainsave = False`: if True, all steps in fits are saved in separate files (necessary for [animation](Animation.md) and debugging).
 
 All options are also accessible separately as properties of the `RTModel` class. The user may thus modify the value of each option one by one. The names of the properties are the same as the options in `config_LevMar()` with the prefix `LevMar_`, as shown in the example below:
 
