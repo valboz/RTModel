@@ -320,11 +320,11 @@ int main(int argc, char* argv[])
 				reslist.sort();
 				auto it = reslist.begin();
 				int imed = (reslist.size() - 1) / 2;
-				residual = *std::next(it, imed);
+				residual = *std::next(it, imed) * 0.186914;
 			}
-			else residual = 1/ 0.186914;
+			else residual = 1;
 			//residual = (residual + 1.) / (weight + 1.);
-			pc = sqrt(residual* 0.186914);
+			pc = sqrt(residual);
 			printf("\n%s", curdataset->label);
 			//printf("\nResidual: %le      Length: %d      Weight: %le       Normalization factor: %le", residual, curdataset->length, weight, pc);
 			printf("\nLength: %d      Res.list: %d     Residual: %lf      Normalization factor: %lf", curdataset->length, reslist.size(), residual, pc);
