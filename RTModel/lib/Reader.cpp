@@ -21,7 +21,7 @@ char systemslash = '\\';
 char systemslash = '/';
 #endif
 
-double tau = 0.1; // conventional correlation time for consecutive points
+double tau = 1.0; // time-scale to trigger scatter assessment
 int npmax = 4000; // maximum number of points left after re-binning
 int otherseasons = 100; // How to use other seasons
 int renormalize = 1; // Re-normalize error bars
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 	char titstring[256] = "", nostr[2], * undersc;
 	char command[256], buffer[256];
 	double value;
-	double t, y, err, Dec, errDec, RA, errRA, yr, ys, errr, errs, w1, w2;
+	double t, y, err, Dec, errDec, RA, errRA, yr, ys, tr, ts, errr, errs, w1, w2;
 	FILE* f;
 	int ifile, flag, nps, normalized = 0, satellite;
 	double pc, residual, residual1, residual2, residual3, outlier, crosscheck, weight, minfac, maxlength;
@@ -238,9 +238,9 @@ int main(int argc, char* argv[])
 
 	minfac = 1.e100;
 	maxlength = -minfac;
-	std::list<double> reslist;
 	for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
-		residual = weight = 0;
+		std::list<double> reslist;
+		residual = weight = tr = ts = 0;
 		if (curdataset->first->err > 0) {
 			for (p = curdataset->first->next; p; p = p->next) {
 				residual1 = residual2 = residual3 = 0;
@@ -257,6 +257,7 @@ int main(int argc, char* argv[])
 						pc = (p->y - y);
 						residual1 = pc / sqrt(err);
 						yr = y;
+						tr = p2->t;
 						errr = err;
 					}
 				}
@@ -270,66 +271,63 @@ int main(int argc, char* argv[])
 						pc = (p2->t - p->t);
 						err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err);// *exp(-pc);
 						ys = y;
+						ts = p2->t;
 						errs = err;
 						//w2 = 1 / exp(-pc );
 						pc = (p->y - y);
 						residual2 = pc / sqrt(err);
 					}
 				}
-				if (p->prev) {
-					p1 = p->prev;
-					if (p->next) {
-						p2 = p->next;
-						ft2 = (p->t - p1->t) / (p2->t - p1->t);
-						ft1 = 1 - ft2;
-						y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) / (p2->t - p1->t) * (p->t - p1->t));
-						pc = (p2->t - p->t);
-						err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err);// *exp(-pc);
-						//w2 = 1 / exp(-pc);
-						pc = (p->y - y);
-						residual3 = pc*pc / err;
+				if (tr - ts < tau) {
+					if (p->prev) {
+						p1 = p->prev;
+						if (p->next) {
+							p2 = p->next;
+							ft2 = (p->t - p1->t) / (p2->t - p1->t);
+							ft1 = 1 - ft2;
+							y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) / (p2->t - p1->t) * (p->t - p1->t));
+							pc = (p2->t - p->t);
+							err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err);// *exp(-pc);
+							//w2 = 1 / exp(-pc);
+							pc = (p->y - y);
+							residual3 = pc / sqrt(err);
+						}
 					}
-				}
-				if (residual1 > -1.e100 && residual2 > -1.e100) {
-					residual1 = residual1;
-				}
-				else {
-					residual1 = residual1;
-				}
-				outlier = residual1 * residual1 + residual2 * residual2;
-				crosscheck = (ys - yr);
-				crosscheck *= crosscheck;
-				crosscheck /= (err + errr);
-				if (residual1*residual2>0 && crosscheck <9 && sqrt(outlier) >thresholdoutliers) {
-					printf("\nOutlier found: %lf %lf %lf", p->t, p->y, sqrt(outlier));
-					p1 = p->prev;
-					curdataset->deletepoint(p);
-					/*p2 = p->next;
-					p1->next = p2;
-					p2->prev = p1;
-					delete p;
-					curdataset->length--;*/
-					p = p1;
-				}
-				else {
-					//residual += outlier;
-					//weight += w1 + w2;
-					if(residual1>0 && residual2>0 && residual3>0) reslist.push_back(outlier + 2 * residual3);
+					outlier = residual1 + residual2 + 2 * residual3;
+					crosscheck = (ys - yr);
+					crosscheck *= crosscheck;
+					crosscheck /= (err + errr);
+					if (/*residual1*residual2>0 && */crosscheck < 9 && fabs(outlier) >4 * thresholdoutliers) {
+						printf("\nOutlier found: %lf %lf %lf", p->t, p->y, outlier);
+						p1 = p->prev;
+						curdataset->deletepoint(p);
+						/*p2 = p->next;
+						p1->next = p2;
+						p2->prev = p1;
+						delete p;
+						curdataset->length--;*/
+						p = p1;
+					}
+					else {
+						//residual += outlier;
+						//weight += w1 + w2;
+						reslist.push_back(outlier * outlier);
+					}
 				}
 			}
 			// 		residual*=0.5*curdataset->length/weight;
 			if (!reslist.empty()) {
 				reslist.sort();
 				auto it = reslist.begin();
-				int imed = (reslist.size() + 1) / 2;
+				int imed = (reslist.size() - 1) / 2;
 				residual = *std::next(it, imed);
 			}
-			else residual = 1;
+			else residual = 1/ 0.186914;
 			//residual = (residual + 1.) / (weight + 1.);
-			pc = sqrt(residual);
+			pc = sqrt(residual* 0.186914);
 			printf("\n%s", curdataset->label);
 			//printf("\nResidual: %le      Length: %d      Weight: %le       Normalization factor: %le", residual, curdataset->length, weight, pc);
-			printf("\nResidual: %le      Length: %d      Normalization factor: %le", residual, curdataset->length, pc);
+			printf("\nLength: %d      Res.list: %d     Residual: %lf      Normalization factor: %lf", curdataset->length, reslist.size(), residual, pc);
 			curdataset->first->sig = pc;
 			if (curdataset->length > maxlength) {
 				minfac = pc;
