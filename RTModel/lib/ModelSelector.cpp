@@ -909,7 +909,7 @@ int main(int argc, char* argv[]) {
 						}
 					}
 
-					double u0 = exp(pr[0]);
+					double u0 = pr[0];
 					double s0, s;
 					for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 						if (ipeak == idpeak) continue;
@@ -1024,7 +1024,7 @@ int main(int argc, char* argv[]) {
 							}
 						}
 
-						double u0 = exp(pr[0]);
+						double u0 = pr[0];
 						double s0, s;
 						for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 							if (ipeak == idpeak) continue;
