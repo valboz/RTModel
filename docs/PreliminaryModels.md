@@ -21,6 +21,12 @@ rtm.cleanup_preliminary_models()
 
 Preliminary models can be plotted as usual by the [plotmodel](PlotModel.md) module.
 
-Besides the preliminary models, in this directory you will also find the 'stepchain' files, which contain the full list of steps in the fit leading to the calculated preliminary models. These can be visualized by additional functions explained in the next page.
+## Step chains files
+
+By choosing the option
+```
+rtm.config_LevMar(stepchainsave = True)
+```
+also the 'stepchain' files will be generated in the directory `/PreModels`. These files contain the full list of steps in the fit leading to the calculated preliminary models. These can be visualized by additional functions explained in the next page.
 
 [Go to **Animation of the Fit process**](Animation.md)
