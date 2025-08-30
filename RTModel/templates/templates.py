@@ -1,6 +1,6 @@
 import site
 from pathlib import Path
-import plotmodeldev as plm
+import RTModel.plotmodel as plm
 import shutil
 import math
 import numpy as np
