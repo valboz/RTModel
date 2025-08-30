@@ -101,7 +101,7 @@ class plotmodel:
         if(self.eventname== None):
             self.lightcurves = []
             self.telescopes = []            
-            self.limbdarkenings = []   
+            self.limbdarkenings = [0]   
             self.nfil = 0
             self.npoints = 0
         else:
@@ -145,7 +145,7 @@ class plotmodel:
 
     # Reading options from LevMar.ini
     def readoptions(self):
-        if(os.path.exists(self.eventname + '/ini/LevMar.ini')):
+        if(self.eventname!=None and os.path.exists(self.eventname + '/ini/LevMar.ini')):
             with open(self.eventname + '/ini/LevMar.ini') as f:
                 lines = f.readlines()
                 for line in lines:
