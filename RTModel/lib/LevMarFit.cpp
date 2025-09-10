@@ -1388,51 +1388,30 @@ double LevMar::ChiSquared(double* pr) {
 
 				if (p1 > p1max) {
 					p1max = p1; // massimo residuo positivo
-					//std::cout << "\nIl massimo residuo positivo è: " << p1max << " al punto " << i << std::endl;
 					tmax = t[i]; // tempo in cui si ha il massimo residuo positivo
 				}
 
 			}
 			else {
-				//printf("\nResiduo negativo o nullo %d: %lf", i, p1); // stampa il residuo negativo
-				// Reset in caso di interruzione della sequenza positiva
-				maxsum = 0;                  // azzera la somma dei residui
+				maxsum = 0;                
 
 			}
-			//Alla fine del ciclo, se la somma dei residui positivi consecutivi è maggiore della somma massima trovata finora allora aggiorna la somma massima e il tempo corrispondente
 			if (maxsum > maxmaxsum) {
 				maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi	
-				//std::cout << "\nLa somma massima dei residui positivi consecutivi è: " << maxmaxsum << " al tempo " << tmax << std::endl;
 				tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
 			}
-			//std::cout << std::endl;
+			
 		}
-		//else {
-			//printf("\nNessun residuo positivo trovato.");
-		//}
-
-
-		//robustezza del fit 
-		//bisogna considerare il residuo di una seguenza di punti consecutivi che hanno lo stesso segno
-		//**** il segno è dato dal confronto tra il modello ed il flusso misurato
-		//**** se il modello è minore del flusso misurato allora il flusso ha un picco che il modello non ha
-		//**** viceversa si ha un deep 
-		//quindi bisogna considerare la somma dei residui dei punti consecutivi che hanno lo stesso segno
-		//in questo modo bisogna tener conto del segno di p1 ad ogni passo e confrontarlo con il segno del residuo precedente
-		//se ha lo stesso segno allora si sommano i residui
-		// in caso di più sequenze si considera qualla in cui la somma dei residui è max
-		//infine si calcola la massima deviazione standard dei residui all'interno di una sequenza di punti consecutivi che hanno lo stesso segno
-
-		chi2 += p1 * p1;
+		
+				chi2 += p1 * p1;
 		if (pr[nps + 1 + filter[i] * nlinpar] > 2 * y[i]) {
 			flagblending++;
 			chi2 += (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * w[i] * w[i];
 		}
 	}
 	if (maxsum > maxmaxsum) {
-		maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi	
-		//std::cout << "\nLa somma massima dei residui positivi consecutivi è: " << maxmaxsum << " al tempo " << tmax << std::endl;
-		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+		maxmaxsum = maxsum;
+		tmaxmax = tmax; 
 	}
 	chi0 = sqrt(2 * chi0); // Error in chi square
 	if (chi0 / chi2 > 0.1) Tol *= 0.5;
@@ -1803,10 +1782,10 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
 		fprintf(f, "%le ", pr[i]);
 	}
-	//stampa tmaxmax 
+	// Write tmaxmax 
 	fprintf(f, "%.16le ", tmaxmax);
 
-	//stampa maxmaxsum
+	// Write maxmaxsum
 	fprintf(f, "%.16le ", maxmaxsum);
 	// Write chi square
 	fprintf(f, "%.16le\n", c0);
@@ -1850,3 +1829,4 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 	fclose(f);
 
 }
+
