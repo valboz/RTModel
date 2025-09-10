@@ -11,7 +11,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <cstdlib>
 #include <regex>
 #include <filesystem>
 
@@ -239,11 +238,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
 				current_path(exedir);
-				current_path("..");
+				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
 			}
+
 			else {
 				modnumber = 0;
 				nps = 4;
@@ -258,11 +258,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[3] = log(pr[3]);
 			}
 			current_path(exedir);
-			current_path("..");
+			//current_path("..");
 			current_path("data");
 			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
 			break;
+
 		case 'B':
 			if (modelcode[1] == 'O') {
 				modnumber = 3;
@@ -277,8 +278,9 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
 				pr[6] = log(pr[6]);
+
 				current_path(exedir);
-				current_path("..");
+				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -298,7 +300,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[6] = log(pr[6]);
 			}
 			current_path(exedir);
-			current_path("..");
+			//current_path("..");
 			current_path("data");
 			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
@@ -338,7 +340,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					pr[4] = log(pr[4]);
 					pr[5] = log(pr[5]);
 					current_path(exedir);
-					current_path("..");
+					//current_path("..");
 					current_path("data");
 					VBM->LoadSunTable("SunEphemeris.txt");
 					current_path(eventname);
@@ -358,7 +360,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						pr[4] = log(pr[4]);
 						pr[5] = log(pr[5]);
 						current_path(exedir);
-						current_path("..");
+						//current_path("..");
 						current_path("data");
 						VBM->LoadSunTable("SunEphemeris.txt");
 						current_path(eventname);
@@ -397,7 +399,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[7] = log(pr[7]);
 				pr[8] = log(pr[8]);
 				current_path(exedir);
-				current_path("..");
+				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -1303,6 +1305,10 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 
 double LevMar::ChiSquared(double* pr) {
 	double chi2 = 0, chi0, chia, p1;
+	double p1max = 0, maxsum = 0;
+	double tmax = 0;
+
+	maxmaxsum = 0;
 
 	for (int fl = 0; fl < nfil; fl++) {
 		VBM->satellite = satel[starts[fl]];
@@ -1376,12 +1382,57 @@ double LevMar::ChiSquared(double* pr) {
 			p1 = (y[i] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) * w[i] * w[i] * pr[nps + 1 + filter[i] * nlinpar] * Tol;
 			chi0 += p1 * p1;
 			p1 = (y[i] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) * w[i];
-			chi2 += p1 * p1;
-			if (pr[nps + 1 + filter[i] * nlinpar] > 2 * y[i]) {
-				flagblending++;
-				chi2 += (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * w[i] * w[i];
+
+			if (p1 > 0) {
+				maxsum += p1; // somma i residui 
+
+				if (p1 > p1max) {
+					p1max = p1; // massimo residuo positivo
+					//std::cout << "\nIl massimo residuo positivo è: " << p1max << " al punto " << i << std::endl;
+					tmax = t[i]; // tempo in cui si ha il massimo residuo positivo
+				}
+
 			}
+			else {
+				//printf("\nResiduo negativo o nullo %d: %lf", i, p1); // stampa il residuo negativo
+				// Reset in caso di interruzione della sequenza positiva
+				maxsum = 0;                  // azzera la somma dei residui
+
+			}
+			//Alla fine del ciclo, se la somma dei residui positivi consecutivi è maggiore della somma massima trovata finora allora aggiorna la somma massima e il tempo corrispondente
+			if (maxsum > maxmaxsum) {
+				maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi	
+				//std::cout << "\nLa somma massima dei residui positivi consecutivi è: " << maxmaxsum << " al tempo " << tmax << std::endl;
+				tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+			}
+			//std::cout << std::endl;
 		}
+		//else {
+			//printf("\nNessun residuo positivo trovato.");
+		//}
+
+
+		//robustezza del fit 
+		//bisogna considerare il residuo di una seguenza di punti consecutivi che hanno lo stesso segno
+		//**** il segno è dato dal confronto tra il modello ed il flusso misurato
+		//**** se il modello è minore del flusso misurato allora il flusso ha un picco che il modello non ha
+		//**** viceversa si ha un deep 
+		//quindi bisogna considerare la somma dei residui dei punti consecutivi che hanno lo stesso segno
+		//in questo modo bisogna tener conto del segno di p1 ad ogni passo e confrontarlo con il segno del residuo precedente
+		//se ha lo stesso segno allora si sommano i residui
+		// in caso di più sequenze si considera qualla in cui la somma dei residui è max
+		//infine si calcola la massima deviazione standard dei residui all'interno di una sequenza di punti consecutivi che hanno lo stesso segno
+
+		chi2 += p1 * p1;
+		if (pr[nps + 1 + filter[i] * nlinpar] > 2 * y[i]) {
+			flagblending++;
+			chi2 += (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * w[i] * w[i];
+		}
+	}
+	if (maxsum > maxmaxsum) {
+		maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi	
+		//std::cout << "\nLa somma massima dei residui positivi consecutivi è: " << maxmaxsum << " al tempo " << tmax << std::endl;
+		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
 	}
 	chi0 = sqrt(2 * chi0); // Error in chi square
 	if (chi0 / chi2 > 0.1) Tol *= 0.5;
@@ -1752,6 +1803,11 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
 		fprintf(f, "%le ", pr[i]);
 	}
+	//stampa tmaxmax 
+	fprintf(f, "%.16le ", tmaxmax);
+
+	//stampa maxmaxsum
+	fprintf(f, "%.16le ", maxmaxsum);
 	// Write chi square
 	fprintf(f, "%.16le\n", c0);
 
@@ -1793,4 +1849,3 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 	}
 	fclose(f);
 }
-
