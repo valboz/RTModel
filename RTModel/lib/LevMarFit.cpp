@@ -238,7 +238,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
 				current_path(exedir);
-				//current_path("..");
+				current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -258,7 +258,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[3] = log(pr[3]);
 			}
 			current_path(exedir);
-			//current_path("..");
+			current_path("..");
 			current_path("data");
 			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
@@ -280,7 +280,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[6] = log(pr[6]);
 
 				current_path(exedir);
-				//current_path("..");
+				current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -300,7 +300,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[6] = log(pr[6]);
 			}
 			current_path(exedir);
-			//current_path("..");
+			current_path("..");
 			current_path("data");
 			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
@@ -340,7 +340,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					pr[4] = log(pr[4]);
 					pr[5] = log(pr[5]);
 					current_path(exedir);
-					//current_path("..");
+					current_path("..");
 					current_path("data");
 					VBM->LoadSunTable("SunEphemeris.txt");
 					current_path(eventname);
@@ -360,7 +360,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						pr[4] = log(pr[4]);
 						pr[5] = log(pr[5]);
 						current_path(exedir);
-						//current_path("..");
+						current_path("..");
 						current_path("data");
 						VBM->LoadSunTable("SunEphemeris.txt");
 						current_path(eventname);
@@ -399,7 +399,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[7] = log(pr[7]);
 				pr[8] = log(pr[8]);
 				current_path(exedir);
-				//current_path("..");
+				current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -1388,7 +1388,7 @@ double LevMar::ChiSquared(double* pr) {
 
 				if (p1 > p1max) {
 					p1max = p1; // massimo residuo positivo
-					//std::cout << "\nIl massimo residuo positivo è: " << p1max << " al punto " << i << std::endl;
+					//std::cout << "\nIl massimo residuo positivo Ã¨: " << p1max << " al punto " << i << std::endl;
 					tmax = t[i]; // tempo in cui si ha il massimo residuo positivo
 				}
 
@@ -1399,10 +1399,10 @@ double LevMar::ChiSquared(double* pr) {
 				maxsum = 0;                  // azzera la somma dei residui
 
 			}
-			//Alla fine del ciclo, se la somma dei residui positivi consecutivi è maggiore della somma massima trovata finora allora aggiorna la somma massima e il tempo corrispondente
+			//Alla fine del ciclo, se la somma dei residui positivi consecutivi Ã¨ maggiore della somma massima trovata finora allora aggiorna la somma massima e il tempo corrispondente
 			if (maxsum > maxmaxsum) {
 				maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi	
-				//std::cout << "\nLa somma massima dei residui positivi consecutivi è: " << maxmaxsum << " al tempo " << tmax << std::endl;
+				//std::cout << "\nLa somma massima dei residui positivi consecutivi Ã¨: " << maxmaxsum << " al tempo " << tmax << std::endl;
 				tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
 			}
 			//std::cout << std::endl;
@@ -1414,13 +1414,13 @@ double LevMar::ChiSquared(double* pr) {
 
 		//robustezza del fit 
 		//bisogna considerare il residuo di una seguenza di punti consecutivi che hanno lo stesso segno
-		//**** il segno è dato dal confronto tra il modello ed il flusso misurato
-		//**** se il modello è minore del flusso misurato allora il flusso ha un picco che il modello non ha
+		//**** il segno Ã¨ dato dal confronto tra il modello ed il flusso misurato
+		//**** se il modello Ã¨ minore del flusso misurato allora il flusso ha un picco che il modello non ha
 		//**** viceversa si ha un deep 
 		//quindi bisogna considerare la somma dei residui dei punti consecutivi che hanno lo stesso segno
 		//in questo modo bisogna tener conto del segno di p1 ad ogni passo e confrontarlo con il segno del residuo precedente
 		//se ha lo stesso segno allora si sommano i residui
-		// in caso di più sequenze si considera qualla in cui la somma dei residui è max
+		// in caso di piÃ¹ sequenze si considera qualla in cui la somma dei residui Ã¨ max
 		//infine si calcola la massima deviazione standard dei residui all'interno di una sequenza di punti consecutivi che hanno lo stesso segno
 
 		chi2 += p1 * p1;
@@ -1431,7 +1431,7 @@ double LevMar::ChiSquared(double* pr) {
 	}
 	if (maxsum > maxmaxsum) {
 		maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi	
-		//std::cout << "\nLa somma massima dei residui positivi consecutivi è: " << maxmaxsum << " al tempo " << tmax << std::endl;
+		//std::cout << "\nLa somma massima dei residui positivi consecutivi Ã¨: " << maxmaxsum << " al tempo " << tmax << std::endl;
 		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
 	}
 	chi0 = sqrt(2 * chi0); // Error in chi square
@@ -1848,4 +1848,5 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 		fprintf(f, "\n");
 	}
 	fclose(f);
+
 }
