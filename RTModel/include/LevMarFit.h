@@ -43,6 +43,8 @@ class LevMar {
 	double* constraints, * consleft, * consright, * consvars;
 	int modnumber;
 
+	double tmaxmax;
+	double maxmaxsum;
 	double Tol;
 
 	//	void (LevMar::* PrintOut)(double*);
