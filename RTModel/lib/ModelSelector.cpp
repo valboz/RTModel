@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <cstdlib>
 #include <filesystem>
 #include <regex>
 #include "bumper.h"
@@ -26,7 +25,7 @@ int main(int argc, char* argv[]) {
 	char modelcode[256];
 	char command[256], buffer[10000];
 	double value;
-	double t, y, w, errDecv, * pr, * sigmapr, * Cov, * Curv, fac, facr, c1, c0, chithr, bestplan = 1.e100, bestbin = 1.e100;
+	double t, y, w, errDecv, * pr, * sigmapr, * Cov, * Curv, fac, facr, c1, tmaxmax, maxmaxsum, c0, chithr, bestplan = 1.e100, bestbin = 1.e100;
 	double renorm;
 	int nfil, il, nlc, nmod, np, k;
 	int nps = 4, dof, nlinpar;
@@ -201,6 +200,10 @@ int main(int argc, char* argv[]) {
 				for (int j = 0; j < nps + nlinpar * nfil; j++) {
 					fscanf(f, "%le", &(pr[j]));
 				}
+
+				//per leggere i parametri
+				fscanf(f, "%le", &(tmaxmax));
+				fscanf(f, "%le", &(maxmaxsum));
 				fscanf(f, "%le", &(c0));
 
 				renorm = sqrt(c0 / dof);
@@ -273,6 +276,8 @@ int main(int argc, char* argv[]) {
 							bumperlist->SetCovariance(Cov, dof / c0);
 							strcpy(bumperlist->modelcode, filename);
 							bumperlist->SetBuffer(f, start, end);
+							bumperlist->tanomaly = tmaxmax;
+							bumperlist->maxsum = maxmaxsum;
 							bumperlist->Amp = c0;
 							bumperlist->next = scanbumper;
 						}
@@ -283,6 +288,8 @@ int main(int argc, char* argv[]) {
 							scanbumper2->SetCovariance(Cov, dof / c0);
 							strcpy(scanbumper2->modelcode, filename);
 							scanbumper2->SetBuffer(f, start, end);
+							bumperlist->tanomaly = tmaxmax;
+							bumperlist->maxsum = maxmaxsum;
 							scanbumper2->Amp = c0;
 							scanbumper2->next = scanbumper->next;
 							scanbumper->next = scanbumper2;
@@ -293,6 +300,8 @@ int main(int argc, char* argv[]) {
 						bumperlist->SetCovariance(Cov, dof / c0);
 						strcpy(bumperlist->modelcode, filename);
 						bumperlist->SetBuffer(f, start, end);
+						bumperlist->tanomaly = tmaxmax;
+						bumperlist->maxsum = maxmaxsum;
 						bumperlist->Amp = c0;
 					}
 					nmod++;
