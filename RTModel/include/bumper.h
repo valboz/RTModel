@@ -13,6 +13,8 @@ public:
 	double *dp;
 	double *curv, *cov;
 	double Amp;
+	double tanomaly;
+	double resanomaly;
 	int nps;
 	char modelcode[16];
 	char *buffer;
