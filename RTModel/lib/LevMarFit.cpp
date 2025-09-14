@@ -19,8 +19,10 @@
 using std::regex, std::string, std::regex_match;
 using namespace std::filesystem;
 
+double inc00 = 1.e-5;
+double lamthr = 1.e1;
 int nlc = 6; // Number of models to be calculated from the same initial condition using the bumper method
-int offsetdegeneracy = 3; // Number of models to be calculated with offset degeneracy
+int offsetdegeneracy = 2; // Number of models to be calculated with offset degeneracy
 int maxsteps = 50; // Maximum number of steps in each fit
 double maxtime = 1.e100; // 600.0; // Maximum time in seconds for total execution (no longer controlled within LevMar)
 double bumperpower = 2.0; // Repulsion factor of bumpers
@@ -92,6 +94,7 @@ LevMar::~LevMar() {
 		free(delta);
 		free(maxdelta);
 		free(Curv);
+		free(GradVec);
 		free(A);
 		free(B);
 		free(B0);
@@ -772,6 +775,7 @@ void LevMar::ReadAncillary() {
 		for (int i = 0; i < nps; i++) {
 			Gr[i] = (double*)malloc(sizeof(double) * np * (nlinpar - 1));
 		}
+		GradVec = (double*)malloc(sizeof(double) * nps);
 
 		current_path("Data");
 
@@ -911,25 +915,41 @@ int LevMar::Run() {
 				bumpnum = 1;
 				k = 1;
 				ichi = 0;
+				inc = inc00;
 				// Main fit
 				while ((ichi < 3) && (lambda < 1.e10) && (k <= maxsteps)) {
 					c0 = c1;
 					printf("\nStep %d\n", k++);
-					/* Calculation of the gradient */
-					//getchar();
 
-					Grad();
-
-					// Preparing the matrices A=(Curv + lambda diag(Curv))
-					// with Curv = Gr^T Gr.
-					// B=Gr (y-f)*w
 
 					oldlambda = lambda;
 					lambda /= inclambda;
 
 					// Levenberg-Marquardt with parameter lambda
 					ilam = 0;
-					while ((c1 >= c0) && (ilam < 20)) {
+					while ((c1 >= c0) && (inc > 1.e-9)) {
+
+						/* Calculation of the gradient */
+						if (ilam == 0 || lambda > lamthr) {
+							Grad();
+
+							// Debug
+							normgrad = 0;
+							for (int i = 0; i < nps; i++) {
+								GradVec[i] = (GradVec[i] - c0) / inc;
+								normgrad = GradVec[i] * GradVec[i];
+							}
+							normgrad = sqrt(normgrad);
+							//for (int i = 0; i < nps; i++) {
+							//	printf("\n%le %le %le", B0[i] * 2, B0[i] * 2 - Curv[i*nps+i]*inc, GradVec[i]);
+							//}
+							//getchar();
+
+							// Preparing the matrices A=(Curv + lambda diag(Curv))
+							// with Curv = Gr^T Gr.
+							// B=Gr (y-f)*w
+						}
+
 						for (int i = 0; i < nps; i++) {
 							for (int j = 0; j < nps; j++) {
 								A[i * nps + j] = Curv[i * nps + j];
@@ -937,7 +957,7 @@ int LevMar::Run() {
 									A[i * nps + j] += lambda * Curv[i * nps + i];
 								}
 							}
-							B[i] = B0[i];
+							B[i] = B0[i];// -Curv[i * nps + i] * inc * 0.5 * lambda / (1 + lambda); //Experimental
 						}
 
 						// Triangularizing the equations A.delta = B
@@ -961,8 +981,12 @@ int LevMar::Run() {
 							}
 							delta[i] = fac / A[i * nps + i];
 						}
-						// If we end up out of bounds, the point is taken at the bound.
 						for (int i = 0; i < nps; i++) {
+							// Experimental quad correction
+							//delta[i] = delta[i] * sqrt(lambda);
+							//delta[i] += 0.5 * (delta[i] - (pr[i] - laststep->p0[i]));
+							
+							// If we end up out of bounds, the point is taken at the bound.
 							//					printf("%lf ",delta[i]);
 							if (!((delta[i] > 0) || (delta[i] < 0))) {
 								delta[i] = 0.;
@@ -981,12 +1005,18 @@ int LevMar::Run() {
 						// Current parameters, current chi square and current lambda are displayed
 						PrintOut(prn);
 						c1 = ChiSquared(prn);
-						printf("\nilam= %d lambda= %lf\nc1 = %lf prec=%le", ilam, lambda, c1, Tol);
+						printf("\nilam= %d lambda= %lf\nc1 = %lf prec=%le inc=%le", ilam, lambda, c1, Tol, inc);
 
 						lambda *= inclambda;
 						ilam++;
+						if (lambda < lamthr && inc<inc00) {
+							inc = inc00;
+						}
+						if(lambda>1.e1){
+							inc = inc00*lamthr/lambda;
+						}
 					}
-					lambda /= inclambda;
+					if(lambda>1.e-3)	lambda /= inclambda;
 
 
 					// if new point is better than previous, pr is updated.
@@ -1006,10 +1036,19 @@ int LevMar::Run() {
 							if (fac < 1) {
 								printf("\nBumped!");
 								bumpcounter++;
+								int flag2 = 0;
 								for (int i = 0; i < nps; i++) {
-									//fac = 2.0 * bumperpower / sqrt(fac);
-									//prn[i] = pr[i] - fac * scanbumper->dp[i];
-									prn[i] = scanbumper->p0[i] - 2.0 * bumperpower * (laststep->p0[i] - scanbumper->p0[i]) / sqrt(fac);
+									fac = scanbumper->distance(laststep->p0);
+									delta[i] = -2.0 * bumperpower * scanbumper->dp[i] / sqrt(fac); // bump to the opposite side
+									if (c1 < scanbumper->Amp) { // If chi square is better, bump to the same side
+										delta[i] = -delta[i];
+										//flag2 = 1;
+									}
+									if (fabs(delta[i]) > maxdelta[i]) { // Do not bump too far!
+										delta[i] *= maxdelta[i] / fabs(delta[i]);
+										flag2 = 1;
+									}
+									prn[i] = scanbumper->p0[i] + delta[i];
 									if (prn[i] > rightlim[i]) {
 										prn[i] = 0.99 * rightlim[i] + 0.01 * pr[i];
 									}
@@ -1018,7 +1057,9 @@ int LevMar::Run() {
 									}
 									pr[i] = prn[i];
 								}
-								scanbumper->UpdateCurvature(bumperpower);
+								if (flag2 == 0) { // Do not broaden bumper if bump was too strong
+									scanbumper->UpdateCurvature(bumperpower);
+								}
 								flag = 1;
 								PrintOut(pr);
 							}
@@ -1082,7 +1123,7 @@ int LevMar::Run() {
 
 					// Check if the model makes sense, otherwise set negative chi square for 
 					// processing by subsequent programs.
-					if ((c0 > 2) && (c0 < 1.e100) && flagblending < np / 2) {
+					if ((c0 > 0) && (c0 < 1.e100) && flagblending < np / 2) {
 						c0 = c0;
 					}
 					else {
@@ -1155,7 +1196,7 @@ int LevMar::Run() {
 								}
 							}
 							printf("\n%d %lf", k, fac);
-							if (fac < 1.) {
+							if (fac < 1.) {// Remove all steps from scanbumper->next on from chain
 								laststep = scanbumper;
 								k--;
 								scanbumper2 = scanbumper->next;
@@ -1167,12 +1208,15 @@ int LevMar::Run() {
 								laststep->next = 0;
 								scanbumper = laststep;
 							}
-							else closestbumper = tentbumper;
+							else closestbumper = tentbumper;// memorize closest bumper
 						}
-						//						if (closestbumper != stepchain) {
 													// Start next chain on the other side of closest bumper
 						for (int i = 0; i < nps; i++) {
-							prn[i] = closestbumper->p0[i] - bumperpower * (laststep->p0[i] - closestbumper->p0[i]);
+							delta[i] = -bumperpower * (laststep->p0[i] - closestbumper->p0[i]);
+							if (fabs(delta[i]) > maxdelta[i]) {
+								delta[i] *= maxdelta[i] / fabs(delta[i]);
+							}
+							prn[i] = closestbumper->p0[i] + delta[i];
 							if (prn[i] > rightlim[i]) {
 								prn[i] = 0.99 * rightlim[i] + 0.01 * pr[i];
 							}
@@ -1184,7 +1228,6 @@ int LevMar::Run() {
 						}
 						laststep->next = new bumper(pr, nps);
 						laststep = laststep->next;
-						//						}
 					}
 					// Updating time count
 					//printf("\npartial time=%lf secs\n",(Environment::TickCount-tm)/1000.0);
@@ -1400,10 +1443,11 @@ double LevMar::ChiSquared(double* pr) {
 }
 
 void LevMar::Grad() {
-	static double inc = 1.0e-3, p1;
+	static double p1, p2;
 	for (int i = 0; i < nps + nfil * nlinpar; i++) {
 		prn[i] = pr[i];
 	}
+	printf("\n");
 	for (int j = 0; j < nps; j++) {
 		printf("%d ", j);
 		prn[j] += inc;
@@ -1464,26 +1508,30 @@ void LevMar::Grad() {
 			}
 		}
 
+		GradVec[j] = 0;
 		for (int icons = 0; icons < consnumber; icons++) { // Gradient of constraints
 			consvars[icons + (j + 1) * consnumber] = ComputeConstraint(prn, icons);
 			p1 = (consvars[icons] - constraints[icons]);
-			consvars[icons + (j + 1) * consnumber] = (consvars[icons + (j + 1) * consnumber] - consvars[icons]) / (((p1 > 0) ? consright[icons] : consleft[icons]) * inc);
+			p2 = ((p1 > 0) ? consright[icons] : consleft[icons]);
+			p2 *= p2;
+			GradVec[j] += p1 * p1 / p2;
+			consvars[icons + (j + 1) * consnumber] = (consvars[icons + (j + 1) * consnumber] - consvars[icons]) / (p2 * inc);
 		}
 		prn[j] -= inc;
 		//		double errgrad = 0,errterm, grad=0;
 		for (int i = 0; i < np; i++) {
 			if (w[i] > 0) {
+				p1 = (prn[nps + filter[i] * nlinpar] + prn[nps + 1 + filter[i] * nlinpar] * fb[i + np * (j + 1)] - y[i]) * w[i];
 				Gr[j][i] = w[i] * (prn[nps + filter[i] * nlinpar] + prn[nps + 1 + filter[i] * nlinpar] * fb[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) / inc;
-				//errterm = w[i] / inc * Tol * pr[nps + 1 + filter[i] * nlinpar];
-				//errgrad += errterm * errterm;
-				//grad += Gr[j][i] * Gr[j][i];
+				GradVec[j] += p1 * p1;
 			}
 			if (wcN[i] > 0) {
+				p1 = (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - cN[i]) * wcN[i];
+				GradVec[j] += p1 * p1;
+				p1 = (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - cE[i]) * wcE[i];
+				GradVec[j] += p1 * p1;
 				Gr[j][i + np] = wcN[i] * (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 2] - c1s[i]) / inc;
 				Gr[j][i + np * 2] = wcE[i] * (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 3] - c2s[i]) / inc;
-				//errterm= (50* exp(pr[3])*Tol*pr[9]) / inc;
-				//errgrad += errterm * errterm * (wcN[i] * wcN[i] + wcE[i] * wcE[i]);
-				//grad += Gr[j][i+np] * Gr[j][i+np] + Gr[j][i+2*np] * Gr[j][i + 2 * np];
 			}
 		}
 		//printf("%d ", j);
@@ -1521,7 +1569,8 @@ void LevMar::Grad() {
 				p1 += wcE[k] * Gr[i][k + np * 2] * (cE[k] - pr[nps + filter[k] * nlinpar + 3] - c2s[k]);
 			}
 		}
-		B0[i] = p1;
+		//B0[i] = p1 - Curv[i * nps + i]*0.5*inc; /// Experimental
+		B0[i] = p1; /// Traditional LM
 		for (int icons = 0; icons < consnumber; icons++) {
 			p1 = (consvars[icons] - constraints[icons]);
 			p1 /= (p1 > 0) ? consright[icons] : consleft[icons];
@@ -1793,4 +1842,5 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 	}
 	fclose(f);
 }
+
 

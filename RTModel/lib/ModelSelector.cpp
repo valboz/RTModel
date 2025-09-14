@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
 	Cov = (double*)malloc(sizeof(double) * (nps * nps));
 	Curv = (double*)malloc(sizeof(double) * (nps * nps));
 
-	dof  -= nps; // degrees of freedom
+	dof -= nps; // degrees of freedom
 
 	// Read models
 
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
 
 			f = fopen(curfile.c_str(), "r");
 			while (!feof(f)) {
-				if(fscanf(f, "%s", filename)!=1) break;
+				if (fscanf(f, "%s", filename) != 1) break;
 				fgetc(f);
 				long start = ftell(f);
 				for (int j = 0; j < nps + nlinpar * nfil; j++) {
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
 				}
 
 				long end = ftell(f);
-				
+
 
 				switch (modelcode[0]) {
 				case 'P':
@@ -296,7 +296,7 @@ int main(int argc, char* argv[]) {
 						bumperlist->Amp = c0;
 					}
 					nmod++;
-				}				
+				}
 			}
 			fclose(f);
 		}
@@ -547,6 +547,11 @@ int main(int argc, char* argv[]) {
 				g = fopen("InitCondLX-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + 2 * nmod);
+				for (int i = 0; i < npeaks; i++) {
+					fgetc(f);
+					fscanf(f, "%[^\n]s", buffer);
+					fprintf(g, "%s\n", buffer);
+				}
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < 9; j++) {
@@ -578,6 +583,11 @@ int main(int argc, char* argv[]) {
 					g = fopen("InitCondLO-temp.txt", "w");
 					fscanf(f, "%d %d", &npeaks, &np);
 					fprintf(g, "%d %d\n", npeaks, np + nmod);
+					for (int i = 0; i < npeaks; i++) {
+						fgetc(f);
+						fscanf(f, "%[^\n]s", buffer);
+						fprintf(g, "%s\n", buffer);
+					}
 					printf("\nNumber of initial conditions: %d", np + nmod);
 					for (int i = 0; i < np; i++) {
 						for (int j = 0; j < 12; j++) {
@@ -606,6 +616,11 @@ int main(int argc, char* argv[]) {
 						g = fopen("InitCondLK-temp.txt", "w");
 						fscanf(f, "%d %d", &npeaks, &np);
 						fprintf(g, "%d %d\n", npeaks, np + nmod);
+						for (int i = 0; i < npeaks; i++) {
+							fgetc(f);
+							fscanf(f, "%[^\n]s", buffer);
+							fprintf(g, "%s\n", buffer);
+						}
 						printf("\nNumber of initial conditions: %d", np + nmod);
 						for (int i = 0; i < np; i++) {
 							for (int j = 0; j < 14; j++) {
@@ -638,9 +653,14 @@ int main(int argc, char* argv[]) {
 				g = fopen("InitCondLO-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + nmod);
+				for (int i = 0; i < npeaks; i++) {
+					fgetc(f);
+					fscanf(f, "%[^\n]s", buffer);
+					fprintf(g, "%s\n", buffer);
+				}
 				printf("\nNumber of initial conditions: %d", np + nmod);
 				for (int i = 0; i < np; i++) {
-					for (int j = 0; j < nps+3; j++) {
+					for (int j = 0; j < nps + 3; j++) {
 						fscanf(f, "%lg", &pr[j]);
 						fprintf(g, "%.10le ", pr[j]);
 					}
@@ -654,7 +674,7 @@ int main(int argc, char* argv[]) {
 						pr[i] = scanbumper->p0[i];
 					}
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0e-006 0.0e-006 1.0e-006", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8]);
-					if(astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 					scanbumper = scanbumper->next;
 				}
@@ -668,9 +688,14 @@ int main(int argc, char* argv[]) {
 					g = fopen("InitCondLK-temp.txt", "w");
 					fscanf(f, "%d %d", &npeaks, &np);
 					fprintf(g, "%d %d\n", npeaks, np + nmod);
+					for (int i = 0; i < npeaks; i++) {
+						fgetc(f);
+						fscanf(f, "%[^\n]s", buffer);
+						fprintf(g, "%s\n", buffer);
+					}
 					printf("\nNumber of initial conditions: %d", np + nmod);
 					for (int i = 0; i < np; i++) {
-						for (int j = 0; j < nps+5; j++) {
+						for (int j = 0; j < nps + 5; j++) {
 							fscanf(f, "%lg", &pr[j]);
 							fprintf(g, "%.10le ", pr[j]);
 						}
@@ -684,7 +709,7 @@ int main(int argc, char* argv[]) {
 							pr[i] = scanbumper->p0[i];
 						}
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0e-006 0.0e-006 1.0e-006 1.0 1.0", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 						fprintf(g, "\n");
 
 						scanbumper = scanbumper->next;
@@ -702,9 +727,14 @@ int main(int argc, char* argv[]) {
 				g = fopen("InitCondLK-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + nmod);
+				for (int i = 0; i < npeaks; i++) {
+					fgetc(f);
+					fscanf(f, "%[^\n]s", buffer);
+					fprintf(g, "%s\n", buffer);
+				}
 				printf("\nNumber of initial conditions: %d", np + nmod);
 				for (int i = 0; i < np; i++) {
-					for (int j = 0; j < nps +2; j++) {
+					for (int j = 0; j < nps + 2; j++) {
 						fscanf(f, "%lg", &pr[j]);
 						fprintf(g, "%.10le ", pr[j]);
 					}
@@ -717,8 +747,8 @@ int main(int argc, char* argv[]) {
 					for (int i = 0; i < nps; i++) {
 						pr[i] = scanbumper->p0[i];
 					}
-					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 1.0", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11],-pr[9]/pr[11]);
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 1.0", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11], -pr[9] / pr[11]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 					scanbumper = scanbumper->next;
 				}
@@ -738,6 +768,11 @@ int main(int argc, char* argv[]) {
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + 2 * nmod);
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
+				for (int i = 0; i < npeaks; i++) {
+					fgetc(f);
+					fscanf(f, "%[^\n]s", buffer);
+					fprintf(g, "%s\n", buffer);
+				}
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < 6; j++) {
 						fscanf(f, "%lg", &pr[j]);
@@ -864,7 +899,7 @@ int main(int argc, char* argv[]) {
 				double* peaks;
 				g = fopen("InitCondLX-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "%d %d\n", npeaks, np + ((npeaks>0)? 6 * nmod : 0));
+				fprintf(g, "%d %d\n", npeaks, np + ((npeaks > 0) ? 6 * nmod : 0));
 				peaks = (double*)malloc(sizeof(double) * npeaks);
 
 				printf("\nNumber of initial conditions: %d", np + ((npeaks > 0) ? 6 * nmod : 0));
@@ -927,12 +962,12 @@ int main(int argc, char* argv[]) {
 						s = 0.5 * (sqrt(4 + xc * xc) + xc);
 						alpha = alpha0;
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 						fprintf(g, "\n");
 						xc = xc0 - 4 * sqrt(q) / (s0 * s0);
 						s = 0.5 * (sqrt(4 + xc * xc) + xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 						fprintf(g, "\n");
 
 
@@ -944,23 +979,23 @@ int main(int argc, char* argv[]) {
 						s = 0.5 * (sqrt(4 + xc * xc) - xc);
 						alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 						fprintf(g, "\n");
 						alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 						fprintf(g, "\n");
 
 						xc = xc0 + 3 * sqrt(3 * q) * s0 * s0 * s0;
 						s = 0.5 * (sqrt(4 + xc * xc) - xc);
 						alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 						fprintf(g, "\n");
 
 						alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 						fprintf(g, "\n");
 
 					}
@@ -1042,13 +1077,13 @@ int main(int argc, char* argv[]) {
 							s = 0.5 * (sqrt(4 + xc * xc) + xc);
 							alpha = alpha0;
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							xc = xc0 - 4 * sqrt(q) / (s0 * s0);
 							s = 0.5 * (sqrt(4 + xc * xc) + xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							xc = xc0;
@@ -1059,24 +1094,24 @@ int main(int argc, char* argv[]) {
 							s = 0.5 * (sqrt(4 + xc * xc) - xc);
 							alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							xc = xc0 + 3 * sqrt(3 * q) * s0 * s0 * s0;
 							s = 0.5 * (sqrt(4 + xc * xc) - xc);
 							alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 						}
@@ -1100,8 +1135,13 @@ int main(int argc, char* argv[]) {
 				int npeaks = 0;
 				g = fopen("InitCondBO-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "0 %d\n", np + 2 * nmod);
-				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
+				fprintf(g, "%d %d\n", npeaks, np + 4 * nmod);
+				for (int i = 0; i < npeaks; i++) {
+					fgetc(f);
+					fscanf(f, "%[^\n]s", buffer);
+					fprintf(g, "%s\n", buffer);
+				}
+				printf("\nNumber of initial conditions: %d", np + 4 * nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < nps + 5; j++) {
 						fscanf(f, "%lg", &pr[j]);
@@ -1117,20 +1157,20 @@ int main(int argc, char* argv[]) {
 						pr[i] = scanbumper->p0[i];
 					}
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0 0.0 1.e-6", exp(pr[0]), exp(pr[1]), pr[2], pr[3], pr[4], pr[5], exp(pr[6]));
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 
 					// Reflected solution
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0 0.0 1.e-6", exp(pr[0]), exp(pr[1]), -pr[2], pr[3], pr[4], pr[5], exp(pr[6]));
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0 0.0 1.e-6", exp(pr[0]), exp(pr[1]), pr[2], -pr[3], pr[4], pr[5], exp(pr[6]));
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0 0.0 1.e-6", exp(pr[0]), exp(pr[1]), -pr[2], -pr[3], pr[4], pr[5], exp(pr[6]));
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 
 					scanbumper = scanbumper->next;

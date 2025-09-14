@@ -946,7 +946,7 @@ int main(int argc, char* argv[])
 		}
 		// First we write the initial conditions from previous best models
 		for (int i = 0; i < dn; i++) {
-			for (int j = 0; j < nps; j++) {
+			for (int j = 0; j < npsold; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
 			fprintf(f, "\n");
@@ -1001,41 +1001,35 @@ int main(int argc, char* argv[])
 		current_path("InitCond");
 		f = fopen(fileinit, "w");
 		int nu0 = 3, ntE = 5, nrho = 4;
-		if (strstr(modelcategories, "PS") != 0) {
-			fprintf(f, "0 %d\n", dn);
-		}
-		else {
-			fprintf(f, "%d %d\n", newpeaks->length, nu0 * ntE * nrho * newpeaks->length * 2 + dn);
-			// Then we write the characteristics of the peaks used
-			for (p = newpeaks->first; p; p = p->next) {
-				fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
-			}
+		if (strstr(modelcategories, "PS") != 0) nu0 = 0; // Switch off grid search if static models are searched first
+		fprintf(f, "%d %d\n", newpeaks->length, nu0 * ntE * nrho * newpeaks->length * 2 + dn);
+		// Then we write the characteristics of the peaks used
+		for (p = newpeaks->first; p; p = p->next) {
+			fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
 		}
 
 		// First we write the initial conditions from previous best models
 		for (int i = 0; i < dn; i++) {
-			for (int j = 0; j < nps; j++) {
+			for (int j = 0; j < npsold; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
 			if (npsold < nps) fprintf(f, "%s", astroini);
 			fprintf(f, "\n");
 		}
 
-		if (strstr(modelcategories, "PS") == 0) {
-			// Here we write the initial conditions by matching the newpeaks to the peaks recorded in the template library
-			for (p = newpeaks->first; p; p = p->next) {
-				for (int iu = 0; iu < nu0; iu++) {
-					for (int itE = 0; itE < ntE; itE++) {
-						for (int ir = 0; ir < nrho; ir++) {
-							//			{u0, tE, t0, Rs}
-							if (astrometric) {
-								fprintf(f, "%le %le %le %le 0.0 0.0 %s\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir), astroini);
-								fprintf(f, "%le %le %le %le 0.0 0.0 %s\n", -pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir), astroini);
-							}
-							else {
-								fprintf(f, "%le %le %le %le 0.0 0.0\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
-								fprintf(f, "%le %le %le %le 0.0 0.0\n", -pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
-							}
+		// Here we write the initial conditions by matching the newpeaks to the peaks recorded in the template library
+		for (p = newpeaks->first; p; p = p->next) {
+			for (int iu = 0; iu < nu0; iu++) {
+				for (int itE = 0; itE < ntE; itE++) {
+					for (int ir = 0; ir < nrho; ir++) {
+						//			{u0, tE, t0, Rs}
+						if (astrometric) {
+							fprintf(f, "%le %le %le %le 0.0 0.0 %s\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir), astroini);
+							fprintf(f, "%le %le %le %le 0.0 0.0 %s\n", -pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir), astroini);
+						}
+						else {
+							fprintf(f, "%le %le %le %le 0.0 0.0\n", pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
+							fprintf(f, "%le %le %le %le 0.0 0.0\n", -pow(10., -2. + iu), pow(10., -1. + itE), p->t, pow(10., -3. + 1. * ir));
 						}
 					}
 				}
@@ -1087,7 +1081,7 @@ int main(int argc, char* argv[])
 		}
 		// First we write the initial conditions from previous best models
 		for (int i = 0; i < dn; i++) {
-			for (int j = 0; j < nps; j++) {
+			for (int j = 0; j < npsold; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
 			fprintf(f, "\n");
@@ -1149,52 +1143,46 @@ int main(int argc, char* argv[])
 		int nu0 = 3, ntE = 5;
 		int nFR = 3;
 
-		if (strstr(modelcategories, "BS") != 0) {
-			fprintf(f, "0 %d\n", dn);
-		}
-		else {
-			fprintf(f, "%d %d\n", newpeaks->length, nu0 * nu0 * ntE * nFR * (newpeaks->length * (newpeaks->length - 1) / 2) * 2 + dn);
-			// Then we write the characteristics of the peaks used
-			for (p = newpeaks->first; p; p = p->next) {
-				fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
-			}
+		if (strstr(modelcategories, "BS") != 0) nu0 = 0; // Switch off grid search if static models have been searched first
+		fprintf(f, "%d %d\n", newpeaks->length, nu0 * nu0 * ntE * nFR * (newpeaks->length * (newpeaks->length - 1) / 2) * 2 + dn);
+		// Then we write the characteristics of the peaks used
+		for (p = newpeaks->first; p; p = p->next) {
+			fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
 		}
 
 		// First we write the initial conditions from previous best models
 		for (int i = 0; i < dn; i++) {
-			for (int j = 0; j < nps; j++) {
+			for (int j = 0; j < npsold; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
 			if (npsold < nps) fprintf(f, "%s", astroini);
 			fprintf(f, "\n");
 		}
 		// Here we write the initial conditions by matching the newpeaks
-		if (strstr(modelcategories, "BS") == 0) {
-			if (newpeaks->length > 1) {
-				for (pl = newpeaks->first; pl->next; pl = pl->next) {
-					for (pr = pl->next; pr; pr = pr->next) {
-						for (int iu = 0; iu < nu0; iu++) {
-							for (int iu2 = 0; iu2 < nu0; iu2++) {
-								for (int itE = 0; itE < ntE; itE++) {
-									for (int iFR = 0; iFR < nFR; iFR++) {
-										if (astrometric) {
-											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
-											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
-											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
-											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
-										}
-										else {
-											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
-											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
-											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
-											fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
-
-										}
-										// Old parameterization
-										//{u0, t0, log_tE, log_Rs, xi1, xi2, omega, inc, phi, log_qs}
-										//fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (-u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
-										//fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
+		if (newpeaks->length > 1) {
+			for (pl = newpeaks->first; pl->next; pl = pl->next) {
+				for (pr = pl->next; pr; pr = pr->next) {
+					for (int iu = 0; iu < nu0; iu++) {
+						for (int iu2 = 0; iu2 < nu0; iu2++) {
+							for (int itE = 0; itE < ntE; itE++) {
+								for (int iFR = 0; iFR < nFR; iFR++) {
+									if (astrometric) {
+										fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
+										fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
+										fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
+										fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le %s\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6, astroini);
 									}
+									else {
+										fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
+										fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
+										fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
+										fprintf(f, "%le %le %le %le %le %le %le %le %le %le %le %le\n", pow(10., -1. + itE), pow(10., -1. + iFR), -pow(10., -2. + iu), -pow(10., -2. + iu2), pl->t, pr->t, 0.0001, 0.0, 0.0, 0.0, 0.0, 1.e-6);
+
+									}
+									// Old parameterization
+									//{u0, t0, log_tE, log_Rs, xi1, xi2, omega, inc, phi, log_qs}
+									//fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (-u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
+									//fprintf(f, "%le %le %le %le %le %le %le %le %le %le\n", u01, pl->t, tE, 0.0001, (pr->t - pl->t) / tE / (1 + qs) * qs, (u02 + u01) / (1 + qs) * qs, 0.000001, 0.0001, 0.00001, qs);
 								}
 							}
 						}
@@ -1263,7 +1251,7 @@ int main(int argc, char* argv[])
 		}
 		// First we write the initial conditions from previous best models
 		for (int i = 0; i < dn; i++) {
-			for (int j = 0; j < nps; j++) {
+			for (int j = 0; j < npsold; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
 			fprintf(f, "\n");
@@ -1338,19 +1326,19 @@ int main(int argc, char* argv[])
 
 		f = fopen(fileinit, "w");
 		if (strstr(modelcategories, "LS") != 0) {
-			fprintf(f, "0 %d\n", dn);
+			fprintf(f, "%d %d\n", newpeaks->length, dn);
 		}
 		else {
 			fprintf(f, "%d %d\n", newpeaks->length, np * (newpeaks->length * (newpeaks->length - 1)) * 2 + dn);
-			// Then we write the characteristics of the peaks used
-			for (p = newpeaks->first; p; p = p->next) {
-				fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
-			}
+		}
+		// Then we write the characteristics of the peaks used
+		for (p = newpeaks->first; p; p = p->next) {
+			fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
 		}
 
 		// First we write the initial conditions from previous best models
 		for (int i = 0; i < dn; i++) {
-			for (int j = 0; j < nps; j++) {
+			for (int j = 0; j < npsold; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
 			if (npsold < nps) fprintf(f, "%s", astroini);
@@ -1451,19 +1439,19 @@ int main(int argc, char* argv[])
 
 		f = fopen(fileinit, "w");
 		if (strstr(modelcategories, "LS") != 0 || strstr(modelcategories, "LX") != 0) {
-			fprintf(f, "0 %d\n", dn);
+			fprintf(f, "%d %d\n", newpeaks->length, dn);
 		}
 		else {
 			fprintf(f, "%d %d\n", newpeaks->length, np * (newpeaks->length * (newpeaks->length - 1)) * 2 + dn);
-			// Then we write the characteristics of the peaks used
-			for (p = newpeaks->first; p; p = p->next) {
-				fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
-			}
+		}
+		// Then we write the characteristics of the peaks used
+		for (p = newpeaks->first; p; p = p->next) {
+			fprintf(f, "%le %le %le %le %le\n", p->t, p->tl, p->tr, p->y, p->sig);
 		}
 
 		// First we write the initial conditions from previous best models
 		for (int i = 0; i < dn; i++) {
-			for (int j = 0; j < nps; j++) {
+			for (int j = 0; j < npsold; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
 			if (npsold < nps) fprintf(f, "%s", astroini);
@@ -1580,7 +1568,7 @@ int main(int argc, char* argv[])
 
 		// First we write the initial conditions from previous best models
 		for (int i = 0; i < dn; i++) {
-			for (int j = 0; j < nps; j++) {
+			for (int j = 0; j < npsold; j++) {
 				fprintf(f, "%le ", tt[i * nps + j]);
 			}
 			if (npsold < nps) fprintf(f, "%s", astroini);
