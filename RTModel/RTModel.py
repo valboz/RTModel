@@ -104,7 +104,7 @@ class RTModel:
                 f.write(str(par[0]) + ' ' + str(par[1]) + ' ' + str(par[2]) + '\n')
         
 
-    def config_Reader(self, tau = 0.1, binning = 4000, otherseasons = 100, renormalize = 1, thresholdoutliers = 10):
+    def config_Reader(self, tau = 1, binning = 4000, otherseasons = 100, renormalize = 1, thresholdoutliers = 10):
         self.Reader_tau= tau # conventional correlation time for consecutive points
         self.Reader_binning = binning # maximum number of points left after re-binning
         self.Reader_otherseasons = otherseasons # How to use other seasons (0 = Yes, 1 = decrease significance, 2 = remove)
@@ -200,7 +200,7 @@ class RTModel:
             print('\033[30;41m! Program stopped here!\033[m')
             self.done = True
 
-    def config_LevMar(self, nfits = 6, offsetdegeneracy = 3, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0, \
+    def config_LevMar(self, nfits = 6, offsetdegeneracy = 2, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0, \
                       mass_luminosity_exponent = None, mass_radius_exponent = None, lens_mass_luminosity_exponent = None, \
                      turn_off_secondary_source = False, turn_off_secondary_lens = False, stepchainsave=False):
         self.LevMar_nfits = nfits # Number of models to be calculated from the same initial condition using the bumper method
