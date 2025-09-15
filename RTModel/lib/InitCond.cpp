@@ -321,7 +321,7 @@ int main(int argc, char* argv[])
 			// asydev = relevance of the asymmetry
 			fint = -1.e100;
 			tasy = 0;
-			asydev = 0;
+			asydev = highdev = 0;
 			f = fopen("spline.txt", "w");
 			fclose(f);
 			///////////////////////////////////
@@ -473,8 +473,10 @@ int main(int argc, char* argv[])
 				// Calculate prominence of highest peak with respect to global minimum of this dataset
 				highestpeak->sig = (highestpeak->y - minimum->y) / sqrt(highestpeak->yerr * highestpeak->yerr + minimum->yerr * minimum->yerr);
 				printf("\n- Highest peak\nt: %lf y: %lg sig: %lf", tv, highestpeak->y, highestpeak->sig);
-				thigh = tv;
-				highdev = highestpeak->sig;
+				if (highestpeak->sig > highdev) {
+					thigh = tv;
+					highdev = highestpeak->sig;
+				}
 
 				// Store maximal asymmetry for later use
 				curpeak = cpeaks->last;
@@ -841,18 +843,18 @@ int main(int argc, char* argv[])
 
 			// If not enough relevant peaks, use largest asymmetry as second peak
 			if (newpeaks->first->next == 0 && tasy > 1) {
-				newpeaks->remove(newpeaks->first);
-				printf("\n\nUsing highest peak %lf", thigh);
+				//newpeaks->remove(newpeaks->first);
+				printf("\n\nUsing highest peak %lf", newpeaks->first->t);
 				printf("\nand maximal asymmetry %lf", tasy);
-				newpeaks->addpoint(0, thigh, highdev, 1);
+				//newpeaks->addpoint(0, thigh, highdev, 1);
 				newpeaks->addpoint(0, tasy, asydev, 1);
-				datapoint* p;
-				p = newpeaks->first;
-				newpeaks->first = p->next;
-				newpeaks->first->prev = 0;
-				newpeaks->first->next = p;
-				p->prev = newpeaks->first;
-				p->next = 0;
+				//datapoint* p;
+				//p = newpeaks->first;
+				//newpeaks->first = p->next;
+				//newpeaks->first->prev = 0;
+				//newpeaks->first->next = p;
+				//p->prev = newpeaks->first;
+				//p->next = 0;
 			}
 
 		}
@@ -1205,6 +1207,7 @@ int main(int argc, char* argv[])
 	else {
 		f = fopen(templatelibrary, "r"); // user-specified template library
 	}
+	if (f == 0) printf("\n\n!!! Template library not found (use absolute path)\n");
 	fscanf(f, "%d", &np);
 	printf("\nTemplates in library: %d", np);
 	yy = (double*)malloc(sizeof(double) * np * 7); // yy will contain all the information read from the template library
