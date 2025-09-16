@@ -238,7 +238,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
 				current_path(exedir);
-				current_path("..");
+				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -258,7 +258,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[3] = log(pr[3]);
 			}
 			current_path(exedir);
-			current_path("..");
+			//current_path("..");
 			current_path("data");
 			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
@@ -280,7 +280,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[6] = log(pr[6]);
 
 				current_path(exedir);
-				current_path("..");
+				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -300,7 +300,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[6] = log(pr[6]);
 			}
 			current_path(exedir);
-			current_path("..");
+			//current_path("..");
 			current_path("data");
 			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
@@ -340,7 +340,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					pr[4] = log(pr[4]);
 					pr[5] = log(pr[5]);
 					current_path(exedir);
-					current_path("..");
+					//current_path("..");
 					current_path("data");
 					VBM->LoadSunTable("SunEphemeris.txt");
 					current_path(eventname);
@@ -360,7 +360,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						pr[4] = log(pr[4]);
 						pr[5] = log(pr[5]);
 						current_path(exedir);
-						current_path("..");
+						//current_path("..");
 						current_path("data");
 						VBM->LoadSunTable("SunEphemeris.txt");
 						current_path(eventname);
@@ -399,7 +399,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[7] = log(pr[7]);
 				pr[8] = log(pr[8]);
 				current_path(exedir);
-				current_path("..");
+				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -1301,6 +1301,7 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 		}
 		break;
 	}
+
 }
 
 double LevMar::ChiSquared(double* pr) {
@@ -1393,25 +1394,28 @@ double LevMar::ChiSquared(double* pr) {
 
 			}
 			else {
-				maxsum = 0;                
+				maxsum = 0;                  // azzera la somma dei residui
 
 			}
+			//Alla fine del ciclo, se la somma dei residui positivi consecutivi è maggiore della somma massima trovata finora allora aggiorna la somma massima e il tempo corrispondente
 			if (maxsum > maxmaxsum) {
-				maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi	
+				maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi
 				tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
 			}
 			
 		}
+
+
 		
-				chi2 += p1 * p1;
+		chi2 += p1 * p1;
 		if (pr[nps + 1 + filter[i] * nlinpar] > 2 * y[i]) {
 			flagblending++;
 			chi2 += (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * w[i] * w[i];
 		}
 	}
 	if (maxsum > maxmaxsum) {
-		maxmaxsum = maxsum;
-		tmaxmax = tmax; 
+		maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi	
+		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
 	}
 	chi0 = sqrt(2 * chi0); // Error in chi square
 	if (chi0 / chi2 > 0.1) Tol *= 0.5;
@@ -1782,10 +1786,10 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
 		fprintf(f, "%le ", pr[i]);
 	}
-	// Write tmaxmax 
+	//stampa tmaxmax 
 	fprintf(f, "%.16le ", tmaxmax);
 
-	// Write maxmaxsum
+	//stampa maxmaxsum
 	fprintf(f, "%.16le ", maxmaxsum);
 	// Write chi square
 	fprintf(f, "%.16le\n", c0);
@@ -1827,6 +1831,4 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 		fprintf(f, "\n");
 	}
 	fclose(f);
-
 }
-
