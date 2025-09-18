@@ -33,9 +33,9 @@ The first line is a header specifying the content of the columns.
 
 `RTModel` accepts both input in magnitudes or fluxes. 
 
-If the header contains the keyword "Mag", then `RTModel` assumes that each line contains magnitude, error and Heliocentric Julian Date - 2450000 for each individual photometric measurement.
+If the header contains the keyword "Mag", then `RTModel` assumes that each line contains **magnitude**, error and Heliocentric Julian Date - 2450000 for each individual photometric measurement.
 
-If the header DOES NOT contain the keyword "Mag", then `RTModel` assumes that each line contains flux, error and Heliocentric Julian Date - 2450000 for each individual photometric measurement.
+If the header DOES NOT contain the keyword "Mag", then `RTModel` assumes that each line contains **flux**, error and Heliocentric Julian Date - 2450000 for each individual photometric measurement.
 
 ## Event coordinates
 
