@@ -44,7 +44,7 @@ struct dataset {
 	~dataset();
 	void addpoint(double, double, double, double, double, double, double);
 	void deletepoint(datapoint*);
-	void swappoints(datapoint*,datapoint*);
+	void swappoints(datapoint*, datapoint*);
 };
 
 #define _computesig\
@@ -179,7 +179,7 @@ int main(int argc, char* argv[])
 			while (fscanf(f, "%[^\n]", titstring) == 1) {
 				fscanf(f, "%[\n]", nostr);
 				ncolumns = sscanf(titstring, "%lg %lg %lg %lg %lg %lg %lg", &y, &err, &t, &Dec, &errDec, &RA, &errRA);
-				if (y>-1.e100 && err>-1.e100 && t>-1.e100) {
+				if (y > -1.e100 && err > -1.e100 && t > -1.e100) {
 					if (ncolumns < 7) {
 						Dec = errDec = RA = errRA = -1;
 					}
@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
 				else {
 					if (p1->t < pmax->t) {
 						pmax = p1;
-					}				
+					}
 				}
 				p1 = p1->next;
 			}
@@ -323,8 +323,10 @@ int main(int argc, char* argv[])
 				residual = *std::next(it, imed) * 0.186914;
 			}
 			else residual = 1;
-			//residual = (residual + 1.) / (weight + 1.);
-			pc = sqrt(residual);
+			//residual = pow(residual,sqrt((reslist.size()-1)/curdataset->length));
+			ft1 = sqrt((reslist.size() - 1.0) / (curdataset->length / 2 + 1));
+			if (ft1 > 1) ft1 = 1;
+			pc = pow(residual, 0.5 * ft1);
 			printf("\n%s", curdataset->label);
 			//printf("\nResidual: %le      Length: %d      Weight: %le       Normalization factor: %le", residual, curdataset->length, weight, pc);
 			printf("\nLength: %d      Res.list: %d     Residual: %lf      Normalization factor: %lf", curdataset->length, reslist.size(), residual, pc);
@@ -400,7 +402,7 @@ int main(int argc, char* argv[])
 				scury2 = devs[ichunk] = 0;
 				for (p = chunkfirst[ichunk]; p != chunklast[ichunk]->next; p = p->next) {
 					dev = p->y - mean;
-					if (dev>0) {
+					if (dev > 0) {
 						dev /= p->err;
 						scury2 += dev * dev;
 					}
@@ -423,11 +425,11 @@ int main(int argc, char* argv[])
 				for (int ichunk = 0; ichunk < nchunks; ichunk++) {
 					if (ichunk != imaxdev) {
 						double fac;
-//						double fac = (devs[ichunk]+1.e-10) /(maxdev + 1.e-10);
-//						fac *= fac;
+						//						double fac = (devs[ichunk]+1.e-10) /(maxdev + 1.e-10);
+						//						fac *= fac;
 						for (p = chunkfirst[ichunk]; p != chunklast[ichunk]->next; p = p->next) {
 							fac = (p->t > chunklast[imaxdev]->t) ? (p->t > chunklast[imaxdev]->t) : (chunkfirst[imaxdev]->t - p->t);
-							p->basesig = 1.0/otherseasons/fac;// fac;
+							p->basesig = 1.0 / otherseasons / fac;// fac;
 						}
 					}
 				}
@@ -589,7 +591,7 @@ int main(int argc, char* argv[])
 				y = p->y;
 				err = p->err;
 			}
-			fprintf(f, "%d %.10le %.10le %.10le %d %.10le %.10le %.10le %.10le\n", ifile, p->t, y, err, satellite, p->Dec, p->errDec,p->RA, p->errRA);
+			fprintf(f, "%d %.10le %.10le %.10le %d %.10le %.10le %.10le %.10le\n", ifile, p->t, y, err, satellite, p->Dec, p->errDec, p->RA, p->errRA);
 		}
 		ifile++;
 	}
@@ -703,21 +705,21 @@ void dataset::swappoints(datapoint* p1, datapoint* p2) {
 	p2p = p2->prev;
 	p2n = p2->next;
 	if (p1n == p2) {
-		if(p1p) p1p->next = p2;
+		if (p1p) p1p->next = p2;
 		p2->prev = p1p;
 		p2->next = p1;
 		p1->prev = p2;
 		p1->next = p2n;
-		if(p2n) p2n->prev = p1;
+		if (p2n) p2n->prev = p1;
 	}
 	else {
 		if (p2n == p1) {
-			if(p2p) p2p->next = p1;
+			if (p2p) p2p->next = p1;
 			p1->prev = p2p;
 			p1->next = p2;
 			p2->prev = p1;
 			p2->next = p1n;
-			if(p1n) p1n->prev = p2;
+			if (p1n) p1n->prev = p2;
 		}
 		else {
 			if (p1p) p1p->next = p2;
