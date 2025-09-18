@@ -23,7 +23,7 @@ char systemslash = '/';
 
 double tau = 1.0; // time-scale to trigger scatter assessment
 int npmax = 4000; // maximum number of points left after re-binning
-int otherseasons = 100; // How to use other seasons
+double otherseasons = 1.0; // How to use other seasons
 int renormalize = 1; // Re-normalize error bars
 double thresholdoutliers = 10; // Threshold for removing outliers
 
@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
 					tau = value;
 				}
 				if (strcmp(command, "otherseasons") == 0) {
-					otherseasons = (int)value;
+					otherseasons = value;
 				}
 				if (strcmp(command, "renormalize") == 0) {
 					renormalize = (int)value;
@@ -428,8 +428,8 @@ int main(int argc, char* argv[])
 						//						double fac = (devs[ichunk]+1.e-10) /(maxdev + 1.e-10);
 						//						fac *= fac;
 						for (p = chunkfirst[ichunk]; p != chunklast[ichunk]->next; p = p->next) {
-							fac = (p->t > chunklast[imaxdev]->t) ? (p->t > chunklast[imaxdev]->t) : (chunkfirst[imaxdev]->t - p->t);
-							p->basesig = 1.0 / otherseasons / fac;// fac;
+							fac = (p->t > chunklast[imaxdev]->t) ? (p->t - chunklast[imaxdev]->t) : (chunkfirst[imaxdev]->t - p->t);
+							p->basesig = 10.0 / otherseasons / fac;// fac;
 						}
 					}
 				}
