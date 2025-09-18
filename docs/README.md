@@ -94,9 +94,9 @@ In this challenge there were 51 binary events with q<0.03 (planetary regime). Th
 
 In the stellar binary regime q>0.03 there were 75 events simulated in the data challenge. We note that orbital motion was simulated by assigning the two transverse components, which leads to non-physical trajectories not reproducible by circular orbital motion. Anyway, the results obtained are the following:
 
-- 63 full successes;
-- 4 cases in which an s<1 solution was found instead of the s>1;
-- 7 cases in which a different binary model was found;
+- 56 full successes;
+- 9 cases in which an s<1 solution was found instead of the s>1;
+- 9 cases in which a different binary model was found;
 - 1 case in which the anomaly was too weak
 
 The success rate is observed to decrease significantly for events with high orbital motion. This should be partly due to the different way this effect is taken into account in the simulation and in our fitting code.
