@@ -15,6 +15,7 @@ public:
 	double Amp;
 	double tanomaly;
 	double resanomaly;
+	double maxsum, maxmaxsum, tmaxmax, tmax;
 	int nps;
 	char modelcode[16];
 	char *buffer;
