@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 
 	// Directory preliminaries. Reads event name from arguments.
 
-	auto exedir = current_path();
+	auto exedir = std::filesystem::current_path();
 
 	if (argc > 2) {
 		strcpy(eventname, argv[1]);
@@ -129,7 +129,6 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	fclose(f);
-
 	// Determine model type
 	nps = (astrometric) ? 4 : 0;
 	nlinpar = (astrometric) ? 4 : 2;
@@ -164,6 +163,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	supfac *= nps;
+
 
 	printf("\n- Model code: %s", modelcode);
 
@@ -808,22 +808,23 @@ int main(int argc, char* argv[]) {
 							pr[i] = scanbumper->p0[i];
 						}
 
-						double mindpeak = 1.e100;
-						int idpeak = 0;
-						for (int ipeak = 0; ipeak < npeaks; ipeak++) {
-							double ddpeak = fabs(peaks[ipeak] - pr[2]);
-							if (ddpeak < mindpeak) {
-								idpeak = ipeak;
-								mindpeak = ddpeak;
-							}
-						}
+						//double mindpeak = 1.e100;
+						//int idpeak = 0;
+						//for (int ipeak = 0; ipeak < npeaks; ipeak++) {
+						//	double ddpeak = fabs(peaks[ipeak] - pr[2]);
+						//	if (ddpeak < mindpeak) {
+						//		idpeak = ipeak;
+						//		mindpeak = ddpeak;
+						//	}
+						//}
 
 						double u0 = exp(pr[0]);
 						double s0, s;
-						for (int ipeak = 0; ipeak < npeaks; ipeak++) {
-							if (ipeak == idpeak) continue;
+						/*for (int ipeak = 0; ipeak < npeaks; ipeak++) {
+							if (ipeak == idpeak) continue;*/
 							double q = 0.001;
-							double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
+							double dt = (scanbumper->tanomaly - pr[2]) / exp(pr[1]);
+							/*double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);*/
 							double xc0 = sqrt(u0 * u0 + dt * dt), xc;
 							double alpha0 = atan2(u0, -dt), alpha;
 							double rho = 0.001; // exp(pr[3] - sqrt(scanbumper->cov[3 * nps + 3]));
@@ -856,7 +857,7 @@ int main(int argc, char* argv[]) {
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2]);
 							alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2]);
-						}
+						//}
 						scanbumper = scanbumper->next;
 					}
 					fclose(g);
@@ -892,7 +893,7 @@ int main(int argc, char* argv[]) {
 				}
 				fclose(f);
 
-				double mindpeak = 1.e100;
+				/*double mindpeak = 1.e100;
 				int idpeak = 0;
 				for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 					double ddpeak = fabs(peaks[ipeak] - pr[2]);
@@ -900,7 +901,7 @@ int main(int argc, char* argv[]) {
 						idpeak = ipeak;
 						mindpeak = ddpeak;
 					}
-				}
+				}*/
 
 				scanbumper = bumperlist;
 				for (il = 1; il <= nmod; il++) {
@@ -908,7 +909,7 @@ int main(int argc, char* argv[]) {
 						pr[i] = scanbumper->p0[i];
 					}
 
-					double mindpeak = 1.e100;
+					/*double mindpeak = 1.e100;
 					int idpeak = 0;
 					for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 						double ddpeak = fabs(peaks[ipeak] - pr[2]);
@@ -916,14 +917,15 @@ int main(int argc, char* argv[]) {
 							idpeak = ipeak;
 							mindpeak = ddpeak;
 						}
-					}
+					}*/
 
 					double u0 = pr[0];
 					double s0, s;
-					for (int ipeak = 0; ipeak < npeaks; ipeak++) {
-						if (ipeak == idpeak) continue;
+					/*for (int ipeak = 0; ipeak < npeaks; ipeak++) {
+						if (ipeak == idpeak) continue;*/
 						double q = 0.001;
-						double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
+						double dt = (scanbumper->tanomaly - pr[2]) / exp(pr[1]);
+						//double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
 						double xc0 = sqrt(u0 * u0 + dt * dt), xc;
 						double alpha0 = atan2(u0, -dt), alpha;
 						double rho = 0.001; // exp(pr[3] - sqrt(scanbumper->cov[3 * nps + 3]));
@@ -972,7 +974,7 @@ int main(int argc, char* argv[]) {
 						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 						fprintf(g, "\n");
 
-					}
+					//}
 					scanbumper = scanbumper->next;
 				}
 
@@ -1007,7 +1009,7 @@ int main(int argc, char* argv[]) {
 					}
 					fclose(f);
 
-					double mindpeak = 1.e100;
+					/*double mindpeak = 1.e100;
 					int idpeak = 0;
 					for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 						double ddpeak = fabs(peaks[ipeak] - pr[2]);
@@ -1015,7 +1017,7 @@ int main(int argc, char* argv[]) {
 							idpeak = ipeak;
 							mindpeak = ddpeak;
 						}
-					}
+					}*/
 
 					scanbumper = bumperlist;
 					for (il = 1; il <= nmod; il++) {
@@ -1023,7 +1025,7 @@ int main(int argc, char* argv[]) {
 							pr[i] = scanbumper->p0[i];
 						}
 
-						double mindpeak = 1.e100;
+						/*double mindpeak = 1.e100;
 						int idpeak = 0;
 						for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 							double ddpeak = fabs(peaks[ipeak] - pr[2]);
@@ -1031,14 +1033,15 @@ int main(int argc, char* argv[]) {
 								idpeak = ipeak;
 								mindpeak = ddpeak;
 							}
-						}
+						}*/
 
 						double u0 = pr[0];
 						double s0, s;
-						for (int ipeak = 0; ipeak < npeaks; ipeak++) {
-							if (ipeak == idpeak) continue;
+						/*for (int ipeak = 0; ipeak < npeaks; ipeak++) {
+							if (ipeak == idpeak) continue;*/
 							double q = 0.001;
-							double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
+							double dt = (scanbumper->tanomaly - pr[2]) / exp(pr[1]);
+							//double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
 							double xc0 = sqrt(u0 * u0 + dt * dt), xc;
 							double alpha0 = atan2(u0, -dt), alpha;
 							double rho = 0.001; // exp(pr[3] - sqrt(scanbumper->cov[3 * nps + 3]));
@@ -1088,7 +1091,7 @@ int main(int argc, char* argv[]) {
 							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
-						}
+						//}
 						scanbumper = scanbumper->next;
 					}
 
