@@ -5,7 +5,7 @@
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include <VBMicrolensingLibrary.h>
+#include "VBMicrolensingLibrary.h"
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
@@ -188,6 +188,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		printf("\n\n- Event: %s\n", eventname);
 
 		current_path(eventname);
+		printf("- Working directory: %s\n", current_path().string().c_str());
 
 		//if(argc>2){
 		//	strcpy(eventname,argv[1]);
@@ -202,7 +203,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 
 		current_path(eventname);
 		current_path("Data");
-
+		printf("- Data directory: %s\n", current_path().string().c_str());
 		/* Reading coordinates */
 
 		auto searchstring = regex(".*\\.coordinates");
@@ -214,8 +215,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				break;
 			}
 		}
-
 		current_path(eventname);
+		printf("\n- Event directory: %s\n", current_path().string().c_str());
 
 		// Read light curve
 		ReadCurve();
@@ -237,11 +238,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
-				current_path(exedir);
+				//current_path(exedir);
 				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
+				
 			}
 
 			else {
@@ -257,11 +259,13 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
 			}
-			current_path(exedir);
+			//current_path(exedir);
 			//current_path("..");
+			
 			current_path("data");
 			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
+			
 			break;
 
 		case 'B':
@@ -279,7 +283,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[6] = log(pr[6]);
 
-				current_path(exedir);
+				//current_path(exedir);
 				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
@@ -299,7 +303,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[6] = log(pr[6]);
 			}
-			current_path(exedir);
+			//current_path(exedir);
 			//current_path("..");
 			current_path("data");
 			VBM->LoadESPLTable("ESPL.tbl");
@@ -319,8 +323,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[4] = log(pr[4]);
 				pr[5] = log(pr[5]);
-				current_path(exedir);
-				current_path("..");
+				//current_path(exedir);
+				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -339,7 +343,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					pr[1] = log(pr[1]);
 					pr[4] = log(pr[4]);
 					pr[5] = log(pr[5]);
-					current_path(exedir);
+					//current_path(exedir);
 					//current_path("..");
 					current_path("data");
 					VBM->LoadSunTable("SunEphemeris.txt");
@@ -359,7 +363,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						pr[1] = log(pr[1]);
 						pr[4] = log(pr[4]);
 						pr[5] = log(pr[5]);
-						current_path(exedir);
+						//current_path(exedir);
 						//current_path("..");
 						current_path("data");
 						VBM->LoadSunTable("SunEphemeris.txt");
@@ -398,11 +402,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[5] = log(pr[5]);
 				pr[7] = log(pr[7]);
 				pr[8] = log(pr[8]);
-				current_path(exedir);
+				//current_path(exedir);
 				//current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
+
 			}
 			else {
 				modnumber = 8;
@@ -1289,6 +1294,9 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 			VBM->BinaryLightCurveKepler(pr, tfl, fbfl, y1a, y2a, seps, sizes[fl]);
 		}
 		break;
+
+
+
 	case 8:
 		VBM->TripleLightCurve(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
 		break;
@@ -1306,7 +1314,8 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 
 double LevMar::ChiSquared(double* pr) {
 	double chi2 = 0, chi0, chia, p1;
-	double p1max = 0, maxsum = 0;
+	double p1maxp = 0, maxsump = 0;
+	double p1maxn = 0, maxsumn = 0;
 	double tmax = 0;
 
 	maxmaxsum = 0;
@@ -1384,25 +1393,42 @@ double LevMar::ChiSquared(double* pr) {
 			chi0 += p1 * p1;
 			p1 = (y[i] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) * w[i];
 
-			if (p1 > 0) {
-				maxsum += p1; // somma i residui 
 
-				if (p1 > p1max) {
-					p1max = p1; // massimo residuo positivo
+			if (p1 > 0) {
+				maxsumn = 0;   // azzera la somma dei residui negativi
+				maxsump += p1; // somma i residui positivi 
+
+				if (p1 > p1maxp) {
+					p1maxp = p1; // aggiorna il massimo residuo positivo
 					tmax = t[i]; // tempo in cui si ha il massimo residuo positivo
 				}
 
 			}
 			else {
-				maxsum = 0;                  // azzera la somma dei residui
+				maxsump = 0;                  // azzera la somma dei residui positivi
+				maxsumn += p1;                // somma dei residui negativi 
 
+				if (abs(p1) > abs(p1maxn)) {
+					p1maxn = p1;               // aggiorna il massimo residuo negativo
+
+					//salva il tempo del primo e del'ultimo elemento della sequenza 
+					
+				}
 			}
 			//Alla fine del ciclo, se la somma dei residui positivi consecutivi è maggiore della somma massima trovata finora allora aggiorna la somma massima e il tempo corrispondente
-			if (maxsum > maxmaxsum) {
-				maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi
-				tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+			if (maxsump > maxmaxsum) {
+				if (maxsump > abs(maxsumn)) {
+					maxmaxsum = maxsump;
+					tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+				}
 			}
-			
+			else (abs(maxsumn) > maxmaxsum); { 
+				if (abs(maxsumn) > maxsump) {
+					maxmaxsum = maxsumn;
+					//calcolo del tempo 
+					
+				}
+			}
 		}
 
 
@@ -1413,9 +1439,18 @@ double LevMar::ChiSquared(double* pr) {
 			chi2 += (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * w[i] * w[i];
 		}
 	}
-	if (maxsum > maxmaxsum) {
-		maxmaxsum = maxsum; // somma massima dei residui positivi consecutivi	
-		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+	if (maxsump > maxmaxsum) {
+		if (maxsump > abs(maxsumn)) {
+			maxmaxsum = maxsump;
+			tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+		}
+	}
+	else (abs(maxsumn) > maxmaxsum); {
+		if (abs(maxsumn) > maxsump) {
+			maxmaxsum = maxsumn;
+			//calcolo del tempo 
+
+		}
 	}
 	chi0 = sqrt(2 * chi0); // Error in chi square
 	if (chi0 / chi2 > 0.1) Tol *= 0.5;
