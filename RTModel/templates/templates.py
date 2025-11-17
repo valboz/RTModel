@@ -9,13 +9,14 @@ template_library_path = None
 site_packages_directories = site.getsitepackages()
 site_packages_directories.append(site.getusersitepackages())
 for site_packages_directory in site_packages_directories:
-    template_library_path = Path(site_packages_directory).joinpath('RTModel/data/TemplateLibrary.txt')
+    template_library_path = Path(site_packages_directory).joinpath('RTModel/data')
 if template_library_path is None:
     raise FileNotFoundError(f'RTModel binary directory not found. Searched {site_packages_directories} '
                             f'site-packages directories.')
 
-def clone_default_library(destination):
-    shutil.copy(template_library_path, destination)
+def clone_default_library(destination,i):
+    template_source = template_library_path.joinpath(f'templates-{i}.txt')
+    shutil.copy(template_source, destination)
     return
 
 def load_library(source = None):
