@@ -141,7 +141,7 @@ class RTModel:
             print('\033[30;41m! Program stopped here!\033[m')
             self.done = True
  
-    def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
+    def config_InitCond(self, npeaks = 8, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
                        , templatelibrary = None, modelcategories = ['PS','PX','BS','BO','LS','LX','LO'], onlyupdate =False):
         self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
         self.InitCond_peakthreshold = peakthreshold # Number of sigmas necessary for a deviation to be identified as a maximum or a minimum.
@@ -188,9 +188,10 @@ class RTModel:
                     peaksearch = False
                     with open(initfils[0], 'r') as f:
                         npeaks = int(f.readline().split()[0])
-                        print('Peaks:  ',end ='')
+                        print('Peaks:  ')
                         for i in range(0,npeaks):
-                            print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
+                            chs=f.readline().split()
+                            print(f'{float(chs[0]):.4f} [{float(chs[4]):.4f}]')
                 imod+=1
             print('\n  OK')
         except subprocess.CalledProcessError as e:
