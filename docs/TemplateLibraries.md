@@ -8,7 +8,7 @@ As explained before, the module [InitCond](InitCond.md) sets the initial conditi
 
 The default libraries used by `InitCond` are available [here](/RTModel/data/). There are libraries for events with peak number ranging from 2 to 8. They are  product of many years of modeling of many different microlensing events, based on the idea that a seed is needed in each region of the parameter space where the sequence of peaks in the light curve remains the same (see [Liebig et al. (2015)](https://ui.adsabs.harvard.edu/abs/2015MNRAS.450.1565L/abstract)).
 
-The first line in the library indicates the number of templates, while the following lines contain the information for each template one by one. Each line contains the parameters $s$ $q$ $u_0$ $\alpha$ $\rho$ followed by the time of two peaks $t_1$ $t_2$. If the template has more than two peaks, the following numbers give the ratios of $t_{i+1}-t_i$ to $t_{i}-t_{i-1}$. Here is an excerpt from our [template library](/RTModel/data/TemplateLibrary.txt):
+The first line in the library indicates the number of templates, while the following lines contain the information for each template one by one. Each line contains the parameters $s$ $q$ $u_0$ $\alpha$ $\rho$ followed by the time of two peaks $t_1$ $t_2$. If the template has more than two peaks, the following numbers give the ratios of $t_{i+1}-t_i$ to $t_{i}-t_{i-1}$. Here is an excerpt from our [template library](/RTModel/data/templates-2.txt):
 
 ```
 113
