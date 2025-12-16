@@ -1314,9 +1314,9 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 
 double LevMar::ChiSquared(double* pr) {
 	double chi2 = 0, chi0, chia, p1;
-	double p1maxp = 0, maxsump = 0;
-	double p1maxn = 0, maxsumn = 0;
-	double tmax = 0;
+	double p1max = 0, maxsump = 0;
+	double maxsumn = 0;
+	double t1 = 0, t2 = 0, tmax = 0;
 
 	maxmaxsum = 0;
 
@@ -1386,6 +1386,8 @@ double LevMar::ChiSquared(double* pr) {
 	}
 
 	// Photometric chi square
+	bool in_pos_sequence;
+	
 	flagblending = 0;
 	for (int i = 0; i < np; i++) {
 		if (w[i] > 0) {
@@ -1393,46 +1395,66 @@ double LevMar::ChiSquared(double* pr) {
 			chi0 += p1 * p1;
 			p1 = (y[i] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) * w[i];
 
+			//controlli su i e filter[i] 
+			//azzerare tutti gli elementi maxsumn e maxsump
+			//inizializzare t1 a t[i]
+			//inizializzare in_pos_sequence = (p1>0) 
+			if ((i == 0) || (filter[i] != filter[i-1])) {
+				maxsumn = 0;
+				maxsump = 0;
+				t1 = t[i];
+			}
 
 			if (p1 > 0) {
+				if (!in_pos_sequence) {
+					in_pos_sequence = true;
+
+					t2 = t[i]; // tempo primo positivo dopo una sequenza neg
+					
+				}
 				maxsumn = 0;   // azzera la somma dei residui negativi
 				maxsump += p1; // somma i residui positivi 
 
-				if (p1 > p1maxp) {
-					p1maxp = p1; // aggiorna il massimo residuo positivo
+				if (p1 > p1max) { //per trovare il picco
+					p1max = p1; // aggiorna il massimo residuo positivo
 					tmax = t[i]; // tempo in cui si ha il massimo residuo positivo
 				}
 
 			}
 			else {
-				maxsump = 0;                  // azzera la somma dei residui positivi
-				maxsumn += p1;                // somma dei residui negativi 
-
-				if (abs(p1) > abs(p1maxn)) {
-					p1maxn = p1;               // aggiorna il massimo residuo negativo
-
-					//salva il tempo del primo e del'ultimo elemento della sequenza 
-					
+				//fine sequenza pos
+				if (in_pos_sequence) {
+					in_pos_sequence = false;
+					t1 = t[i-1]; // tempo ultimo pos prima di una sequenza neg
 				}
+				//aggiorna t2
+				t2 = t[i];
+
+				maxsump = 0;                 // azzera la somma dei residui positivi
+				maxsumn += p1;               // somma dei residui negativi, è un numero negativo
+				p1max = 0;					 
+
 			}
 			//Alla fine del ciclo, se la somma dei residui positivi consecutivi è maggiore della somma massima trovata finora allora aggiorna la somma massima e il tempo corrispondente
 			if (maxsump > maxmaxsum) {
-				if (maxsump > abs(maxsumn)) {
-					maxmaxsum = maxsump;
-					tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
-				}
+				maxmaxsum = maxsump;
+				tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+				
 			}
 			else (abs(maxsumn) > maxmaxsum); { 
-				if (abs(maxsumn) > maxsump) {
-					maxmaxsum = maxsumn;
-					//calcolo del tempo 
-					
+				maxmaxsum = - maxsumn;
+				//calcolo del tempo || pr[6] è t0 in binary lens
+				if (abs(pr[6] - t1) > abs(pr[6] - t2)) {
+					tmaxmax = t1;
+				}
+				else {
+					tmaxmax = t2;
 				}
 			}
 		}
 
+		pr[2];
 
-		
 		chi2 += p1 * p1;
 		if (pr[nps + 1 + filter[i] * nlinpar] > 2 * y[i]) {
 			flagblending++;
@@ -1440,18 +1462,20 @@ double LevMar::ChiSquared(double* pr) {
 		}
 	}
 	if (maxsump > maxmaxsum) {
-		if (maxsump > abs(maxsumn)) {
-			maxmaxsum = maxsump;
-			tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
-		}
+		maxmaxsum = maxsump;
+		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+		
 	}
 	else (abs(maxsumn) > maxmaxsum); {
-		if (abs(maxsumn) > maxsump) {
-			maxmaxsum = maxsumn;
-			//calcolo del tempo 
-
+		maxmaxsum = maxsumn;
+		if (abs(pr[6] - t1) > abs(pr[6] - t2)) {
+			tmaxmax = t1;
+		}
+		else {
+			tmaxmax = t2;
 		}
 	}
+
 	chi0 = sqrt(2 * chi0); // Error in chi square
 	if (chi0 / chi2 > 0.1) Tol *= 0.5;
 	if (chi0 / chi2 < 0.01 && Tol < .99e-2) Tol *= 2;
@@ -1826,6 +1850,7 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 
 	//stampa maxmaxsum
 	fprintf(f, "%.16le ", maxmaxsum);
+
 	// Write chi square
 	fprintf(f, "%.16le\n", c0);
 
