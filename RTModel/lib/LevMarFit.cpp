@@ -1466,8 +1466,8 @@ double LevMar::ChiSquared(double* pr) {
 		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
 		
 	}
-	else (fabs(double(maxsumn)) > maxmaxsum); {
-		maxmaxsum = maxsumn;
+	else if (fabs(maxsumn) > maxmaxsum); {
+		maxmaxsum = -maxsumn;
 		if (abs(pr[6] - t1) > abs(pr[6] - t2)) {
 			tmaxmax = t1;
 		}
