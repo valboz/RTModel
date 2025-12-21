@@ -1406,13 +1406,13 @@ double LevMar::ChiSquared(double* pr) {
 			}
 
 			if (p1 > 0) {
-				if (!in_pos_sequence) {
-					in_pos_sequence = true;
+				//if (!in_pos_sequence) {
+				//	in_pos_sequence = true;
 
-					t2 = t[i]; // tempo primo positivo dopo una sequenza neg
-					
-				}
-				maxsumn = 0;   // azzera la somma dei residui negativi
+				//	t2 = t[i]; // tempo primo positivo dopo una sequenza neg
+				//	
+				//}
+				/*maxsumn = 0; */  // azzera la somma dei residui negativi
 				maxsump += p1; // somma i residui positivi 
 
 				if (p1 > p1max) { //per trovare il picco
@@ -1423,16 +1423,16 @@ double LevMar::ChiSquared(double* pr) {
 			}
 			else {
 				//fine sequenza pos
-				if (in_pos_sequence) {
-					in_pos_sequence = false;
-					t1 = t[i-1]; // tempo ultimo pos prima di una sequenza neg
-				}
-				//aggiorna t2
-				t2 = t[i];
+				//if (in_pos_sequence) {
+				//	in_pos_sequence = false;
+				//	t1 = t[i-1]; // tempo ultimo pos prima di una sequenza neg
+				//}
+				////aggiorna t2
+				//t2 = t[i];
 
 				maxsump = 0;                 // azzera la somma dei residui positivi
-				maxsumn += p1;               // somma dei residui negativi, è un numero negativo
-				p1max = 0;					 
+				//maxsumn += p1;               // somma dei residui negativi, è un numero negativo
+				//p1max = 0;					 
 
 			}
 			//Alla fine del ciclo, se la somma dei residui positivi consecutivi è maggiore della somma massima trovata finora allora aggiorna la somma massima e il tempo corrispondente
@@ -1441,16 +1441,16 @@ double LevMar::ChiSquared(double* pr) {
 				tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
 				
 			}
-			else if(fabs(maxsumn) > maxmaxsum); { 
-				maxmaxsum = - maxsumn;
-				//calcolo del tempo || pr[6] è t0 in binary lens
-				if (abs(double(pr[6] - t1)) > abs(double(pr[6] - t2))) {
-					tmaxmax = t1;
-				}
-				else {
-					tmaxmax = t2;
-				}
-			}
+			//else if(fabs(maxsumn) > maxmaxsum); { 
+			//	maxmaxsum = - maxsumn;
+			//	//calcolo del tempo || pr[6] è t0 in binary lens
+			//	if (abs(double(pr[6] - t1)) > abs(double(pr[6] - t2))) {
+			//		tmaxmax = t1;
+			//	}
+			//	else {
+			//		tmaxmax = t2;
+			//	}
+			//}
 		}
 
 
@@ -1465,15 +1465,15 @@ double LevMar::ChiSquared(double* pr) {
 		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
 		
 	}
-	else if (fabs(maxsumn) > maxmaxsum); {
-		maxmaxsum = -maxsumn;
-		if (abs(pr[6] - t1) > abs(pr[6] - t2)) {
-			tmaxmax = t1;
-		}
-		else {
-			tmaxmax = t2;
-		}
-	}
+	//else if (fabs(maxsumn) > maxmaxsum); {
+	//	maxmaxsum = -maxsumn;
+	//	if (abs(pr[6] - t1) > abs(pr[6] - t2)) {
+	//		tmaxmax = t1;
+	//	}
+	//	else {
+	//		tmaxmax = t2;
+	//	}
+	//}
 
 	chi0 = sqrt(2 * chi0); // Error in chi square
 	if (chi0 / chi2 > 0.1) Tol *= 0.5;
