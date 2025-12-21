@@ -1453,7 +1453,6 @@ double LevMar::ChiSquared(double* pr) {
 			}
 		}
 
-		pr[2];
 
 		chi2 += p1 * p1;
 		if (pr[nps + 1 + filter[i] * nlinpar] > 2 * y[i]) {
