@@ -1399,11 +1399,11 @@ double LevMar::ChiSquared(double* pr) {
 			//azzerare tutti gli elementi maxsumn e maxsump
 			//inizializzare t1 a t[i]
 			//inizializzare in_pos_sequence = (p1>0) 
-			if ((i == 0) || (filter[i] != filter[i-1])) {
+			/*if ((i == 0) || (filter[i] != filter[i-1])) {
 				maxsumn = 0;
 				maxsump = 0;
 				t1 = t[i];
-			}
+			}*/
 
 			if (p1 > 0) {
 				//if (!in_pos_sequence) {
@@ -1466,7 +1466,7 @@ double LevMar::ChiSquared(double* pr) {
 		
 	}
 	//else if (fabs(maxsumn) > maxmaxsum); {
-	//	maxmaxsum = -maxsumn;
+	//	maxmaxsum = - maxsumn;
 	//	if (abs(pr[6] - t1) > abs(pr[6] - t2)) {
 	//		tmaxmax = t1;
 	//	}
