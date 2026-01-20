@@ -14,6 +14,8 @@ public:
 	double *curv, *cov;
 	double Amp;
 	double tanomaly;
+	double y1anomaly, y2anomaly;
+	double y1maxmax, y2maxmax;
 	double resanomaly;
 	double maxsum, maxmaxsum, tmaxmax, tmax;
 	int nps;
