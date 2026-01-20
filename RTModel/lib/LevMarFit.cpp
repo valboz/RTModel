@@ -1,6 +1,6 @@
 // LevMarFit.cpp 
 // Implementation of all methods in LevMarFit.h for Levenberg-Marquardt fitting
-
+// ACversion
 #define _CRT_SECURE_NO_WARNINGS
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
@@ -13,6 +13,7 @@
 #include <cmath>
 #include <regex>
 #include <filesystem>
+
 
 //using namespace std;
 using std::regex, std::string, std::regex_match;
@@ -55,6 +56,7 @@ std::vector<std::vector<int>> logposs = { {0, 1, 3},
 
 const double epsilon = 1.e-100;
 
+
 LevMar::LevMar(int argc, char* argv[]) {
 	setbuf(stdout, nullptr);
 	printf("******************************************\n");
@@ -72,6 +74,7 @@ LevMar::LevMar(int argc, char* argv[]) {
 	VBM->RelTol = 0.001;
 	VBM->parallaxsystem = 1;
 	VBM->SetMethod(VBMicrolensing::Method::Multipoly);
+	
 
 	ReadFiles(argc, argv);
 
@@ -188,8 +191,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		printf("\n\n- Event: %s\n", eventname);
 
 		current_path(eventname);
-		printf("- Working directory: %s\n", current_path().string().c_str());
-
 		//if(argc>2){
 		//	strcpy(eventname,argv[1]);
 		//	strcpy(outdir,argv[2]);
@@ -215,6 +216,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				break;
 			}
 		}
+
 		current_path(eventname);
 		printf("\n- Event directory: %s\n", current_path().string().c_str());
 
@@ -238,14 +240,14 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
-				//current_path(exedir);
-				//current_path("..");
+				/*current_path(exedir);*/
+				current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
-				
-			}
 
+				getchar();
+			}
 			else {
 				modnumber = 0;
 				nps = 4;
@@ -261,13 +263,10 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			}
 			//current_path(exedir);
 			//current_path("..");
-			
 			current_path("data");
 			VBM->LoadESPLTable("ESPL.tbl");
 			current_path(eventname);
-			
 			break;
-
 		case 'B':
 			if (modelcode[1] == 'O') {
 				modnumber = 3;
@@ -282,7 +281,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
 				pr[6] = log(pr[6]);
-
 				//current_path(exedir);
 				//current_path("..");
 				current_path("data");
@@ -407,7 +405,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
-
 			}
 			else {
 				modnumber = 8;
@@ -428,7 +425,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			break;
 		}
 		printf("\n- Model: %s", modelcode);
-
 	}
 	catch (...) {
 		error = 10;
@@ -693,7 +689,6 @@ void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presig
 	VBM->lens_mass_luminosity_exponent = lens_mass_luminosity_exponent;
 	current_path(eventname);
 }
-
 int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim) {
 	char buffer[3200], initcondfile[256];
 	int npeaks, ninit, incond;
@@ -703,6 +698,7 @@ int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim
 	rightlim = (double*)malloc(sizeof(double) * nps);
 	pr = (double*)malloc(sizeof(double) * nps);
 	if (parametersfile[0] == 0) {
+
 		sprintf(initcondfile, "InitCond%c%c.txt", modelcode[0], modelcode[1]);
 		current_path("InitCond");
 		f = fopen(initcondfile, "r");
@@ -781,7 +777,7 @@ void LevMar::ReadAncillary() {
 		}
 
 		current_path("Data");
-
+		
 		// If Normalization.txt is present, use numbers therein to normalize datasets.
 
 		normfacs = (double*)malloc(sizeof(double) * nfil);
@@ -1217,6 +1213,7 @@ int LevMar::Run() {
 			// If this fit has found the best minimum so far, update minchi.dat
 //			current_path("..");
 			strcpy(filename, "minchi.dat");
+			strcpy(filename, "minchi.dat");
 			if (exists(filename)) {
 				f = fopen(filename, "r");
 				fscanf(f, "%lf", &minchi);
@@ -1294,9 +1291,6 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 			VBM->BinaryLightCurveKepler(pr, tfl, fbfl, y1a, y2a, seps, sizes[fl]);
 		}
 		break;
-
-
-
 	case 8:
 		VBM->TripleLightCurve(pr, tfl, fbfl, y1a, y2a, sizes[fl]);
 		break;
@@ -1309,7 +1303,6 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 		}
 		break;
 	}
-
 }
 
 double LevMar::ChiSquared(double* pr) {
@@ -1317,7 +1310,7 @@ double LevMar::ChiSquared(double* pr) {
 	double p1max = 0, maxsump = 0;
 	double maxsumn = 0;
 	double t1 = 0, t2 = 0, tmax = 0;
-
+	double y1max=0, y2max=0, y1t1=0, y2t1=0, y1t2=0, y2t2=0;
 	maxmaxsum = 0;
 
 	for (int fl = 0; fl < nfil; fl++) {
@@ -1418,6 +1411,9 @@ double LevMar::ChiSquared(double* pr) {
 				if (p1 > p1max) { //per trovare il picco
 					p1max = p1; // aggiorna il massimo residuo positivo
 					tmax = t[i]; // tempo in cui si ha il massimo residuo positivo
+					y1max = y1a[i];
+					y2max = y2a[i];
+
 				}
 
 			}
@@ -1426,10 +1422,13 @@ double LevMar::ChiSquared(double* pr) {
 				if (in_pos_sequence) {
 					in_pos_sequence = false;
 					t1 = t[i-1]; // tempo ultimo pos prima di una sequenza neg
+					y1t1 = y1a[i - 1];
+					y2t1 = y2a[i - 1];
 				}
 				////aggiorna t2
 				t2 = t[i];
-
+				y1t2 = y1a[i];
+				y2t2 = y2a[i];
 				maxsump = 0;                 // azzera la somma dei residui positivi
 				maxsumn += p1;               // somma dei residui negativi, è un numero negativo
 				p1max = 0;					 
@@ -1439,16 +1438,21 @@ double LevMar::ChiSquared(double* pr) {
 			if (maxsump > maxmaxsum) {
 				maxmaxsum = maxsump;
 				tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
-				
+				y1maxmax = y1max;
+				y2maxmax = y2max;
 			}
 			else if(fabs(maxsumn) > maxmaxsum); { 
 				maxmaxsum = - maxsumn;
 				//calcolo del tempo || pr[6] è t0 in binary lens
 				if (abs(double(pr[6] - t1)) > abs(double(pr[6] - t2))) {
 					tmaxmax = t1;
+					y1maxmax = y1t1;
+					y2maxmax = y2t1;
 				}
 				else {
 					tmaxmax = t2;
+					y1maxmax = y1t2;
+					y2maxmax = y2t2;
 				}
 			}
 		}
@@ -1463,15 +1467,20 @@ double LevMar::ChiSquared(double* pr) {
 	if (maxsump > maxmaxsum) {
 		maxmaxsum = maxsump;
 		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
-		
+		y1maxmax = y1max;
+		y2maxmax = y2max;
 	}
 	else if (fabs(maxsumn) > maxmaxsum); {
 		maxmaxsum = - maxsumn;
 		if (abs(pr[6] - t1) > abs(pr[6] - t2)) {
 			tmaxmax = t1;
+			y1maxmax = y1t1;
+			y2maxmax = y2t1;
 		}
 		else {
 			tmaxmax = t2;
+			y1maxmax = y1t2;
+			y2maxmax = y2t2;
 		}
 	}
 
@@ -1670,8 +1679,6 @@ void LevMar::Covariance() {
 	}
 }
 
-
-
 void LevMar::PrintOut(double* pr) {
 	int npp = nps, ilog = 0, logsize = logposs[modnumber].size();
 	double fl;
@@ -1847,8 +1854,12 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 	//stampa tmaxmax 
 	fprintf(f, "%.16le ", tmaxmax);
 
-	//stampa maxmaxsum
-	fprintf(f, "%.16le ", maxmaxsum);
+	//stampa y1maxmax e y2maxmax
+	fprintf(f, "%.16le\n", y1maxmax);
+	fprintf(f, "%.16le\n", y2maxmax);
+
+	//stampa delta chi quadro
+	fprintf(f, "%.16le", maxmaxsum);
 
 	// Write chi square
 	fprintf(f, "%.16le\n", c0);
