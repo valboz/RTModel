@@ -240,13 +240,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				error = InitCond(presigmapr, preleftlim, prerightlim);
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
-				/*current_path(exedir);*/
+				current_path(exedir);
 				current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
 
-				getchar();
 			}
 			else {
 				modnumber = 0;
@@ -261,11 +260,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
 			}
-			//current_path(exedir);
-			//current_path("..");
-			current_path("data");
-			VBM->LoadESPLTable("ESPL.tbl");
-			current_path(eventname);
+				current_path(exedir);
+				current_path("..");
+				current_path("data");
+				VBM->LoadESPLTable("ESPL.tbl");
+				current_path(eventname);
+			
 			break;
 		case 'B':
 			if (modelcode[1] == 'O') {
@@ -281,8 +281,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
 				pr[6] = log(pr[6]);
-				//current_path(exedir);
-				//current_path("..");
+				current_path(exedir);
+				current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -300,12 +300,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
 				pr[6] = log(pr[6]);
-			}
-			//current_path(exedir);
-			//current_path("..");
-			current_path("data");
-			VBM->LoadESPLTable("ESPL.tbl");
-			current_path(eventname);
+				}
+				current_path(exedir);
+				current_path("..");
+				current_path("data");
+				VBM->LoadESPLTable("ESPL.tbl");
+				current_path(eventname);
 			break;
 		case 'L':
 			if (modelcode[1] == 'X') {
@@ -321,8 +321,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[4] = log(pr[4]);
 				pr[5] = log(pr[5]);
-				//current_path(exedir);
-				//current_path("..");
+				/*current_path(exedir);
+				current_path("..");*/
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -341,8 +341,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					pr[1] = log(pr[1]);
 					pr[4] = log(pr[4]);
 					pr[5] = log(pr[5]);
-					//current_path(exedir);
-					//current_path("..");
+					current_path(exedir);
+					current_path("..");
 					current_path("data");
 					VBM->LoadSunTable("SunEphemeris.txt");
 					current_path(eventname);
@@ -361,8 +361,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						pr[1] = log(pr[1]);
 						pr[4] = log(pr[4]);
 						pr[5] = log(pr[5]);
-						//current_path(exedir);
-						//current_path("..");
+						current_path(exedir);
+						current_path("..");
 						current_path("data");
 						VBM->LoadSunTable("SunEphemeris.txt");
 						current_path(eventname);
@@ -400,8 +400,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[5] = log(pr[5]);
 				pr[7] = log(pr[7]);
 				pr[8] = log(pr[8]);
-				//current_path(exedir);
-				//current_path("..");
+				current_path(exedir);
+				current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -584,7 +584,7 @@ void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presig
 					}
 
 					if (command[0] == 'g' && command[1] == '_') { // Blending
-						sscanf(&command[2], "%d", &consindex[conscurrent]);
+						scanf(&command[2], "%d", &consindex[conscurrent]);
 						consindex[conscurrent] += 10000;
 					}
 					// special combinations
@@ -1855,11 +1855,11 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 	fprintf(f, "%.16le ", tmaxmax);
 
 	//stampa y1maxmax e y2maxmax
-	fprintf(f, "%.16le\n", y1maxmax);
-	fprintf(f, "%.16le\n", y2maxmax);
+	fprintf(f, "%.16le ", y1maxmax);
+	fprintf(f, "%.16le ", y2maxmax);
 
 	//stampa delta chi quadro
-	fprintf(f, "%.16le", maxmaxsum);
+	fprintf(f, "%.16le ", maxmaxsum);
 
 	// Write chi square
 	fprintf(f, "%.16le\n", c0);
@@ -1889,7 +1889,7 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 			fprintf(f, " %le", errs[i]);
 		}
 		fprintf(f, "\n");
-
+		
 		// Print covariance matrix to file
 		for (int i = 0; i < nps; i++) {
 			if (i > 0) fprintf(f, "\n");
@@ -1899,6 +1899,8 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 			}
 		}
 		fprintf(f, "\n");
+		
 	}
+	
 	fclose(f);
 }
