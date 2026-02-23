@@ -733,16 +733,16 @@ int main(int argc, char* argv[]) {
 				double* peaks;
 				g = fopen("InitCondTS-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				if (npeaks == 0) {
+				/*if (npeaks == 0) {
 					fclose(g);
 					fclose(f);
 					remove("InitCondTS-temp.txt");
-				}
-				else {
-					fprintf(g, "%d %d\n", npeaks, np + ((npeaks > 0) ? 6 * nmod : 0));
-					peaks = (double*)malloc(sizeof(double) * npeaks);
+				}*/
+				/*else {*/
+					fprintf(g, "%d %d\n", npeaks, np + 6 * nmod);
+					peaks = (double*)malloc(sizeof(double) * (npeaks + 1));
 
-					printf("\nNumber of initial conditions: %d", np + ((npeaks > 0) ? 6 * nmod : 0));
+					printf("\nNumber of initial conditions: %d", np +  6 * nmod );
 					for (int i = 0; i < npeaks; i++) {
 						fscanf(f, "%lg", &peaks[i]);
 						fprintf(g, "%le", peaks[i]);
@@ -769,7 +769,7 @@ int main(int argc, char* argv[]) {
 						double alpha = pr[3];
 						double s0, s = exp(pr[0]), s2;
 						double q = exp(pr[1]);
-						double q2 = 0.000001;
+						double q2 = 0.001;
 						/*double dt = (scanbumper->tanomaly - pr[6]) / exp(pr[5]);*/
 						/*double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);*/
 						double xc0, xc;
@@ -821,7 +821,7 @@ int main(int argc, char* argv[]) {
 					free(peaks);
 					remove("InitCondTS.txt");
 					rename("InitCondTS-temp.txt", "InitCondTS.txt");
-				}
+				//}
 			}
 		}
 		if (modelcode[1] == 'X') {
@@ -922,7 +922,7 @@ int main(int argc, char* argv[]) {
 					double alpha = pr[3];
 					double s0, s = exp(pr[0]), s2;
 					double q = exp(pr[1]);
-					double q2 = 0.000001;
+					double q2 = 0.001;
 					/*double dt = (scanbumper->tanomaly - pr[6]) / exp(pr[5]);*/
 					/*double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);*/
 					double xc0, xc;
@@ -1050,16 +1050,16 @@ int main(int argc, char* argv[]) {
 				double* peaks;
 				g = fopen("InitCondLS-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				if (npeaks == 0) {
+				/*if (npeaks == 0) {
 					fclose(g);
 					fclose(f);
 					remove("InitCondLS-temp.txt");
 				}
-				else {
-					fprintf(g, "%d %d\n", npeaks, np + ((npeaks > 0) ? 6 * nmod : 0));
+				else {*/
+					fprintf(g, "%d %d\n", npeaks, np + 6 * nmod );
 					peaks = (double*)malloc(sizeof(double) * npeaks);
 
-					printf("\nNumber of initial conditions: %d", np + ((npeaks > 0) ? 6 * nmod : 0));
+					printf("\nNumber of initial conditions: %d", np + 6 * nmod);
 					for (int i = 0; i < npeaks; i++) {
 						fscanf(f, "%lg", &peaks[i]);
 						fprintf(g, "%le", peaks[i]);
@@ -1142,7 +1142,7 @@ int main(int argc, char* argv[]) {
 					free(peaks);
 					remove("InitCondLS.txt");
 					rename("InitCondLS-temp.txt", "InitCondLS.txt");
-				}
+				//}
 			}
 		}
 		else {
