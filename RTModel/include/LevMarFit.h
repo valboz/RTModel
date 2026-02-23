@@ -45,6 +45,8 @@ class LevMar {
 
 	double tmaxmax;
 	double maxmaxsum;
+	double y1maxmax;
+	double y2maxmax;
 	double Tol;
 
 	//	void (LevMar::* PrintOut)(double*);
