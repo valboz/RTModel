@@ -321,8 +321,8 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[4] = log(pr[4]);
 				pr[5] = log(pr[5]);
-				/*current_path(exedir);
-				current_path("..");*/
+				current_path(exedir);
+				current_path("..");
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
@@ -1441,7 +1441,7 @@ double LevMar::ChiSquared(double* pr) {
 				y1maxmax = y1max;
 				y2maxmax = y2max;
 			}
-			else if(fabs(maxsumn) > maxmaxsum); { 
+			else if(fabs(maxsumn) > maxmaxsum) { 
 				maxmaxsum = - maxsumn;
 				//calcolo del tempo || pr[6] è t0 in binary lens
 				if (abs(double(pr[6] - t1)) > abs(double(pr[6] - t2))) {
@@ -1470,7 +1470,7 @@ double LevMar::ChiSquared(double* pr) {
 		y1maxmax = y1max;
 		y2maxmax = y2max;
 	}
-	else if (fabs(maxsumn) > maxmaxsum); {
+	else if (fabs(maxsumn) > maxmaxsum) {
 		maxmaxsum = - maxsumn;
 		if (abs(pr[6] - t1) > abs(pr[6] - t2)) {
 			tmaxmax = t1;

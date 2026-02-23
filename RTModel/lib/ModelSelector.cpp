@@ -176,7 +176,6 @@ int main(int argc, char* argv[]) {
 	supfac *= supfac;
 
 	// Read curve to fit
-
 	printf("\n\nReading data\n");
 
 	current_path(eventname);
@@ -291,7 +290,6 @@ int main(int argc, char* argv[]) {
 
 				long end = ftell(f);
 				
-
 				switch (modelcode[0]) {
 				case 'P':
 					sigmapr[1] = sigmapr[1] / pr[1];
@@ -337,13 +335,7 @@ int main(int argc, char* argv[]) {
 					break;
 
 					//da vedere per il triple lens
-				case 'T': 
-
-					
-					break;
 				}
-
-
 				if (c0 > 0) {
 					if (nmod) {
 						if (c0 < bumperlist->Amp) {
@@ -609,7 +601,6 @@ int main(int argc, char* argv[]) {
 	if (nmod > maxmodels) nmod = maxmodels;
 	printf("\nModels to be saved = %d\n", nmod);
 	
-
 	// Store best models passing the selection in directory "Models"
 
 	current_path("..");
@@ -758,7 +749,6 @@ int main(int argc, char* argv[]) {
 					}
 					fclose(f);
 
-
 					scanbumper = bumperlist;
 					for (il = 1; il <= nmod; il++) {
 						for (int i = 0; i < nps; i++) {
@@ -795,12 +785,11 @@ int main(int argc, char* argv[]) {
 
 						xc = xc0;
 						s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
-						q2 = 0.00001;
+						q2 = 0.001;
 						while (xc < 3 * sqrt(3 * q2) * s0 * s0 * s0) q2 *= 0.1;
 						xc = xc0 - 3 * sqrt(3 * q2) * s0 * s0 * s0;
 						s2 = 0.5 * (sqrt(4 + xc * xc) - xc);
 						beta = beta0 + M_PI + asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
-
 
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
 						beta = beta0 + M_PI - asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
@@ -948,7 +937,7 @@ int main(int argc, char* argv[]) {
 
 					xc = xc0;
 					s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
-					q2 = 0.00001;
+					q2 = 0.001;
 					while (xc < 3 * sqrt(3 * q2) * s0 * s0 * s0) q2 *= 0.1;
 					xc = xc0 - 3 * sqrt(3 * q2) * s0 * s0 * s0;
 					s2 = 0.5 * (sqrt(4 + xc * xc) - xc);
