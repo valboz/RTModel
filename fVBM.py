@@ -1,16 +1,11 @@
+import importlib.util
 import os
-import inspect
 
-try:
-    import VBMicrolensing
-    package_dir = os.path.dirname(inspect.getfile(VBMicrolensing)).replace('\\','/')
+spec = importlib.util.find_spec("VBMicrolensing")
 
- #   with open("vbmp.txt", "w") as f:
- #       f.write(package_dir)
-        
-    print(f"{package_dir}")
-
-except ImportError:
+if spec is None or spec.origin is None:
     print("! Error: VBMicrolensing non installed!")
-    raise
+    raise SystemExit(1)
 
+package_dir = os.path.dirname(spec.origin).replace("\\", "/")
+print(package_dir)
