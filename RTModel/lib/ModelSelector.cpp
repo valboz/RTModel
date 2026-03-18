@@ -176,6 +176,7 @@ int main(int argc, char* argv[]) {
 	supfac *= supfac;
 
 	// Read curve to fit
+
 	printf("\n\nReading data\n");
 
 	current_path(eventname);
@@ -267,7 +268,7 @@ int main(int argc, char* argv[]) {
 				for (int j = 0; j < nps + nlinpar * nfil; j++) {
 					fscanf(f, "%le", &(pr[j]));
 				}
-
+								
 				//per leggere i parametri
 				fscanf(f, "%le", &(tmaxmax));
 				fscanf(f, "%le", &(y1maxmax));
@@ -290,6 +291,7 @@ int main(int argc, char* argv[]) {
 
 				long end = ftell(f);
 				
+
 				switch (modelcode[0]) {
 				case 'P':
 					sigmapr[1] = sigmapr[1] / pr[1];
@@ -335,7 +337,13 @@ int main(int argc, char* argv[]) {
 					break;
 
 					//da vedere per il triple lens
+				case 'T': 
+
+					
+					break;
 				}
+
+
 				if (c0 > 0) {
 					if (nmod) {
 						if (c0 < bumperlist->Amp) {
@@ -601,6 +609,7 @@ int main(int argc, char* argv[]) {
 	if (nmod > maxmodels) nmod = maxmodels;
 	printf("\nModels to be saved = %d\n", nmod);
 	
+
 	// Store best models passing the selection in directory "Models"
 
 	current_path("..");
@@ -717,8 +726,8 @@ int main(int argc, char* argv[]) {
 					}
 				}
 			}
-
-			printf("\n- Adding initial conditions for planets");
+			
+		printf("\n- Adding initial conditions for planets");
 			if (f = fopen("InitCondTS.txt", "r")) {
 				int npeaks = 0;
 				double* peaks;
@@ -755,6 +764,77 @@ int main(int argc, char* argv[]) {
 							pr[i] = scanbumper->p0[i];
 						}
 
+						// Ci spostiamo nella directory "Models" 
+						current_path("..");
+						current_path("Models");
+
+						// Se 'filename' contiene un percorso (es. "Models/test.txt"), 
+						// dobbiamo isolare solo "test.txt" perché siamo già dentro la cartella Models.
+						std::filesystem::path p(filename);
+						string solo_nome_file = p.filename().string();
+
+						// Tentiamo l'apertura usando il nome pulito
+						f = fopen(solo_nome_file.c_str(), "r");
+
+						if (f == NULL) continue;
+						// Un buffer abbastanza grande per contenere la prima riga
+						char riga[10000];
+
+						//Leggiamo solo la prima riga completa
+						if (fgets(riga, sizeof(riga), f) != NULL) {
+
+							// cerchiamo i 5 double partendo dalla fine della riga poiché sappiamo che sono gli ultimi 5 valori della riga.
+							double t, y1, y2, m, c; // usiamo variabili temporanee
+
+							// Cerchiamo di leggere i 5 valori. sscanf leggerà i primi 5 che trova se non specifichiamo altro,
+
+							char* p = riga;
+							double val;
+							int count = 0;
+							vector<double> tutti_i_numeri_della_riga;
+
+							// Estraiamo tutti i numeri dalla riga per essere sicuri
+							char* endptr;
+							while (true) {
+								val = strtod(p, &endptr);
+								if (p == endptr) break; // Non ci sono più numeri
+								tutti_i_numeri_della_riga.push_back(val);
+								p = endptr;
+							}
+
+							// Prendiamo gli ultimi 5 elementi trovati nella riga
+							size_t n = tutti_i_numeri_della_riga.size();
+							if (n >= 5) {
+								c0 = tutti_i_numeri_della_riga[n - 1];
+								maxmaxsum = tutti_i_numeri_della_riga[n - 2];
+								y2maxmax = tutti_i_numeri_della_riga[n - 3];
+								y1maxmax = tutti_i_numeri_della_riga[n - 4];
+								tmaxmax = tutti_i_numeri_della_riga[n - 5];
+							}
+
+						}
+						//Assegnazione alla struttura bumperlist
+						bumperlist->tanomaly = tmaxmax;
+						bumperlist->y1anomaly = y1maxmax;
+						bumperlist->y2anomaly = y2maxmax;
+						bumperlist->maxsum = maxmaxsum;
+						bumperlist->Amp = c0;
+
+						//printf("\nFile %s aperto e letto correttamente.", solo_nome_file.c_str());
+					
+							/*else {
+								printf("\n! Errore: Formato dati non valido in %s", solo_nome_file.c_str());
+							}*/
+							fclose(f);
+							current_path("..");
+							current_path("InitCond");
+						//else {
+						//	// Messaggio di debug per capire dove si trova il programma e cosa sta cercando
+						//	printf("\n! Errore: Impossibile trovare %s in %s",
+						//		solo_nome_file.c_str(),
+						//		std::filesystem::current_path().string().c_str());
+						//}
+
 						double u0 = pr[2];
 						double alpha = pr[3];
 						double s0, s = exp(pr[0]), s2;
@@ -790,6 +870,7 @@ int main(int argc, char* argv[]) {
 						xc = xc0 - 3 * sqrt(3 * q2) * s0 * s0 * s0;
 						s2 = 0.5 * (sqrt(4 + xc * xc) - xc);
 						beta = beta0 + M_PI + asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
+
 
 						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
 						beta = beta0 + M_PI - asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
@@ -937,7 +1018,7 @@ int main(int argc, char* argv[]) {
 
 					xc = xc0;
 					s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
-					q2 = 0.001;
+					q2 = 0.00001;
 					while (xc < 3 * sqrt(3 * q2) * s0 * s0 * s0) q2 *= 0.1;
 					xc = xc0 - 3 * sqrt(3 * q2) * s0 * s0 * s0;
 					s2 = 0.5 * (sqrt(4 + xc * xc) - xc);
