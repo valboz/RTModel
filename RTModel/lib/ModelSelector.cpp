@@ -235,7 +235,7 @@ int main(int argc, char* argv[]) {
 
 	printf("\n- Model code: %s", modelcode);
 
-
+	//da controllare
 	pr = (double*)malloc(sizeof(double) * (nps + 20 + nlinpar * nfil)); //20 added to allow for higher order models in updates
 	sigmapr = (double*)malloc(sizeof(double) * (nps + nlinpar * nfil));
 	Cov = (double*)malloc(sizeof(double) * (nps * nps));
@@ -280,12 +280,12 @@ int main(int argc, char* argv[]) {
 
 				for (int j = 0; j < nps + nlinpar * nfil; j++) {
 					fscanf(f, "%le", &(sigmapr[j]));
-					if (!(sigmapr[j] >= 0)) c0 = -1;
+					if (!(sigmapr[j] >= 0)) c0 = -1; 
 				}
 
 				for (int i = 0; i < nps; i++) {
 					for (int j = 0; j < nps; j++) {
-						fscanf(f, "%le", &(Cov[i + j * nps]));
+						fscanf(f, "%le", &(Cov[i + j * nps]));  
 					}
 				}
 
@@ -366,10 +366,10 @@ int main(int argc, char* argv[]) {
 							scanbumper2->SetCovariance(Cov, dof / c0);
 							strcpy(scanbumper2->modelcode, filename);
 							scanbumper2->SetBuffer(f, start, end);
-							bumperlist->tanomaly = tmaxmax;
-							bumperlist->y1anomaly = y1maxmax;
-							bumperlist->y2anomaly = y2maxmax;
-							bumperlist->maxsum = maxmaxsum;
+							scanbumper2->tanomaly = tmaxmax;
+							scanbumper2->y1anomaly = y1maxmax;
+							scanbumper2->y2anomaly = y2maxmax;
+							scanbumper2->maxsum = maxmaxsum;
 							scanbumper2->Amp = c0;
 							scanbumper2->next = scanbumper->next;
 							scanbumper->next = scanbumper2;
@@ -764,77 +764,71 @@ int main(int argc, char* argv[]) {
 							pr[i] = scanbumper->p0[i];
 						}
 
-						// Ci spostiamo nella directory "Models" 
-						current_path("..");
-						current_path("Models");
+						//// Ci spostiamo nella directory "Models" 
+						//current_path("..");
+						//current_path("Models");
 
-						// Se 'filename' contiene un percorso (es. "Models/test.txt"), 
-						// dobbiamo isolare solo "test.txt" perché siamo già dentro la cartella Models.
-						std::filesystem::path p(filename);
-						string solo_nome_file = p.filename().string();
+						//// Se 'filename' contiene un percorso (es. "Models/test.txt"), 
+						//// dobbiamo isolare solo "test.txt" perché siamo già dentro la cartella Models.
+						//std::filesystem::path p(filename);
+						//string solo_nome_file = p.filename().string();
 
-						// Tentiamo l'apertura usando il nome pulito
-						f = fopen(solo_nome_file.c_str(), "r");
+						//// Tentiamo l'apertura usando il nome pulito
+						//f = fopen(solo_nome_file.c_str(), "r");
 
-						if (f == NULL) continue;
-						// Un buffer abbastanza grande per contenere la prima riga
-						char riga[10000];
+						//if (f == NULL) continue;
+						//// Un buffer abbastanza grande per contenere la prima riga
+						//char riga[10000];
 
-						//Leggiamo solo la prima riga completa
-						if (fgets(riga, sizeof(riga), f) != NULL) {
+						////Leggiamo solo la prima riga completa
+						//if (fgets(riga, sizeof(riga), f) != NULL) {
 
-							// cerchiamo i 5 double partendo dalla fine della riga poiché sappiamo che sono gli ultimi 5 valori della riga.
-							double t, y1, y2, m, c; // usiamo variabili temporanee
+						//	// cerchiamo i 5 double partendo dalla fine della riga poiché sappiamo che sono gli ultimi 5 valori della riga.
+						//	double t, y1, y2, m, c; // usiamo variabili temporanee
 
-							// Cerchiamo di leggere i 5 valori. sscanf leggerà i primi 5 che trova se non specifichiamo altro,
+						//	// Cerchiamo di leggere i 5 valori. sscanf leggerà i primi 5 che trova se non specifichiamo altro,
 
-							char* p = riga;
-							double val;
-							int count = 0;
-							vector<double> tutti_i_numeri_della_riga;
+						//	char* p = riga;
+						//	double val;
+						//	int count = 0;
+						//	vector<double> tutti_i_numeri_della_riga;
 
-							// Estraiamo tutti i numeri dalla riga per essere sicuri
-							char* endptr;
-							while (true) {
-								val = strtod(p, &endptr);
-								if (p == endptr) break; // Non ci sono più numeri
-								tutti_i_numeri_della_riga.push_back(val);
-								p = endptr;
-							}
+						//	// Estraiamo tutti i numeri dalla riga per essere sicuri
+						//	char* endptr;
+						//	while (true) {
+						//		val = strtod(p, &endptr);
+						//		if (p == endptr) break; // Non ci sono più numeri
+						//		tutti_i_numeri_della_riga.push_back(val);
+						//		p = endptr;
+						//	}
 
-							// Prendiamo gli ultimi 5 elementi trovati nella riga
-							size_t n = tutti_i_numeri_della_riga.size();
-							if (n >= 5) {
-								c0 = tutti_i_numeri_della_riga[n - 1];
-								maxmaxsum = tutti_i_numeri_della_riga[n - 2];
-								y2maxmax = tutti_i_numeri_della_riga[n - 3];
-								y1maxmax = tutti_i_numeri_della_riga[n - 4];
-								tmaxmax = tutti_i_numeri_della_riga[n - 5];
-							}
+						//	// Prendiamo gli ultimi 5 elementi trovati nella riga
+						//	size_t n = tutti_i_numeri_della_riga.size();
+						//	if (n >= 5) {
+						//		c0 = tutti_i_numeri_della_riga[n - 1];
+						//		maxmaxsum = tutti_i_numeri_della_riga[n - 2];
+						//		y2maxmax = tutti_i_numeri_della_riga[n - 3];
+						//		y1maxmax = tutti_i_numeri_della_riga[n - 4];
+						//		tmaxmax = tutti_i_numeri_della_riga[n - 5];
+						//	}
 
-						}
-						//Assegnazione alla struttura bumperlist
-						bumperlist->tanomaly = tmaxmax;
-						bumperlist->y1anomaly = y1maxmax;
-						bumperlist->y2anomaly = y2maxmax;
-						bumperlist->maxsum = maxmaxsum;
-						bumperlist->Amp = c0;
-
-						//printf("\nFile %s aperto e letto correttamente.", solo_nome_file.c_str());
-					
-							/*else {
-								printf("\n! Errore: Formato dati non valido in %s", solo_nome_file.c_str());
-							}*/
-							fclose(f);
-							current_path("..");
-							current_path("InitCond");
-						//else {
-						//	// Messaggio di debug per capire dove si trova il programma e cosa sta cercando
-						//	printf("\n! Errore: Impossibile trovare %s in %s",
-						//		solo_nome_file.c_str(),
-						//		std::filesystem::current_path().string().c_str());
 						//}
+						////Assegnazione alla bumperlist
+						//bumperlist->tanomaly = tmaxmax;
+						//bumperlist->y1anomaly = y1maxmax;
+						//bumperlist->y2anomaly = y2maxmax;
+						//bumperlist->maxsum = maxmaxsum;
+						//bumperlist->Amp = c0;
 
+						////printf("\nFile %s aperto e letto correttamente.", solo_nome_file.c_str());
+					
+						//	/*else {
+						//		printf("\n! Errore: Formato dati non valido in %s", solo_nome_file.c_str());
+						//	}*/
+						//fclose(f);
+						//current_path("..");
+						//current_path("InitCond");
+						//
 						double u0 = pr[2];
 						double alpha = pr[3];
 						double s0, s = exp(pr[0]), s2;
