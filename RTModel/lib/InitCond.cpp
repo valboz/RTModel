@@ -30,7 +30,7 @@ bool onlyorbital = false; // Only orbital motion models will be calculated.
 bool onlyupdate = false; // No model search, but only update of previously found best models.
 int usesatellite = 0; // Satellite to be used for initial conditions. Ground telescopes by default.
 char templatelibrary[256] = ""; // User-specified template library
-char modelcategories[256] = "PSPXBSBOLSLXLOTXTS";
+char modelcategories[256] = "PSPXBSBOLSLXLOTSTX";
 char astroini[256] = "0.0 0.0 0.125 1.0";
 
 //double tau = 0.5; // Provisional!!! Exclude peaks shorter than tau
