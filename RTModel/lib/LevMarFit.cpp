@@ -1,28 +1,26 @@
 // LevMarFit.cpp 
 // Implementation of all methods in LevMarFit.h for Levenberg-Marquardt fitting
-
+// ACversion
 #define _CRT_SECURE_NO_WARNINGS
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include <VBMicrolensingLibrary.h>
+#include "VBMicrolensingLibrary.h"
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <cstdlib>
 #include <regex>
 #include <filesystem>
+
 
 //using namespace std;
 using std::regex, std::string, std::regex_match;
 using namespace std::filesystem;
 
-double inc00 = 1.e-5;
-double lamthr = 1.e1;
 int nlc = 6; // Number of models to be calculated from the same initial condition using the bumper method
-int offsetdegeneracy = 2; // Number of models to be calculated with offset degeneracy
+int offsetdegeneracy = 3; // Number of models to be calculated with offset degeneracy
 int maxsteps = 50; // Maximum number of steps in each fit
 double maxtime = 1.e100; // 600.0; // Maximum time in seconds for total execution (no longer controlled within LevMar)
 double bumperpower = 2.0; // Repulsion factor of bumpers
@@ -58,6 +56,7 @@ std::vector<std::vector<int>> logposs = { {0, 1, 3},
 
 const double epsilon = 1.e-100;
 
+
 LevMar::LevMar(int argc, char* argv[]) {
 	setbuf(stdout, nullptr);
 	printf("******************************************\n");
@@ -75,6 +74,7 @@ LevMar::LevMar(int argc, char* argv[]) {
 	VBM->RelTol = 0.001;
 	VBM->parallaxsystem = 1;
 	VBM->SetMethod(VBMicrolensing::Method::Multipoly);
+	
 
 	ReadFiles(argc, argv);
 
@@ -94,7 +94,6 @@ LevMar::~LevMar() {
 		free(delta);
 		free(maxdelta);
 		free(Curv);
-		free(GradVec);
 		free(A);
 		free(B);
 		free(B0);
@@ -192,7 +191,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		printf("\n\n- Event: %s\n", eventname);
 
 		current_path(eventname);
-
 		//if(argc>2){
 		//	strcpy(eventname,argv[1]);
 		//	strcpy(outdir,argv[2]);
@@ -206,7 +204,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 
 		current_path(eventname);
 		current_path("Data");
-
+		printf("- Data directory: %s\n", current_path().string().c_str());
 		/* Reading coordinates */
 
 		auto searchstring = regex(".*\\.coordinates");
@@ -220,6 +218,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 		}
 
 		current_path(eventname);
+		printf("\n- Event directory: %s\n", current_path().string().c_str());
 
 		// Read light curve
 		ReadCurve();
@@ -246,6 +245,7 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				current_path("data");
 				VBM->LoadSunTable("SunEphemeris.txt");
 				current_path(eventname);
+
 			}
 			else {
 				modnumber = 0;
@@ -260,11 +260,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[1] = log(pr[1]);
 				pr[3] = log(pr[3]);
 			}
-			current_path(exedir);
-			current_path("..");
-			current_path("data");
-			VBM->LoadESPLTable("ESPL.tbl");
-			current_path(eventname);
+				current_path(exedir);
+				current_path("..");
+				current_path("data");
+				VBM->LoadESPLTable("ESPL.tbl");
+				current_path(eventname);
+			
 			break;
 		case 'B':
 			if (modelcode[1] == 'O') {
@@ -299,12 +300,12 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				pr[0] = log(pr[0]);
 				pr[1] = log(pr[1]);
 				pr[6] = log(pr[6]);
-			}
-			current_path(exedir);
-			current_path("..");
-			current_path("data");
-			VBM->LoadESPLTable("ESPL.tbl");
-			current_path(eventname);
+				}
+				current_path(exedir);
+				current_path("..");
+				current_path("data");
+				VBM->LoadESPLTable("ESPL.tbl");
+				current_path(eventname);
 			break;
 		case 'L':
 			if (modelcode[1] == 'X') {
@@ -424,7 +425,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 			break;
 		}
 		printf("\n- Model: %s", modelcode);
-
 	}
 	catch (...) {
 		error = 10;
@@ -584,7 +584,7 @@ void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presig
 					}
 
 					if (command[0] == 'g' && command[1] == '_') { // Blending
-						sscanf(&command[2], "%d", &consindex[conscurrent]);
+						scanf(&command[2], "%d", &consindex[conscurrent]);
 						consindex[conscurrent] += 10000;
 					}
 					// special combinations
@@ -689,7 +689,6 @@ void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presig
 	VBM->lens_mass_luminosity_exponent = lens_mass_luminosity_exponent;
 	current_path(eventname);
 }
-
 int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim) {
 	char buffer[3200], initcondfile[256];
 	int npeaks, ninit, incond;
@@ -699,6 +698,7 @@ int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim
 	rightlim = (double*)malloc(sizeof(double) * nps);
 	pr = (double*)malloc(sizeof(double) * nps);
 	if (parametersfile[0] == 0) {
+
 		sprintf(initcondfile, "InitCond%c%c.txt", modelcode[0], modelcode[1]);
 		current_path("InitCond");
 		f = fopen(initcondfile, "r");
@@ -775,10 +775,9 @@ void LevMar::ReadAncillary() {
 		for (int i = 0; i < nps; i++) {
 			Gr[i] = (double*)malloc(sizeof(double) * np * (nlinpar - 1));
 		}
-		GradVec = (double*)malloc(sizeof(double) * nps);
 
 		current_path("Data");
-
+		
 		// If Normalization.txt is present, use numbers therein to normalize datasets.
 
 		normfacs = (double*)malloc(sizeof(double) * nfil);
@@ -915,41 +914,25 @@ int LevMar::Run() {
 				bumpnum = 1;
 				k = 1;
 				ichi = 0;
-				inc = inc00;
 				// Main fit
 				while ((ichi < 3) && (lambda < 1.e10) && (k <= maxsteps)) {
 					c0 = c1;
 					printf("\nStep %d\n", k++);
+					/* Calculation of the gradient */
+					//getchar();
 
+					Grad();
+
+					// Preparing the matrices A=(Curv + lambda diag(Curv))
+					// with Curv = Gr^T Gr.
+					// B=Gr (y-f)*w
 
 					oldlambda = lambda;
 					lambda /= inclambda;
 
 					// Levenberg-Marquardt with parameter lambda
 					ilam = 0;
-					while ((c1 >= c0) && (inc > 1.e-9)) {
-
-						/* Calculation of the gradient */
-						if (ilam == 0 || lambda > lamthr) {
-							Grad();
-
-							// Debug
-							normgrad = 0;
-							for (int i = 0; i < nps; i++) {
-								GradVec[i] = (GradVec[i] - c0) / inc;
-								normgrad = GradVec[i] * GradVec[i];
-							}
-							normgrad = sqrt(normgrad);
-							//for (int i = 0; i < nps; i++) {
-							//	printf("\n%le %le %le", B0[i] * 2, B0[i] * 2 - Curv[i*nps+i]*inc, GradVec[i]);
-							//}
-							//getchar();
-
-							// Preparing the matrices A=(Curv + lambda diag(Curv))
-							// with Curv = Gr^T Gr.
-							// B=Gr (y-f)*w
-						}
-
+					while ((c1 >= c0) && (ilam < 20)) {
 						for (int i = 0; i < nps; i++) {
 							for (int j = 0; j < nps; j++) {
 								A[i * nps + j] = Curv[i * nps + j];
@@ -957,7 +940,7 @@ int LevMar::Run() {
 									A[i * nps + j] += lambda * Curv[i * nps + i];
 								}
 							}
-							B[i] = B0[i];// -Curv[i * nps + i] * inc * 0.5 * lambda / (1 + lambda); //Experimental
+							B[i] = B0[i];
 						}
 
 						// Triangularizing the equations A.delta = B
@@ -981,12 +964,8 @@ int LevMar::Run() {
 							}
 							delta[i] = fac / A[i * nps + i];
 						}
+						// If we end up out of bounds, the point is taken at the bound.
 						for (int i = 0; i < nps; i++) {
-							// Experimental quad correction
-							//delta[i] = delta[i] * sqrt(lambda);
-							//delta[i] += 0.5 * (delta[i] - (pr[i] - laststep->p0[i]));
-							
-							// If we end up out of bounds, the point is taken at the bound.
 							//					printf("%lf ",delta[i]);
 							if (!((delta[i] > 0) || (delta[i] < 0))) {
 								delta[i] = 0.;
@@ -1005,18 +984,12 @@ int LevMar::Run() {
 						// Current parameters, current chi square and current lambda are displayed
 						PrintOut(prn);
 						c1 = ChiSquared(prn);
-						printf("\nilam= %d lambda= %lf\nc1 = %lf prec=%le inc=%le", ilam, lambda, c1, Tol, inc);
+						printf("\nilam= %d lambda= %lf\nc1 = %lf prec=%le", ilam, lambda, c1, Tol);
 
 						lambda *= inclambda;
 						ilam++;
-						if (lambda < lamthr && inc<inc00) {
-							inc = inc00;
-						}
-						if(lambda>1.e1){
-							inc = inc00*lamthr/lambda;
-						}
 					}
-					if(lambda>1.e-3)	lambda /= inclambda;
+					lambda /= inclambda;
 
 
 					// if new point is better than previous, pr is updated.
@@ -1036,19 +1009,10 @@ int LevMar::Run() {
 							if (fac < 1) {
 								printf("\nBumped!");
 								bumpcounter++;
-								int flag2 = 0;
 								for (int i = 0; i < nps; i++) {
-									fac = scanbumper->distance(laststep->p0);
-									delta[i] = -2.0 * bumperpower * scanbumper->dp[i] / sqrt(fac); // bump to the opposite side
-									if (c1 < scanbumper->Amp) { // If chi square is better, bump to the same side
-										delta[i] = -delta[i];
-										//flag2 = 1;
-									}
-									if (fabs(delta[i]) > maxdelta[i]) { // Do not bump too far!
-										delta[i] *= maxdelta[i] / fabs(delta[i]);
-										flag2 = 1;
-									}
-									prn[i] = scanbumper->p0[i] + delta[i];
+									//fac = 2.0 * bumperpower / sqrt(fac);
+									//prn[i] = pr[i] - fac * scanbumper->dp[i];
+									prn[i] = scanbumper->p0[i] - 2.0 * bumperpower * (laststep->p0[i] - scanbumper->p0[i]) / sqrt(fac);
 									if (prn[i] > rightlim[i]) {
 										prn[i] = 0.99 * rightlim[i] + 0.01 * pr[i];
 									}
@@ -1057,9 +1021,7 @@ int LevMar::Run() {
 									}
 									pr[i] = prn[i];
 								}
-								if (flag2 == 0) { // Do not broaden bumper if bump was too strong
-									scanbumper->UpdateCurvature(bumperpower);
-								}
+								scanbumper->UpdateCurvature(bumperpower);
 								flag = 1;
 								PrintOut(pr);
 							}
@@ -1123,7 +1085,7 @@ int LevMar::Run() {
 
 					// Check if the model makes sense, otherwise set negative chi square for 
 					// processing by subsequent programs.
-					if ((c0 > 0) && (c0 < 1.e100) && flagblending < np / 2) {
+					if ((c0 > 2) && (c0 < 1.e100) && flagblending < np / 2) {
 						c0 = c0;
 					}
 					else {
@@ -1196,7 +1158,7 @@ int LevMar::Run() {
 								}
 							}
 							printf("\n%d %lf", k, fac);
-							if (fac < 1.) {// Remove all steps from scanbumper->next on from chain
+							if (fac < 1.) {
 								laststep = scanbumper;
 								k--;
 								scanbumper2 = scanbumper->next;
@@ -1208,15 +1170,12 @@ int LevMar::Run() {
 								laststep->next = 0;
 								scanbumper = laststep;
 							}
-							else closestbumper = tentbumper;// memorize closest bumper
+							else closestbumper = tentbumper;
 						}
+						//						if (closestbumper != stepchain) {
 													// Start next chain on the other side of closest bumper
 						for (int i = 0; i < nps; i++) {
-							delta[i] = -bumperpower * (laststep->p0[i] - closestbumper->p0[i]);
-							if (fabs(delta[i]) > maxdelta[i]) {
-								delta[i] *= maxdelta[i] / fabs(delta[i]);
-							}
-							prn[i] = closestbumper->p0[i] + delta[i];
+							prn[i] = closestbumper->p0[i] - bumperpower * (laststep->p0[i] - closestbumper->p0[i]);
 							if (prn[i] > rightlim[i]) {
 								prn[i] = 0.99 * rightlim[i] + 0.01 * pr[i];
 							}
@@ -1228,6 +1187,7 @@ int LevMar::Run() {
 						}
 						laststep->next = new bumper(pr, nps);
 						laststep = laststep->next;
+						//						}
 					}
 					// Updating time count
 					//printf("\npartial time=%lf secs\n",(Environment::TickCount-tm)/1000.0);
@@ -1252,6 +1212,7 @@ int LevMar::Run() {
 
 			// If this fit has found the best minimum so far, update minchi.dat
 //			current_path("..");
+			strcpy(filename, "minchi.dat");
 			strcpy(filename, "minchi.dat");
 			if (exists(filename)) {
 				f = fopen(filename, "r");
@@ -1346,6 +1307,11 @@ void LevMar::EvaluateModel(double* pr, int fl, int ips) {
 
 double LevMar::ChiSquared(double* pr) {
 	double chi2 = 0, chi0, chia, p1;
+	double p1max = 0, maxsump = 0;
+	double maxsumn = 0;
+	double t1 = 0, t2 = 0, tmax = 0;
+	double y1max=0, y2max=0, y1t1=0, y2t1=0, y1t2=0, y2t2=0;
+	maxmaxsum = 0;
 
 	for (int fl = 0; fl < nfil; fl++) {
 		VBM->satellite = satel[starts[fl]];
@@ -1413,19 +1379,111 @@ double LevMar::ChiSquared(double* pr) {
 	}
 
 	// Photometric chi square
+	bool in_pos_sequence;
+	
 	flagblending = 0;
 	for (int i = 0; i < np; i++) {
 		if (w[i] > 0) {
 			p1 = (y[i] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) * w[i] * w[i] * pr[nps + 1 + filter[i] * nlinpar] * Tol;
 			chi0 += p1 * p1;
 			p1 = (y[i] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) * w[i];
-			chi2 += p1 * p1;
-			if (pr[nps + 1 + filter[i] * nlinpar] > 2 * y[i]) {
-				flagblending++;
-				chi2 += (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * w[i] * w[i];
+
+			//controlli su i e filter[i] 
+			//azzerare tutti gli elementi maxsumn e maxsump
+			//inizializzare t1 a t[i]
+			//inizializzare in_pos_sequence = (p1>0) 
+			if ((i == 0) || (filter[i] != filter[i-1])) {
+				maxsumn = 0;
+				maxsump = 0;
+				t1 = t[i];
+			}
+
+			if (p1 > 0) {
+				if (!in_pos_sequence) {
+					in_pos_sequence = true;
+
+					t2 = t[i]; // tempo primo positivo dopo una sequenza neg
+					
+				}
+				maxsumn = 0;   // azzera la somma dei residui negativi
+				maxsump += p1; // somma i residui positivi 
+
+				if (p1 > p1max) { //per trovare il picco
+					p1max = p1; // aggiorna il massimo residuo positivo
+					tmax = t[i]; // tempo in cui si ha il massimo residuo positivo
+					y1max = y1a[i];
+					y2max = y2a[i];
+
+				}
+
+			}
+			else {
+				//fine sequenza pos
+				if (in_pos_sequence) {
+					in_pos_sequence = false;
+					t1 = t[i-1]; // tempo ultimo pos prima di una sequenza neg
+					y1t1 = y1a[i - 1];
+					y2t1 = y2a[i - 1];
+				}
+				////aggiorna t2
+				t2 = t[i];
+				y1t2 = y1a[i];
+				y2t2 = y2a[i];
+				maxsump = 0;                 // azzera la somma dei residui positivi
+				maxsumn += p1;               // somma dei residui negativi, è un numero negativo
+				p1max = 0;					 
+
+			}
+			//Alla fine del ciclo, se la somma dei residui positivi consecutivi è maggiore della somma massima trovata finora allora aggiorna la somma massima e il tempo corrispondente
+			if (maxsump > maxmaxsum) {
+				maxmaxsum = maxsump;
+				tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+				y1maxmax = y1max;
+				y2maxmax = y2max;
+			}
+			else if(fabs(maxsumn) > maxmaxsum) { 
+				maxmaxsum = - maxsumn;
+				//calcolo del tempo || pr[6] è t0 in binary lens
+				if (abs(double(pr[6] - t1)) > abs(double(pr[6] - t2))) {
+					tmaxmax = t1;
+					y1maxmax = y1t1;
+					y2maxmax = y2t1;
+				}
+				else {
+					tmaxmax = t2;
+					y1maxmax = y1t2;
+					y2maxmax = y2t2;
+				}
 			}
 		}
+
+
+		chi2 += p1 * p1;
+		if (pr[nps + 1 + filter[i] * nlinpar] > 2 * y[i]) {
+			flagblending++;
+			chi2 += (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * (pr[nps + 1 + filter[i] * nlinpar] - 2 * y[i]) * w[i] * w[i];
+		}
 	}
+	if (maxsump > maxmaxsum) {
+		maxmaxsum = maxsump;
+		tmaxmax = tmax; // tempo in cui si ha la somma massima dei residui positivi consecutivi
+		y1maxmax = y1max;
+		y2maxmax = y2max;
+	}
+	else if (fabs(maxsumn) > maxmaxsum) {
+		maxmaxsum = - maxsumn;
+		if (abs(pr[6] - t1) > abs(pr[6] - t2)) {
+			tmaxmax = t1;
+			y1maxmax = y1t1;
+			y2maxmax = y2t1;
+		}
+		else {
+			tmaxmax = t2;
+			y1maxmax = y1t2;
+			y2maxmax = y2t2;
+		}
+	}
+
 	chi0 = sqrt(2 * chi0); // Error in chi square
 	if (chi0 / chi2 > 0.1) Tol *= 0.5;
 	if (chi0 / chi2 < 0.01 && Tol < .99e-2) Tol *= 2;
@@ -1443,11 +1501,10 @@ double LevMar::ChiSquared(double* pr) {
 }
 
 void LevMar::Grad() {
-	static double p1, p2;
+	static double inc = 1.0e-3, p1;
 	for (int i = 0; i < nps + nfil * nlinpar; i++) {
 		prn[i] = pr[i];
 	}
-	printf("\n");
 	for (int j = 0; j < nps; j++) {
 		printf("%d ", j);
 		prn[j] += inc;
@@ -1508,30 +1565,26 @@ void LevMar::Grad() {
 			}
 		}
 
-		GradVec[j] = 0;
 		for (int icons = 0; icons < consnumber; icons++) { // Gradient of constraints
 			consvars[icons + (j + 1) * consnumber] = ComputeConstraint(prn, icons);
 			p1 = (consvars[icons] - constraints[icons]);
-			p2 = ((p1 > 0) ? consright[icons] : consleft[icons]);
-			p2 *= p2;
-			GradVec[j] += p1 * p1 / p2;
-			consvars[icons + (j + 1) * consnumber] = (consvars[icons + (j + 1) * consnumber] - consvars[icons]) / (p2 * inc);
+			consvars[icons + (j + 1) * consnumber] = (consvars[icons + (j + 1) * consnumber] - consvars[icons]) / (((p1 > 0) ? consright[icons] : consleft[icons]) * inc);
 		}
 		prn[j] -= inc;
 		//		double errgrad = 0,errterm, grad=0;
 		for (int i = 0; i < np; i++) {
 			if (w[i] > 0) {
-				p1 = (prn[nps + filter[i] * nlinpar] + prn[nps + 1 + filter[i] * nlinpar] * fb[i + np * (j + 1)] - y[i]) * w[i];
 				Gr[j][i] = w[i] * (prn[nps + filter[i] * nlinpar] + prn[nps + 1 + filter[i] * nlinpar] * fb[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) / inc;
-				GradVec[j] += p1 * p1;
+				//errterm = w[i] / inc * Tol * pr[nps + 1 + filter[i] * nlinpar];
+				//errgrad += errterm * errterm;
+				//grad += Gr[j][i] * Gr[j][i];
 			}
 			if (wcN[i] > 0) {
-				p1 = (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - cN[i]) * wcN[i];
-				GradVec[j] += p1 * p1;
-				p1 = (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - cE[i]) * wcE[i];
-				GradVec[j] += p1 * p1;
 				Gr[j][i + np] = wcN[i] * (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 2] - c1s[i]) / inc;
 				Gr[j][i + np * 2] = wcE[i] * (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 3] - c2s[i]) / inc;
+				//errterm= (50* exp(pr[3])*Tol*pr[9]) / inc;
+				//errgrad += errterm * errterm * (wcN[i] * wcN[i] + wcE[i] * wcE[i]);
+				//grad += Gr[j][i+np] * Gr[j][i+np] + Gr[j][i+2*np] * Gr[j][i + 2 * np];
 			}
 		}
 		//printf("%d ", j);
@@ -1569,8 +1622,7 @@ void LevMar::Grad() {
 				p1 += wcE[k] * Gr[i][k + np * 2] * (cE[k] - pr[nps + filter[k] * nlinpar + 3] - c2s[k]);
 			}
 		}
-		//B0[i] = p1 - Curv[i * nps + i]*0.5*inc; /// Experimental
-		B0[i] = p1; /// Traditional LM
+		B0[i] = p1;
 		for (int icons = 0; icons < consnumber; icons++) {
 			p1 = (consvars[icons] - constraints[icons]);
 			p1 /= (p1 > 0) ? consright[icons] : consleft[icons];
@@ -1626,8 +1678,6 @@ void LevMar::Covariance() {
 		if (!(errs[i + nps] > 0)) errs[i + nps] = 1.e100;
 	}
 }
-
-
 
 void LevMar::PrintOut(double* pr) {
 	int npp = nps, ilog = 0, logsize = logposs[modnumber].size();
@@ -1801,6 +1851,16 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 		pr[i] = ((pr[i] > -1.e300) && (pr[i] < 1.e300)) ? pr[i] : -1.e300;
 		fprintf(f, "%le ", pr[i]);
 	}
+	//stampa tmaxmax 
+	fprintf(f, "%.16le ", tmaxmax);
+
+	//stampa y1maxmax e y2maxmax
+	fprintf(f, "%.16le ", y1maxmax);
+	fprintf(f, "%.16le ", y2maxmax);
+
+	//stampa delta chi quadro
+	fprintf(f, "%.16le ", maxmaxsum);
+
 	// Write chi square
 	fprintf(f, "%.16le\n", c0);
 
@@ -1829,7 +1889,7 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 			fprintf(f, " %le", errs[i]);
 		}
 		fprintf(f, "\n");
-
+		
 		// Print covariance matrix to file
 		for (int i = 0; i < nps; i++) {
 			if (i > 0) fprintf(f, "\n");
@@ -1839,8 +1899,8 @@ void LevMar::PrintFile(char* filename, int il, double c0, bool printerrors) {
 			}
 		}
 		fprintf(f, "\n");
+		
 	}
+	
 	fclose(f);
 }
-
-

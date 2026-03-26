@@ -7,13 +7,78 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <cstdlib>
 #include <filesystem>
 #include <regex>
 #include "bumper.h"
 
 using namespace std;
 using namespace std::filesystem;
+
+static inline void initcond_from_anomaly(
+	FILE* g,
+	double xc0,
+	double q, 
+	double u0,
+	double alpha0,
+	double rho,
+	double* pr,
+	int nps,
+	int astrometric
+) {
+	double xc = xc0;
+	double s0 = 0.5 * (sqrt(4 + xc * xc) + xc);
+	while (xc < 4 * sqrt(q) / (s0 * s0)) q *= 0.1;
+
+	//prima parte
+	xc = xc0 + 4 * sqrt(q) / (s0 * s0);
+	double s = 0.5 * (sqrt(4 + xc * xc) + xc);
+	double alpha = alpha0;
+
+	fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+	if (astrometric)
+		fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+	fprintf(g, "\n");
+
+	//seconda parte
+	xc = xc0 + 4 * sqrt(q) / (s0 * s0);
+	s = 0.5 * (sqrt(4 + xc * xc) + xc);
+	alpha = alpha0;
+	fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+	if (astrometric)
+		fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+	fprintf(g, "\n");
+
+	xc = xc0;
+	s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
+	q = 0.001;
+	while (xc < 3 * sqrt(3 * q) * s0 * s0 * s0) q *= 0.1;
+
+	//terza parte
+	xc = xc0 - 3 * sqrt(3 * q) * s0 * s0 * s0;
+	s = 0.5 * (sqrt(4 + xc * xc) - xc);
+	alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+	fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+	if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+	fprintf(g, "\n");
+
+	alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+	fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+	if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+	fprintf(g, "\n");
+
+	//quarta parte
+	xc = xc0 + 3 * sqrt(3 * q) * s0 * s0 * s0;
+	s = 0.5 * (sqrt(4 + xc * xc) - xc);
+	alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+	fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+	if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+	fprintf(g, "\n");
+
+	alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+	fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+	if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+	fprintf(g, "\n");
+}
 
 double supfac = 3.0; // factor multiplying the inverse covariance in search for superpositions (models are incompatible if farther than supfac*sigma)
 double chifac = 1.; // number of sigmas in the chi square distribution for accepting alternative models after the best one
@@ -26,7 +91,8 @@ int main(int argc, char* argv[]) {
 	char modelcode[256];
 	char command[256], buffer[10000];
 	double value;
-	double t, y, w, errDecv, * pr, * sigmapr, * Cov, * Curv, fac, facr, c1, c0, chithr, bestplan = 1.e100, bestbin = 1.e100;
+	double t, y, w, errDecv, * pr, * sigmapr, * Cov, * Curv, fac, facr, c1, chithr, bestplan = 1.e100, bestbin = 1.e100;
+	double tmaxmax, y1maxmax, y2maxmax, maxmaxsum, c0;
 	double renorm;
 	int nfil, il, nlc, nmod, np, k;
 	int nps = 4, dof, nlinpar;
@@ -44,7 +110,7 @@ int main(int argc, char* argv[]) {
 
 	// Directory preliminaries. Reads event name from arguments.
 
-	auto exedir = current_path();
+	auto exedir = std::filesystem::current_path();
 
 	if (argc > 2) {
 		strcpy(eventname, argv[1]);
@@ -166,16 +232,16 @@ int main(int argc, char* argv[]) {
 
 	supfac *= nps;
 
+
 	printf("\n- Model code: %s", modelcode);
 
-
-
+	//da controllare
 	pr = (double*)malloc(sizeof(double) * (nps + 20 + nlinpar * nfil)); //20 added to allow for higher order models in updates
 	sigmapr = (double*)malloc(sizeof(double) * (nps + nlinpar * nfil));
 	Cov = (double*)malloc(sizeof(double) * (nps * nps));
 	Curv = (double*)malloc(sizeof(double) * (nps * nps));
 
-	dof -= nps; // degrees of freedom
+	dof  -= nps; // degrees of freedom
 
 	// Read models
 
@@ -186,6 +252,7 @@ int main(int argc, char* argv[]) {
 		return 0;
 	}
 	current_path("PreModels");
+
 	nmod = 0;
 
 	auto searchstring = regex(string(modelcode) + ".*txt");
@@ -195,29 +262,35 @@ int main(int argc, char* argv[]) {
 
 			f = fopen(curfile.c_str(), "r");
 			while (!feof(f)) {
-				if (fscanf(f, "%s", filename) != 1) break;
+				if(fscanf(f, "%s", filename)!=1) break;
 				fgetc(f);
 				long start = ftell(f);
 				for (int j = 0; j < nps + nlinpar * nfil; j++) {
 					fscanf(f, "%le", &(pr[j]));
 				}
+								
+				//per leggere i parametri
+				fscanf(f, "%le", &(tmaxmax));
+				fscanf(f, "%le", &(y1maxmax));
+				fscanf(f, "%le", &(y2maxmax));
+				fscanf(f, "%le", &(maxmaxsum));
 				fscanf(f, "%le", &(c0));
 
 				renorm = sqrt(c0 / dof);
 
 				for (int j = 0; j < nps + nlinpar * nfil; j++) {
 					fscanf(f, "%le", &(sigmapr[j]));
-					if (!(sigmapr[j] >= 0)) c0 = -1;
+					if (!(sigmapr[j] >= 0)) c0 = -1; 
 				}
 
 				for (int i = 0; i < nps; i++) {
 					for (int j = 0; j < nps; j++) {
-						fscanf(f, "%le", &(Cov[i + j * nps]));
+						fscanf(f, "%le", &(Cov[i + j * nps]));  
 					}
 				}
 
 				long end = ftell(f);
-
+				
 
 				switch (modelcode[0]) {
 				case 'P':
@@ -262,6 +335,12 @@ int main(int argc, char* argv[]) {
 						//}
 					}
 					break;
+
+					//da vedere per il triple lens
+				case 'T': 
+
+					
+					break;
 				}
 
 
@@ -273,6 +352,10 @@ int main(int argc, char* argv[]) {
 							bumperlist->SetCovariance(Cov, dof / c0);
 							strcpy(bumperlist->modelcode, filename);
 							bumperlist->SetBuffer(f, start, end);
+							bumperlist->tanomaly = tmaxmax;
+							bumperlist->y1anomaly = y1maxmax;
+							bumperlist->y2anomaly = y2maxmax;
+							bumperlist->maxsum = maxmaxsum;
 							bumperlist->Amp = c0;
 							bumperlist->next = scanbumper;
 						}
@@ -283,6 +366,10 @@ int main(int argc, char* argv[]) {
 							scanbumper2->SetCovariance(Cov, dof / c0);
 							strcpy(scanbumper2->modelcode, filename);
 							scanbumper2->SetBuffer(f, start, end);
+							scanbumper2->tanomaly = tmaxmax;
+							scanbumper2->y1anomaly = y1maxmax;
+							scanbumper2->y2anomaly = y2maxmax;
+							scanbumper2->maxsum = maxmaxsum;
 							scanbumper2->Amp = c0;
 							scanbumper2->next = scanbumper->next;
 							scanbumper->next = scanbumper2;
@@ -293,10 +380,14 @@ int main(int argc, char* argv[]) {
 						bumperlist->SetCovariance(Cov, dof / c0);
 						strcpy(bumperlist->modelcode, filename);
 						bumperlist->SetBuffer(f, start, end);
+						bumperlist->tanomaly = tmaxmax;
+						bumperlist->y1anomaly = y1maxmax;
+						bumperlist->y2anomaly = y2maxmax;
+						bumperlist->maxsum = maxmaxsum;
 						bumperlist->Amp = c0;
 					}
 					nmod++;
-				}
+				}				
 			}
 			fclose(f);
 		}
@@ -305,6 +396,7 @@ int main(int argc, char* argv[]) {
 		printf("\n! No models for this class");
 		return 0;
 	}
+
 	printf("\nnmod: %d", nmod);
 	c1 = (bumperlist) ? bumperlist->Amp : 1.e100;
 	printf("\nNumber of initial models = %d\nMinimum chi square = %lf\n", nmod, c1);
@@ -412,7 +504,7 @@ int main(int argc, char* argv[]) {
 					if (facr < fac) fac = facr;
 					scanbumper->signCovariance(1);
 					break;
-					// Binary source
+					// Triple lens
 				case 'T':
 					// Check with no reflections
 					pr[1] = scanbumper->p0[1];
@@ -430,8 +522,12 @@ int main(int argc, char* argv[]) {
 						}
 					}
 					fac = facr;
+
 					// Need to implement all mass permutations (and reflections for static model)
+
 					break;
+
+				//binary source
 				case 'B':
 					// Check with no reflections
 					pr[1] = scanbumper->p0[1];
@@ -512,7 +608,7 @@ int main(int argc, char* argv[]) {
 
 	if (nmod > maxmodels) nmod = maxmodels;
 	printf("\nModels to be saved = %d\n", nmod);
-
+	
 
 	// Store best models passing the selection in directory "Models"
 
@@ -547,11 +643,6 @@ int main(int argc, char* argv[]) {
 				g = fopen("InitCondLX-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + 2 * nmod);
-				for (int i = 0; i < npeaks; i++) {
-					fgetc(f);
-					fscanf(f, "%[^\n]s", buffer);
-					fprintf(g, "%s\n", buffer);
-				}
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < 9; j++) {
@@ -583,11 +674,6 @@ int main(int argc, char* argv[]) {
 					g = fopen("InitCondLO-temp.txt", "w");
 					fscanf(f, "%d %d", &npeaks, &np);
 					fprintf(g, "%d %d\n", npeaks, np + nmod);
-					for (int i = 0; i < npeaks; i++) {
-						fgetc(f);
-						fscanf(f, "%[^\n]s", buffer);
-						fprintf(g, "%s\n", buffer);
-					}
 					printf("\nNumber of initial conditions: %d", np + nmod);
 					for (int i = 0; i < np; i++) {
 						for (int j = 0; j < 12; j++) {
@@ -616,11 +702,6 @@ int main(int argc, char* argv[]) {
 						g = fopen("InitCondLK-temp.txt", "w");
 						fscanf(f, "%d %d", &npeaks, &np);
 						fprintf(g, "%d %d\n", npeaks, np + nmod);
-						for (int i = 0; i < npeaks; i++) {
-							fgetc(f);
-							fscanf(f, "%[^\n]s", buffer);
-							fprintf(g, "%s\n", buffer);
-						}
 						printf("\nNumber of initial conditions: %d", np + nmod);
 						for (int i = 0; i < np; i++) {
 							for (int j = 0; j < 14; j++) {
@@ -645,6 +726,103 @@ int main(int argc, char* argv[]) {
 					}
 				}
 			}
+			
+		printf("\n- Adding initial conditions for planets");
+			if (f = fopen("InitCondTS.txt", "r")) {
+				int npeaks = 0;
+				double* peaks;
+				g = fopen("InitCondTS-temp.txt", "w");
+				fscanf(f, "%d %d", &npeaks, &np);
+				/*if (npeaks == 0) {
+					fclose(g);
+					fclose(f);
+					remove("InitCondTS-temp.txt");
+				}*/
+				/*else {*/
+					fprintf(g, "%d %d\n", npeaks, np + 6 * nmod);
+					peaks = (double*)malloc(sizeof(double) * (npeaks + 1));
+
+					printf("\nNumber of initial conditions: %d", np +  6 * nmod );
+					for (int i = 0; i < npeaks; i++) {
+						fscanf(f, "%lg", &peaks[i]);
+						fprintf(g, "%le", peaks[i]);
+						fscanf(f, "%[^\n]s", &buffer);
+						fprintf(g, "%s\n", buffer);
+					}
+					for (int i = 0; i < np; i++) {
+						for (int j = 0; j < 10; j++) {
+							fscanf(f, "%lg", &pr[j]);
+							fprintf(g, "%.10le ", pr[j]);
+						}
+						fprintf(g, "\n");
+					}
+					fclose(f);
+
+					scanbumper = bumperlist;
+					for (il = 1; il <= nmod; il++) {
+						for (int i = 0; i < nps; i++) {
+							pr[i] = scanbumper->p0[i];
+						}
+
+						
+						double u0 = pr[2];
+						double alpha = pr[3];
+						double s0, s = exp(pr[0]), s2;
+						double q = exp(pr[1]);
+						double q2 = 0.001;
+						/*double dt = (scanbumper->tanomaly - pr[6]) / exp(pr[5]);*/
+						/*double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);*/
+						double xc0, xc;
+						double rho = exp(pr[4]);
+						double y1A = scanbumper->y1anomaly + q * s / (1 + q), y2A = scanbumper->y2anomaly;
+						double beta, beta0;
+
+						//y1A = pr[2] * sin(pr[3]) - dt * cos(pr[3]) + q * s / (1 + q); //rispetto la primaria
+						//y2A = -pr[2] * cos(pr[3]) - dt * sin(pr[3]);
+						beta = beta0 = atan2(y2A, y1A);
+
+						xc0 = sqrt(y1A * y1A + y2A * y2A);
+						xc = xc0;
+						s0 = 0.5 * (sqrt(4 + xc * xc) + xc);
+						while (xc < 4 * sqrt(q2) / (s0 * s0)) q2 *= 0.1;
+						xc = xc0 + 4 * sqrt(q2) / (s0 * s0);
+						s2 = 0.5 * (sqrt(4 + xc * xc) + xc);
+
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+						xc = xc0 - 4 * sqrt(q2) / (s0 * s0);
+						s2 = 0.5 * (sqrt(4 + xc * xc) + xc);
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+
+						xc = xc0;
+						s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
+						q2 = 0.001;
+						while (xc < 3 * sqrt(3 * q2) * s0 * s0 * s0) q2 *= 0.1;
+						xc = xc0 - 3 * sqrt(3 * q2) * s0 * s0 * s0;
+						s2 = 0.5 * (sqrt(4 + xc * xc) - xc);
+						beta = beta0 + M_PI + asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
+
+
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+						beta = beta0 + M_PI - asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
+
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+						xc = xc0 + 3 * sqrt(3 * q2) * s0 * s0 * s0;
+						s2 = 0.5 * (sqrt(4 + xc * xc) - xc);
+						beta = beta0 + M_PI + asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
+
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+						beta = beta0 + M_PI - asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
+
+						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+
+						scanbumper = scanbumper->next;
+					}
+					fclose(g);
+					free(peaks);
+					remove("InitCondTS.txt");
+					rename("InitCondTS-temp.txt", "InitCondTS.txt");
+				//}
+			}
 		}
 		if (modelcode[1] == 'X') {
 			printf("\n- Preparing initial conditions for orbital motion");
@@ -653,11 +831,6 @@ int main(int argc, char* argv[]) {
 				g = fopen("InitCondLO-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + nmod);
-				for (int i = 0; i < npeaks; i++) {
-					fgetc(f);
-					fscanf(f, "%[^\n]s", buffer);
-					fprintf(g, "%s\n", buffer);
-				}
 				printf("\nNumber of initial conditions: %d", np + nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < nps + 3; j++) {
@@ -688,11 +861,6 @@ int main(int argc, char* argv[]) {
 					g = fopen("InitCondLK-temp.txt", "w");
 					fscanf(f, "%d %d", &npeaks, &np);
 					fprintf(g, "%d %d\n", npeaks, np + nmod);
-					for (int i = 0; i < npeaks; i++) {
-						fgetc(f);
-						fscanf(f, "%[^\n]s", buffer);
-						fprintf(g, "%s\n", buffer);
-					}
 					printf("\nNumber of initial conditions: %d", np + nmod);
 					for (int i = 0; i < np; i++) {
 						for (int j = 0; j < nps + 5; j++) {
@@ -719,20 +887,23 @@ int main(int argc, char* argv[]) {
 					rename("InitCondLK-temp.txt", "InitCondLK.txt");
 				}
 			}
-		}
-		if (modelcode[1] == 'O') {
-			printf("\n- Preparing initial conditions for Keplerian orbital motion");
-			if (f = fopen("InitCondLK.txt", "r")) {
+		
+			printf("\n- Adding initial conditions for planets");
+			if (f = fopen("InitCondTX.txt", "r")) {
 				int npeaks = 0;
-				g = fopen("InitCondLK-temp.txt", "w");
+				double* peaks;
+				g = fopen("InitCondTX-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "%d %d\n", npeaks, np + nmod);
+				fprintf(g, "%d %d\n", npeaks, np + ((npeaks > 0) ? 6 * nmod : 0));
+				peaks = (double*)malloc(sizeof(double) * npeaks);
+
+				printf("\nNumber of initial conditions: %d", np + ((npeaks > 0) ? 6 * nmod : 0));
 				for (int i = 0; i < npeaks; i++) {
-					fgetc(f);
-					fscanf(f, "%[^\n]s", buffer);
+					fscanf(f, "%lg", &peaks[i]);
+					fprintf(g, "%le", peaks[i]);
+					fscanf(f, "%[^\n]s", &buffer);
 					fprintf(g, "%s\n", buffer);
 				}
-				printf("\nNumber of initial conditions: %d", np + nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < nps + 2; j++) {
 						fscanf(f, "%lg", &pr[j]);
@@ -747,8 +918,89 @@ int main(int argc, char* argv[]) {
 					for (int i = 0; i < nps; i++) {
 						pr[i] = scanbumper->p0[i];
 					}
-					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 1.0", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11], -pr[9] / pr[11]);
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					double u0 = pr[2];
+					double alpha = pr[3];
+					double s0, s = exp(pr[0]), s2;
+					double q = exp(pr[1]);
+					double q2 = 0.001;
+					/*double dt = (scanbumper->tanomaly - pr[6]) / exp(pr[5]);*/
+					/*double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);*/
+					double xc0, xc;
+					double rho = exp(pr[4]);
+					double y1A = scanbumper->y1anomaly + q * s / (1 + q), y2A = scanbumper->y2anomaly;
+					double beta, beta0;
+
+					//y1A = pr[2] * sin(pr[3]) - dt * cos(pr[3]) + q * s / (1 + q); //rispetto la primaria
+					//y2A = -pr[2] * cos(pr[3]) - dt * sin(pr[3]);
+					beta = beta0 = atan2(y2A, y1A);
+
+					xc0 = sqrt(y1A * y1A + y2A * y2A);
+					xc = xc0;
+					s0 = 0.5 * (sqrt(4 + xc * xc) + xc);
+					while (xc < 4 * sqrt(q2) / (s0 * s0)) q2 *= 0.1;
+					xc = xc0 + 4 * sqrt(q2) / (s0 * s0);
+					s2 = 0.5 * (sqrt(4 + xc * xc) + xc);
+
+					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+					xc = xc0 - 4 * sqrt(q2) / (s0 * s0);
+					s2 = 0.5 * (sqrt(4 + xc * xc) + xc);
+					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+
+					xc = xc0;
+					s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
+					q2 = 0.00001;
+					while (xc < 3 * sqrt(3 * q2) * s0 * s0 * s0) q2 *= 0.1;
+					xc = xc0 - 3 * sqrt(3 * q2) * s0 * s0 * s0;
+					s2 = 0.5 * (sqrt(4 + xc * xc) - xc);
+					beta = beta0 + M_PI + asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
+
+
+					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+					beta = beta0 + M_PI - asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
+
+					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+					xc = xc0 + 3 * sqrt(3 * q2) * s0 * s0 * s0;
+					s2 = 0.5 * (sqrt(4 + xc * xc) - xc);
+					beta = beta0 + M_PI + asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
+
+					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+					beta = beta0 + M_PI - asin(fabs(2 * sqrt(q2 * (1 - s2 * s2)) / s2) / xc);
+
+					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[5]), pr[6], s2, q2, beta);
+
+					scanbumper = scanbumper->next;
+				}
+				fclose(g);
+				free(peaks);
+				remove("InitCondTX.txt");
+				rename("InitCondTX-temp.txt", "InitCondTX.txt");
+			}
+		}
+			
+		if (modelcode[1] == 'O') {
+			printf("\n- Preparing initial conditions for Keplerian orbital motion");
+			if (f = fopen("InitCondLK.txt", "r")) {
+				int npeaks = 0;
+				g = fopen("InitCondLK-temp.txt", "w");
+				fscanf(f, "%d %d", &npeaks, &np);
+				fprintf(g, "%d %d\n", npeaks, np + nmod);
+				printf("\nNumber of initial conditions: %d", np + nmod);
+				for (int i = 0; i < np; i++) {
+					for (int j = 0; j < nps +2; j++) {
+						fscanf(f, "%lg", &pr[j]);
+						fprintf(g, "%.10le ", pr[j]);
+					}
+					fprintf(g, "\n");
+				}
+				fclose(f);
+
+				scanbumper = bumperlist;
+				for (il = 1; il <= nmod; il++) {
+					for (int i = 0; i < nps; i++) {
+						pr[i] = scanbumper->p0[i];
+					}
+					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 1.0", exp(pr[0]), exp(pr[1]), pr[2], pr[3], exp(pr[4]), exp(pr[5]), pr[6], pr[7], pr[8], pr[9], pr[10], pr[11],-pr[9]/pr[11]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 					scanbumper = scanbumper->next;
 				}
@@ -757,6 +1009,7 @@ int main(int argc, char* argv[]) {
 				rename("InitCondLK-temp.txt", "InitCondLK.txt");
 			}
 		}
+
 		break;
 	case 'P':
 		if (modelcode[1] == 'S') {
@@ -768,11 +1021,6 @@ int main(int argc, char* argv[]) {
 				fscanf(f, "%d %d", &npeaks, &np);
 				fprintf(g, "%d %d\n", npeaks, np + 2 * nmod);
 				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
-				for (int i = 0; i < npeaks; i++) {
-					fgetc(f);
-					fscanf(f, "%[^\n]s", buffer);
-					fprintf(g, "%s\n", buffer);
-				}
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < 6; j++) {
 						fscanf(f, "%lg", &pr[j]);
@@ -802,16 +1050,16 @@ int main(int argc, char* argv[]) {
 				double* peaks;
 				g = fopen("InitCondLS-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				if (npeaks == 0) {
+				/*if (npeaks == 0) {
 					fclose(g);
 					fclose(f);
 					remove("InitCondLS-temp.txt");
 				}
-				else {
-					fprintf(g, "%d %d\n", npeaks, np + ((npeaks > 0) ? 6 * nmod : 0));
+				else {*/
+					fprintf(g, "%d %d\n", npeaks, np + 6 * nmod );
 					peaks = (double*)malloc(sizeof(double) * npeaks);
 
-					printf("\nNumber of initial conditions: %d", np + ((npeaks > 0) ? 6 * nmod : 0));
+					printf("\nNumber of initial conditions: %d", np + 6 * nmod);
 					for (int i = 0; i < npeaks; i++) {
 						fscanf(f, "%lg", &peaks[i]);
 						fprintf(g, "%le", peaks[i]);
@@ -834,27 +1082,32 @@ int main(int argc, char* argv[]) {
 							pr[i] = scanbumper->p0[i];
 						}
 
-						double mindpeak = 1.e100;
-						int idpeak = 0;
-						for (int ipeak = 0; ipeak < npeaks; ipeak++) {
-							double ddpeak = fabs(peaks[ipeak] - pr[2]);
-							if (ddpeak < mindpeak) {
-								idpeak = ipeak;
-								mindpeak = ddpeak;
-							}
-						}
+						//double mindpeak = 1.e100;
+						//int idpeak = 0;
+						//for (int ipeak = 0; ipeak < npeaks; ipeak++) {
+						//	double ddpeak = fabs(peaks[ipeak] - pr[2]);
+						//	if (ddpeak < mindpeak) {
+						//		idpeak = ipeak;
+						//		mindpeak = ddpeak;
+						//	}
+						//}
 
 						double u0 = exp(pr[0]);
 						double s0, s;
-						for (int ipeak = 0; ipeak < npeaks; ipeak++) {
-							if (ipeak == idpeak) continue;
+						double y1A = scanbumper->y1anomaly, y2A = scanbumper->y2anomaly;
+						/*for (int ipeak = 0; ipeak < npeaks; ipeak++) {
+							if (ipeak == idpeak) continue;*/
 							double q = 0.001;
-							double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
-							double xc0 = sqrt(u0 * u0 + dt * dt), xc;
-							double alpha0 = atan2(u0, -dt), alpha;
+							/*double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
+							double dt = (scanbumper->tanomaly - pr[2]) / exp(pr[1]);*/
+							//double xc0 = sqrt(u0 * u0 + dt * dt), xc;
+							double xc0 = sqrt(y1A * y1A + y2A * y2A), xc;
+							//double alpha0 = atan2(u0, -dt), alpha;
+							double alpha0 = atan2(-y2A, y1A), alpha;
 							double rho = 0.001; // exp(pr[3] - sqrt(scanbumper->cov[3 * nps + 3]));
 
 							xc = xc0;
+
 
 							s0 = 0.5 * (sqrt(4 + xc * xc) + xc);
 							while (xc < 4 * sqrt(q) / (s0 * s0)) q *= 0.1;
@@ -882,14 +1135,14 @@ int main(int argc, char* argv[]) {
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2]);
 							alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le\n", s, q, u0, alpha, rho, exp(pr[1]), pr[2]);
-						}
+						//}
 						scanbumper = scanbumper->next;
 					}
 					fclose(g);
 					free(peaks);
 					remove("InitCondLS.txt");
 					rename("InitCondLS-temp.txt", "InitCondLS.txt");
-				}
+				//}
 			}
 		}
 		else {
@@ -899,7 +1152,7 @@ int main(int argc, char* argv[]) {
 				double* peaks;
 				g = fopen("InitCondLX-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "%d %d\n", npeaks, np + ((npeaks > 0) ? 6 * nmod : 0));
+				fprintf(g, "%d %d\n", npeaks, np + ((npeaks>0)? 6 * nmod : 0));
 				peaks = (double*)malloc(sizeof(double) * npeaks);
 
 				printf("\nNumber of initial conditions: %d", np + ((npeaks > 0) ? 6 * nmod : 0));
@@ -918,7 +1171,7 @@ int main(int argc, char* argv[]) {
 				}
 				fclose(f);
 
-				double mindpeak = 1.e100;
+				/*double mindpeak = 1.e100;
 				int idpeak = 0;
 				for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 					double ddpeak = fabs(peaks[ipeak] - pr[2]);
@@ -926,7 +1179,7 @@ int main(int argc, char* argv[]) {
 						idpeak = ipeak;
 						mindpeak = ddpeak;
 					}
-				}
+				}*/
 
 				scanbumper = bumperlist;
 				for (il = 1; il <= nmod; il++) {
@@ -934,7 +1187,7 @@ int main(int argc, char* argv[]) {
 						pr[i] = scanbumper->p0[i];
 					}
 
-					double mindpeak = 1.e100;
+					/*double mindpeak = 1.e100;
 					int idpeak = 0;
 					for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 						double ddpeak = fabs(peaks[ipeak] - pr[2]);
@@ -942,63 +1195,80 @@ int main(int argc, char* argv[]) {
 							idpeak = ipeak;
 							mindpeak = ddpeak;
 						}
-					}
-
+					}*/
+					
 					double u0 = pr[0];
 					double s0, s;
-					for (int ipeak = 0; ipeak < npeaks; ipeak++) {
-						if (ipeak == idpeak) continue;
+					double y1A = scanbumper->y1anomaly, y2A = scanbumper->y2anomaly;
+					/*for (int ipeak = 0; ipeak < npeaks; ipeak++) {
+						if (ipeak == idpeak) continue;*/
 						double q = 0.001;
-						double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
-						double xc0 = sqrt(u0 * u0 + dt * dt), xc;
-						double alpha0 = atan2(u0, -dt), alpha;
+						/*double dt = (scanbumper->tanomaly - pr[2]) / exp(pr[1]);*/
+						double xc0 = sqrt(y1A * y1A + y2A * y2A), xc;
+						double alpha0 = atan2(-y2A, y1A), alpha;
+						//double xc0 = sqrt(u0 * u0 + dt * dt), xc;
+						//double alpha0 = atan2(u0, -dt), alpha;
 						double rho = 0.001; // exp(pr[3] - sqrt(scanbumper->cov[3 * nps + 3]));
 
-						xc = xc0;
 
-						s0 = 0.5 * (sqrt(4 + xc * xc) + xc);
-						while (xc < 4 * sqrt(q) / (s0 * s0)) q *= 0.1;
-						xc = xc0 + 4 * sqrt(q) / (s0 * s0);
-						s = 0.5 * (sqrt(4 + xc * xc) + xc);
-						alpha = alpha0;
-						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
-						fprintf(g, "\n");
-						xc = xc0 - 4 * sqrt(q) / (s0 * s0);
-						s = 0.5 * (sqrt(4 + xc * xc) + xc);
-						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
-						fprintf(g, "\n");
+						//funzione inline
+						initcond_from_anomaly(g, xc0, q, u0, alpha0, rho, pr, nps, astrometric);
+
+						//xc = xc0;
+
+						//s0 = 0.5 * (sqrt(4 + xc * xc) + xc);
+						//while (xc < 4 * sqrt(q) / (s0 * s0)) q *= 0.1;
+
+						//xc = xc0 + 4 * sqrt(q) / (s0 * s0);
+						//s = 0.5 * (sqrt(4 + xc * xc) + xc);
+						//alpha = alpha0;
+						//fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+						//if (astrometric)
+						//	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						//fprintf(g, "\n");
+
+						////seconda parte
+						//xc = xc0 - 4 * sqrt(q) / (s0 * s0);
+						//s = 0.5 * (sqrt(4 + xc * xc) + xc);
+						//fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+						//if (astrometric)	
+						//	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						//fprintf(g, "\n");
 
 
-						xc = xc0;
-						s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
-						q = 0.001;
-						while (xc < 3 * sqrt(3 * q) * s0 * s0 * s0) q *= 0.1;
-						xc = xc0 - 3 * sqrt(3 * q) * s0 * s0 * s0;
-						s = 0.5 * (sqrt(4 + xc * xc) - xc);
-						alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
-						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
-						fprintf(g, "\n");
-						alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
-						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
-						fprintf(g, "\n");
+						//xc = xc0;
 
-						xc = xc0 + 3 * sqrt(3 * q) * s0 * s0 * s0;
-						s = 0.5 * (sqrt(4 + xc * xc) - xc);
-						alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
-						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
-						fprintf(g, "\n");
+						//s0 = 0.5 * (sqrt(4 + xc * xc) - xc);
+						//q = 0.001;
+						//while (xc < 3 * sqrt(3 * q) * s0 * s0 * s0) q *= 0.1;
 
-						alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
-						fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-						if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
-						fprintf(g, "\n");
+						////terza parte
+						//xc = xc0 - 3 * sqrt(3 * q) * s0 * s0 * s0;
+						//s = 0.5 * (sqrt(4 + xc * xc) - xc);
+						//alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+						//fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+						//if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						//fprintf(g, "\n");
 
-					}
+						//alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+						//fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+						//if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						//fprintf(g, "\n");
+
+						////quarta parte
+						//xc = xc0 + 3 * sqrt(3 * q) * s0 * s0 * s0;
+						//s = 0.5 * (sqrt(4 + xc * xc) - xc);
+						//alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+						//fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+						//if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						//fprintf(g, "\n");
+
+						//alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
+						//fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
+						//if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+						//fprintf(g, "\n");
+
+					//}
 					scanbumper = scanbumper->next;
 				}
 
@@ -1033,7 +1303,7 @@ int main(int argc, char* argv[]) {
 					}
 					fclose(f);
 
-					double mindpeak = 1.e100;
+					/*double mindpeak = 1.e100;
 					int idpeak = 0;
 					for (int ipeak = 0; ipeak < npeaks; ipeak++) {
 						double ddpeak = fabs(peaks[ipeak] - pr[2]);
@@ -1041,35 +1311,31 @@ int main(int argc, char* argv[]) {
 							idpeak = ipeak;
 							mindpeak = ddpeak;
 						}
-					}
+					}*/
 
 					scanbumper = bumperlist;
 					for (il = 1; il <= nmod; il++) {
 						for (int i = 0; i < nps; i++) {
 							pr[i] = scanbumper->p0[i];
 						}
-
-						double mindpeak = 1.e100;
-						int idpeak = 0;
-						for (int ipeak = 0; ipeak < npeaks; ipeak++) {
-							double ddpeak = fabs(peaks[ipeak] - pr[2]);
-							if (ddpeak < mindpeak) {
-								idpeak = ipeak;
-								mindpeak = ddpeak;
-							}
-						}
-
+												
 						double u0 = pr[0];
 						double s0, s;
-						for (int ipeak = 0; ipeak < npeaks; ipeak++) {
-							if (ipeak == idpeak) continue;
+						double y1A = scanbumper->y1anomaly, y2A = scanbumper->y2anomaly;
+						/*for (int ipeak = 0; ipeak < npeaks; ipeak++) {
+							if (ipeak == idpeak) continue;*/
 							double q = 0.001;
-							double dt = (peaks[ipeak] - pr[2]) / exp(pr[1]);
-							double xc0 = sqrt(u0 * u0 + dt * dt), xc;
-							double alpha0 = atan2(u0, -dt), alpha;
+							//double dt = (scanbumper->tanomaly - pr[2]) / exp(pr[1]);
+							double xc0 = sqrt(y1A * y1A + y2A * y2A), xc;
+							double alpha0 = atan2(-y2A, y1A), alpha;
+							/*double xc0 = sqrt(u0 * u0 + dt * dt), xc;
+							double alpha0 = atan2(u0, -dt), alpha; */
 							double rho = 0.001; // exp(pr[3] - sqrt(scanbumper->cov[3 * nps + 3]));
 
-							xc = xc0;
+							//funzione inline
+							initcond_from_anomaly(g, xc0, q, u0, alpha0, rho, pr, nps, astrometric);
+
+					/*		xc = xc0;
 
 							s0 = 0.5 * (sqrt(4 + xc * xc) + xc);
 							while (xc < 4 * sqrt(q) / (s0 * s0)) q *= 0.1;
@@ -1077,13 +1343,13 @@ int main(int argc, char* argv[]) {
 							s = 0.5 * (sqrt(4 + xc * xc) + xc);
 							alpha = alpha0;
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							xc = xc0 - 4 * sqrt(q) / (s0 * s0);
 							s = 0.5 * (sqrt(4 + xc * xc) + xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							xc = xc0;
@@ -1094,27 +1360,27 @@ int main(int argc, char* argv[]) {
 							s = 0.5 * (sqrt(4 + xc * xc) - xc);
 							alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							xc = xc0 + 3 * sqrt(3 * q) * s0 * s0 * s0;
 							s = 0.5 * (sqrt(4 + xc * xc) - xc);
 							alpha = alpha0 + M_PI + asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 							fprintf(g, "\n");
 
 							alpha = alpha0 + M_PI - asin(fabs(2 * sqrt(q * (1 - s * s)) / s) / xc);
 							fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0001 0.0001 0.0001", s, q, u0, alpha, rho, exp(pr[1]), pr[2], pr[4], pr[5]);
-							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
-							fprintf(g, "\n");
+							if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+							fprintf(g, "\n");*/
 
-						}
+						//}
 						scanbumper = scanbumper->next;
 					}
 
@@ -1127,6 +1393,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		break;
+
 	case 'B':
 		if (modelcode[1] == 'S') {
 			// Preparation of initial conditions for xallarap
@@ -1135,13 +1402,8 @@ int main(int argc, char* argv[]) {
 				int npeaks = 0;
 				g = fopen("InitCondBO-temp.txt", "w");
 				fscanf(f, "%d %d", &npeaks, &np);
-				fprintf(g, "%d %d\n", npeaks, np + 4 * nmod);
-				for (int i = 0; i < npeaks; i++) {
-					fgetc(f);
-					fscanf(f, "%[^\n]s", buffer);
-					fprintf(g, "%s\n", buffer);
-				}
-				printf("\nNumber of initial conditions: %d", np + 4 * nmod);
+				fprintf(g, "0 %d\n", np + 2 * nmod);
+				printf("\nNumber of initial conditions: %d", np + 2 * nmod);
 				for (int i = 0; i < np; i++) {
 					for (int j = 0; j < nps + 5; j++) {
 						fscanf(f, "%lg", &pr[j]);
@@ -1157,20 +1419,20 @@ int main(int argc, char* argv[]) {
 						pr[i] = scanbumper->p0[i];
 					}
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0 0.0 1.e-6", exp(pr[0]), exp(pr[1]), pr[2], pr[3], pr[4], pr[5], exp(pr[6]));
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 
 					// Reflected solution
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0 0.0 1.e-6", exp(pr[0]), exp(pr[1]), -pr[2], pr[3], pr[4], pr[5], exp(pr[6]));
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0 0.0 1.e-6", exp(pr[0]), exp(pr[1]), pr[2], -pr[3], pr[4], pr[5], exp(pr[6]));
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 
 					fprintf(g, "%.10le %.10le %.10le %.10le %.10le %.10le %.10le 0.0 0.0 0.0 0.0 1.e-6", exp(pr[0]), exp(pr[1]), -pr[2], -pr[3], pr[4], pr[5], exp(pr[6]));
-					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps - 4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
+					if (astrometric)	fprintf(g, " %.10le %.10le %.10le %.10le", pr[nps-4], pr[nps - 3], pr[nps - 2], pr[nps - 1]);
 					fprintf(g, "\n");
 
 					scanbumper = scanbumper->next;
