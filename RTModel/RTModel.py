@@ -141,7 +141,7 @@ class RTModel:
             print('\033[30;41m! Program stopped here!\033[m')
             self.done = True
  
-    def config_InitCond(self, npeaks = 8, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
+    def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
                        , templatelibrary = None, modelcategories = ['PS','PX','BS','BO','LS','LX','LO'], onlyupdate =False):
         self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
         self.InitCond_peakthreshold = peakthreshold # Number of sigmas necessary for a deviation to be identified as a maximum or a minimum.
