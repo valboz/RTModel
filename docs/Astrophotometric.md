@@ -6,7 +6,7 @@ Space telescopes or adaptive optics facilities may reach astrometric precisions 
 
 ## Astrophotometric datasets
 
-We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with thre columns: magnitude, error, HJD. We recall an example here for convenience:
+We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with thre columns: magnitude (or flux), error, HJD. We recall an example here for convenience:
 
 ```
 # Mag err HJD-2450000
@@ -36,7 +36,7 @@ If we have Declination and Right Ascension of our microlensing event with the re
 
 ```
 
-As usual, the first line is just a header and is ignored by `RTModel`. Dec and RA indicate the angular displacements in milliarcseconds from a fixed reference point (decided by the observer) in the North and East directions respectively.
+As usual, the first line is a header determining the use or magnitudes or fluxes. Dec and RA indicate the angular displacements in milliarcseconds from a fixed reference point (decided by the observer) in the North and East directions respectively.
 
 In the directory [`/events`](/events) we have an example of an astrophotometric event ([`astroevent001.zip`](/events/astroevent001.zip)) with one purely photometric dataset and an astrophotometric dataset that can be useful to understand how to prepare such datasets.
 

@@ -18,7 +18,7 @@ from tabulate import tabulate
 class plotmodel:
     def __init__(self, eventname,model = '', tmin = '', tmax = '', magmin = '', magmax = '', tlabel='t', maglabel='mag', reslabel = 'Res',
                  referencephot = 0, timesteps = 300, 
-                 modelfile = None, parameters = [], line = 0,printpars = True, animate = False,interval = 1000, 
+                 modelfile = None, parameters = [], line = 0,printpars = True, printimage = True, animate = False,interval = 1000, 
                  satellitedir = '.', accuracy = 0.01, colors = None, satellitecolors = None):
         self.satellitedir = satellitedir
         self.parameters = parameters
@@ -94,7 +94,8 @@ class plotmodel:
             self.readoptions()
             self.readparameters()
             self.calculate()
-            self.showall()
+            if(printimage):
+                self.showall()
         
     # Reading data from LCToFit.txt
     def readdata(self):
@@ -734,7 +735,7 @@ class plotmodel:
         self.animation_fig.save('ani.gif',dpi = 150)        
         plt.close(self.fig)
         
-def plotchain(eventname, model, par1, par2):
+def plotchain(eventname, model, par1, par2,xlim=None,ylim=None):
     chains = []
     filenames = glob.glob(eventname+ '/PreModels/' + model + '-step*')
     for fil in filenames:
@@ -758,7 +759,11 @@ def plotchain(eventname, model, par1, par2):
         y = chain.transpose()[par2]
         ax.plot(x,y,color = colors[i])
         ax.scatter(x[-1], y[-1],s=20,color = colors[i])
-        
+    if(xlim!=None):
+        ax.set_xlim(xlim)
+    if(ylim!=None):
+        ax.set_ylim(ylim)
+
 def orbital_elements(modelfile):
     with open(modelfile) as f:
         line=f.readline().split()
