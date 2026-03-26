@@ -40,7 +40,7 @@ In alternative, you may directly install it from PyPI without cloning this repos
 pip install RTModel
 ```
 
-Currently, `RTModel` works on Linux, Windows and MacOS, requiring Python >= 3.7. 
+Currently, `RTModel` works on Linux, Windows and MacOS, requiring Python >= 3.8. 
 A C++ compiler compatible with C++17 standard is needed for installation.
 `RTModel` uses [`VBMicrolensing`](https://github.com/valboz/VBMicrolensing) for all calculations. You are encouraged to cite the relevant papers listed in that repository as well.
 
