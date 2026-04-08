@@ -12,6 +12,8 @@ This directory should contain a subdirectory named `/Data`.
 
 The `/Data` directory should contain all photometric time series available for the analysis. Each series (data collected by a single telescope in one filter) corresponds to one file with extension  `.dat`.
 
+Note that each filename ending with a number will be interpreted as a dataset taken by the corresponding satellite (e.g. `Spitzer1.dat`). **Ground dataset filenames should never end by a number!** We will come back to fitting [satellite datasets](Satellite.md) later on.
+
 ## Photometry files
 
 The content of each `.dat` file should be as in the following example:
