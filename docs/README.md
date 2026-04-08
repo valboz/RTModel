@@ -85,21 +85,20 @@ The success rate of `RTModel` has been evaluated on the simulated events created
 ### Planetary regime
 
 In this challenge there were 51 binary events with q<0.03 (planetary regime). The results obtained by the current version of  `RTModel` with the default options were the following:
-- 43 full successes;
-- 4 cases in which an s<1 solution was found instead of the s>1 or viceversa;
-- 2 cases in which a different binary solution was preferred;
-- 2 case in which the anomaly was not detected or ignored (too much noise)
+- 47 full successes;
+- 3 cases in which an s<1 solution was found instead of the s>1 or viceversa;
+- 1 case in which the anomaly was not detected or ignored (too much noise)
 
 ### Binary regime
 
 In the stellar binary regime q>0.03 there were 75 events simulated in the data challenge. We note that orbital motion was simulated by assigning the two transverse components, which leads to non-physical trajectories not reproducible by circular orbital motion. Anyway, the results obtained are the following:
 
-- 56 full successes;
-- 9 cases in which an s<1 solution was found instead of the s>1;
-- 9 cases in which a different binary model was found;
+- 64 full successes;
+- 6 cases in which an s<1 solution was found instead of the s>1;
+- 5 cases in which a different binary model was found;
 - 1 case in which the anomaly was too weak
 
-The success rate is observed to decrease significantly for events with high orbital motion. This should be partly due to the different way this effect is taken into account in the simulation and in our fitting code.
+The success rate is observed to decrease for events with high orbital motion. This should be partly due to the different way this effect is taken into account in the simulation and in our fitting code.
 
 In addition, we note that such events with strong higher order effects would have been better fit with the `nostatic = True` option (see [Initial conditions](InitCond.md)).
 
