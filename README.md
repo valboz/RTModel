@@ -20,7 +20,7 @@ A second subpackage **`RTModel.templates`** helps the user in the visualization 
 
 Any scientific use of `RTModel` should be acknowledged by citing the paper [V.Bozza, A&A 688 (2024) 83](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract), describing all the algorithms behind the code.
 
-We are grateful to Greg Olmschenk, who revised the package installation in order to make it as cross-platform as possible. We also thank all the users who are providing suggestions, reporting bugs or failures: Etienne Bachelet, David Bennett, Jonathan Brashear, Laura Salmeri, Stela Ishitani Silva, Yiannis Tsapras, Sigfried Vanaverbeke, Keto Zhang.
+We are grateful to Greg Olmschenk, who revised the package installation in order to make it as cross-platform as possible. Antonio Consiglio collaborated to the development of the anomaly detection code. We also thank all the users who are providing suggestions, reporting bugs or failures: Etienne Bachelet, David Bennett, Jonathan Brashear, Paolo Rota, Laura Salmeri, Stela Ishitani Silva, Yiannis Tsapras, Sigfried Vanaverbeke, Keto Zhang.
 
 ## Installation
 
