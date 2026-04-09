@@ -117,6 +117,6 @@ The elements are as follows
 
 The same function can also be used for models obtained with [eccentric orbital motion](ModelCategories.md), for which the eccentricity and the argument of the periastron will take non-zero values. 
 
-For triple-lens models, the listed orbital elements refer to the secondary object with respect to the primary.
+For triple-lens models, the orbital elements for the third lens are also added.
 
 [Go to **Archiving and updating models**](Archive.md)
