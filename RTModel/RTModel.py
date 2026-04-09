@@ -110,7 +110,7 @@ class RTModel:
     def config_Reader(self, tau = 1, binning = 4000, otherseasons = 1, renormalize = 1, thresholdoutliers = 10):
         self.Reader_tau= tau # conventional correlation time for consecutive points
         self.Reader_binning = binning # maximum number of points left after re-binning
-        self.Reader_otherseasons = otherseasons # How to use other seasons (0 = Yes, 1 = decrease significance, 2 = remove)
+        self.Reader_otherseasons = otherseasons # How to use other seasons (0: Yes, >=1 decrease significance)
         self.Reader_renormalize = renormalize # Re-normalize error bars if non-zero
         self.Reader_thresholdoutliers = thresholdoutliers # Threshold in sigmas for removing outliers
         
