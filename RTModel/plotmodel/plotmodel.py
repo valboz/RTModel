@@ -859,4 +859,42 @@ def orbital_elements(modelfile):
                 om = math.acos((X1*Z0-X0*Z1)/math.sin(inc))*np.sign(X2)
                 phi0 = math.acos(cosnu)*np.sign(sinnu)       
                 orbitalparameters = {'T': 2*math.pi/n, 'a': a, 'e': e, 'inc': inc, 'OM': Om, 'om': om, 'phi0': phi0, 'epoch': tperi}
+        elif(os.path.basename(modelfile)[0]=='T'):
+            if(os.path.basename(modelfile)[1]=='O'):
+                parameters = parsall[0:15]
+                w1 = parameters[12]
+                w2 = parameters[13]
+                w3 = parameters[14]
+                s = parameters[0]
+                t0 = parameters[6]
+                alpha = parameters[3]
+                s_2 = parameters[7]
+                beta = parameters[9]
+                
+                calpha = math.cos(alpha)
+                salpha = math.sin(alpha)
+                w13 = w1 * w1 + w3 * w3
+                w123 = math.sqrt(w13 + w2 * w2)
+                w13 = math.sqrt(w13)
+                if (w13 > 1.e-8):
+                    if(w3 < 1.e-8): 
+                        w3 = 1.e-8
+                    w = w3 * w123 / w13
+                    s3d = s*w13/w3
+                    inc = math.acos(w2 * w3 / w13 / w123)
+                    Om = math.atan2(w1*w2/w13,w13)
+                    phi0 = math.atan2(-w1 * w123, w3 * w13)
+                else:
+                    w = w2
+                    inc = 0.0
+                    Om = math.pi/2
+                    phi0 = -Om
+
+                pphi0_2 = phi0 + beta
+                phi0_2 = math.atan2(math.sin(pphi0_2)/math.cos(inc), math.cos(pphi0_2))
+                s3d_2 = s_2/math.sqrt(math.cos(phi0_2)**2+math.cos(inc)**2 * math.sin(phi0_2)**2)
+                w_2 = w * (s3d_2/s3d)**(-1.5)            
+                orbitalparameters = {'T': 2*math.pi/w, 'a': s3d, 'e': 0, 'inc': inc, 'OM': Om, 'om': 0, 'phi0': phi0,'epoch': t0-phi0*w,
+                                    'T_2': 2*math.pi/w_2, 'a_2': s3d_2, 'phi0_2': phi0_2, 'epoch_2': t0-phi0_2*w_2}
+
     return orbitalparameters
