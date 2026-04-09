@@ -21,7 +21,7 @@ With this code, we first perform all steps as detailed in the previous sections 
 
 In the `/event001` directory you will see that the following products appear:
 - A new subdirectory called `FinalModels/` is created. This will contain the final proposed models for the microlensing event, which are just copies of those appearing in the directory `Models/` that have passed all critieria.
-- A file `nature.txt` containing a summary of the chi square achieved in each model category, a final assessment, and the list of the competing models that have passed all criteria and copied to the directory `FinalModels/`.
+- A file `nature.txt` containing a summary of the chi square achieved in each model category, a final assessment, and the list of the competing models that have passed all criteria and copied to the directory `FinalModels/`. For these models, also the $\Delta \chi^2$ of the largest unmodeled feature is reported. This can be useful to assess the needfor further investigations.
 
 The execution of `Finalizer` closes the modeling run. You may then proceed to [plotting](PlotModel.md) the best models.
 
