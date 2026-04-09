@@ -53,7 +53,7 @@ If `RTModel` finds an astrophotometric dataset, it automatically includes four a
 | piS | Geometric parallax of the source in milliarcseconds |
 | thetaE | Einstein angle in milliarcseconds |
 
-Furthermore, the microlensing parallax components piN and piE are always included in the model, which means that no static models are fitted. This is because the lens proper motion is obtained from the source proper motion using the information on the relative proper motion hidden in the standard microlensing parameters. In definitive, the [model categories](ModelCategories.md) used by default in astrophotometric fits are `['PX','BO','LX','LO']`, with a total of 10, 14, 13, 16 parameters respectively. The Keplerian fit 'LK' with 18 parameters can be added by the user, if desired.
+Furthermore, the microlensing parallax components piN and piE are always included in the model, which means that no static models are fitted. This is because the lens proper motion is obtained from the source proper motion using the information on the relative proper motion hidden in the standard microlensing parameters. In definitive, the [model categories](ModelCategories.md) used by default in astrophotometric fits are `['PX','BO','LX','LO']`, with a total of 10, 14, 13, 16 parameters respectively. The Keplerian fit 'LK' with 18 parameters can be added by the user, if desired. Similarly, triple-lens models 'TX','TO' can be added with 16 and 19 parameters.
 
 ## Results
 
