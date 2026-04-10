@@ -3,10 +3,11 @@
 - Single-lens-single-source microlensing (i.e. Paczynski)
 - Single-lens-binary-source microlensing (with or without xallarap)
 - Binary-lens-single-source microlensing (including planetary microlensing, parallax and orbital motion)
+- Triple-lens-single-source microlensing (including parallax and circular orbital motion)
 
 All models include the finite-size of the source(s).
 
-The modeling strategy is based on a grid search in the parameter space for single-lens models, whereas a **template library** for binary-lens models is used including all possible geometries of the source trajectory with respect to the caustics. In addition to this global search, planets are searched where maximal deviations from a Paczynski model occurs. 
+The modeling strategy is based on a grid search in the parameter space for single-lens models, whereas a **template library** for binary-lens models is used including all possible geometries of the source trajectory with respect to the caustics. In addition to this global search, planets are searched where maximal deviations from a Paczynski model occurs. Triple-lens models are searched as small perturbations to binary-lens models.
 
 The library is in the form of a standard Python package that launches specific subprocesses for different tasks. Model fitting is executed in **parallel** exploiting available processors in the machine. The full modeling may take from one to three hours depending on the event and on the machine speed. The results of modeling are given in the form of a text **assessment file**; in addition, **final models** are made available with their parameters and covariance matrices.
 
@@ -24,20 +25,16 @@ We are grateful to Greg Olmschenk, who revised the package installation in order
 
 ## Installation
 
-The easiest way to install `RTModel` is through `pip`. 
-
-First clone this repository.
-
-Then go to the repository directory and type
-
-```
-pip install .
-```
-
-In alternative, you may directly install it from PyPI without cloning this repository:
+The easiest way to install `RTModel` is through `pip install`. 
 
 ```
 pip install RTModel
+```
+
+In alternative, you may clone this repository. Then go to the repository directory and type
+
+```
+pip install .
 ```
 
 Currently, `RTModel` works on Linux, Windows and MacOS, requiring Python >= 3.8. 
