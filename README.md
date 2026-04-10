@@ -3,10 +3,11 @@
 - Single-lens-single-source microlensing (i.e. Paczynski)
 - Single-lens-binary-source microlensing (with or without xallarap)
 - Binary-lens-single-source microlensing (including planetary microlensing, parallax and orbital motion)
+- Triple-lens-single-source microlensing (including parallax and circular orbital motion)
 
 All models include the finite-size of the source(s).
 
-The modeling strategy is based on a grid search in the parameter space for single-lens models, whereas a **template library** for binary-lens models is used including all possible geometries of the source trajectory with respect to the caustics. In addition to this global search, planets are searched where maximal deviations from a Paczynski model occurs. 
+The modeling strategy is based on a grid search in the parameter space for single-lens models, whereas a **template library** for binary-lens models is used including all possible geometries of the source trajectory with respect to the caustics. In addition to this global search, planets are searched where maximal deviations from a Paczynski model occurs. Triple-lens models are searched as small perturbations to binary-lens models.
 
 The library is in the form of a standard Python package that launches specific subprocesses for different tasks. Model fitting is executed in **parallel** exploiting available processors in the machine. The full modeling may take from one to three hours depending on the event and on the machine speed. The results of modeling are given in the form of a text **assessment file**; in addition, **final models** are made available with their parameters and covariance matrices.
 
@@ -20,27 +21,23 @@ A second subpackage **`RTModel.templates`** helps the user in the visualization 
 
 Any scientific use of `RTModel` should be acknowledged by citing the paper [V.Bozza, A&A 688 (2024) 83](https://ui.adsabs.harvard.edu/abs/2024A%26A...688A..83B/abstract), describing all the algorithms behind the code.
 
-We are grateful to Greg Olmschenk, who revised the package installation in order to make it as cross-platform as possible. We also thank all the users who are providing suggestions, reporting bugs or failures: Etienne Bachelet, David Bennett, Jonathan Brashear, Laura Salmeri, Stela Ishitani Silva, Yiannis Tsapras, Sigfried Vanaverbeke, Keto Zhang.
+We are grateful to Greg Olmschenk, who revised the package installation in order to make it as cross-platform as possible. Antonio Consiglio collaborated to the development of the anomaly detection code. We also thank all the users who are providing suggestions, reporting bugs or failures: Etienne Bachelet, David Bennett, Jonathan Brashear, Sophie Budzik, Paolo Rota, Laura Salmeri, Stela Ishitani Silva, Yiannis Tsapras, Sigfried Vanaverbeke, Keto Zhang.
 
 ## Installation
 
-The easiest way to install `RTModel` is through `pip`. 
-
-First clone this repository.
-
-Then go to the repository directory and type
-
-```
-pip install .
-```
-
-In alternative, you may directly install it from PyPI without cloning this repository:
+The easiest way to install `RTModel` is through `pip install`. 
 
 ```
 pip install RTModel
 ```
 
-Currently, `RTModel` works on Linux, Windows and MacOS, requiring Python >= 3.7. 
+In alternative, you may clone this repository. Then go to the repository directory and type
+
+```
+pip install .
+```
+
+Currently, `RTModel` works on Linux, Windows and MacOS, requiring Python >= 3.8. 
 A C++ compiler compatible with C++17 standard is needed for installation.
 `RTModel` uses [`VBMicrolensing`](https://github.com/valboz/VBMicrolensing) for all calculations. You are encouraged to cite the relevant papers listed in that repository as well.
 

@@ -88,13 +88,15 @@ At the end of the modeling run, a summary is displayed with the best chi square 
 
 The best models listed in `nature.txt` are available as text files in the subdirectory `event001/FinalModels`.
 
-Each file contains the list of parameters in the first line, including the background and source fluxes for each telescope and the total chi square. This means that the first line contains `nps + 2 * ntel + 1` values, where `nps` is the number of parameters in the model category (e.g. 7 for binary-lens-single-source) and `ntel` is the number of datasets.
+Each file contains the list of parameters in the first line, including the background and source fluxes for each telescope, four anomaly parameters and the total chi square. This means that the first line contains `nps + 2 * ntel + 5` values, where `nps` is the number of parameters in the model category (e.g. 7 for binary-lens-single-source) and `ntel` is the number of datasets.
 
 A detailed explanation of parameters for each model category is available in [Model categories](ModelCategories.md)
 
-The second line contains the uncertainty on each of the above listed parameters (except for the chi square). Therefore, this line contains `nps + 2 * ntel` values.
+The second line contains the uncertainty on each of the above listed parameters (except for the chi square and the anomaly parameters). Therefore, this line contains `nps + 2 * ntel` values.
 
 The remaining lines contain the covariance matrix between the model parameters. Therefore, there are `nps` additional lines containing `nps` values each. Note that some parameters are internally fit in logarithmic scale (see [Model categories](ModelCategories.md) for which parameters are fit as ln). The reported covariance matrix is thus calculated on these internal parameters.
+
+The four anomaly parameters describe the largest deviation of a series of consecutive data points from the model on the same side (above or below the model). They are the time of the anomaly, the coordinates $y_1$ and $y_2$ of the source at the time of the anomaly and the $\Delta \chi^2$ of the anomaly. This is used by `RTModel` to design initial conditions with additional lenses, but it is also a very useful indication of the largest feature that is left unexplained by the model.
 
 ### Additional products
 

@@ -30,8 +30,8 @@ After the model selection, the preliminary models calculated by `launch_fits` wi
 
 Each model file contains:
 
-- The parameters of the model, starting from the non-linear parameters as described in [Model categories](ModelCategories.md), followed by the blend and source fluxes for each dataset, in the order shown in `FilterToData.txt`, and closing with the chi square.
-- The 1-sigma error for each parameter as listed in the first line, except for the chi square.
+- The parameters of the model, starting from the non-linear parameters as described in [Model categories](ModelCategories.md), followed by the blend and source fluxes for each dataset, in the order shown in `FilterToData.txt`, four anomaly parameters and finally the chi square.
+- The 1-sigma error for each parameter as listed in the first line, except for the chi square and the anomaly parameters.
 - The covariance matrix for the parameters as used in the fit. Some of them are fit in log scale (see [Model categories](ModelCategories.md)).
 
 ## The model selection

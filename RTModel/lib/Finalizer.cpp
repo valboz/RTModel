@@ -15,7 +15,7 @@ using namespace std;
 using namespace std::filesystem;
 
 const double failthr = 1.0e100; // threshold for chisquare/dof for declaring failure
-const int ncategories = 10;
+const int ncategories = 11;
 
 int main(int argc, char* argv[]) {
 
@@ -28,13 +28,14 @@ int main(int argc, char* argv[]) {
 	double thrs[20] = { 36., 40.0872, 43.4518, 46.4625, 49.2497, 51.878, 54.3854, 56.7964, \
 						59.1282, 61.3932, 63.601, 65.7588, 67.8725, 69.9471, 71.9863, \
 						73.9937, 75.9719, 77.9236, 79.8506 }; // thresholds at 6 sigma for n more parameters
-	string modelcodes[ncategories] = { "PS","PX","BS","BO","LS","LX","LO","LK","TS","TX" };
+	string modelcodes[ncategories] = { "PS","PX","BS","BO","LS","LX","LO","LK","TS","TX", "TO" };
 	string modelnames[ncategories] = { "Single-Lens-Single-Source","Single-Lens-Single-Source with parallax",\
 									"Binary source","Binary source with xallarap",\
 									""," with parallax"," with orbital motion", "with eccentric orbital motion",\
-									"Triplelens", "Triple lens with parallax" };
-	int npss[ncategories] = { 4,6,7,12,7,9,12, 14, 10, 12 };
+									"Triple lens", "Triple lens with parallax", "Triple lens with orbital motion" };
+	int npss[ncategories] = { 4,6,7,12,7,9,12, 14, 10, 12, 15 };
 	double chis[ncategories];
+	double tmaxmax, y1maxmax, y2maxmax, maxmaxsum;
 	double cmin, c0, c1, c2, cflat, dof;
 	double chiblp = 1.e100, chiblb = 1.e100;
 	int mn;
@@ -200,6 +201,10 @@ int main(int argc, char* argv[]) {
 				for (int j = 0; j < npss[icat] + nlinpar * nfil; j++) {
 					fscanf(f, "%le", &(pr[j]));
 				}
+				fscanf(f, "%le", &(tmaxmax));
+				fscanf(f, "%le", &(y1maxmax));
+				fscanf(f, "%le", &(y2maxmax));
+				fscanf(f, "%le", &(maxmaxsum));
 				fscanf(f, "%le", &(c0));
 				fclose(f);
 
@@ -219,6 +224,7 @@ int main(int argc, char* argv[]) {
 						bumperlist = new bumper(pr, npss[icat]);
 						strcpy(bumperlist->modelcode, (char*)(itr).path().filename().string().c_str());
 						bumperlist->il = icat;
+						bumperlist->maxsum = maxmaxsum;
 						bumperlist->Amp = c0;
 						bumperlist->next = scanbumper;
 					}
@@ -228,6 +234,7 @@ int main(int argc, char* argv[]) {
 						scanbumper2 = new bumper(pr, npss[icat]);
 						strcpy(scanbumper2->modelcode, (char*)(itr).path().filename().string().c_str());
 						scanbumper2->il = icat;
+						scanbumper2->maxsum = maxmaxsum;
 						scanbumper2->Amp = c0;
 						scanbumper2->next = scanbumper->next;
 						scanbumper->next = scanbumper2;
@@ -237,6 +244,7 @@ int main(int argc, char* argv[]) {
 					bumperlist = new bumper(pr, npss[icat]);
 					strcpy(bumperlist->modelcode, (char*)(itr).path().filename().string().c_str());
 					bumperlist->il = icat;
+					bumperlist->maxsum = maxmaxsum;
 					bumperlist->Amp = c0;
 				}
 				nmod++;
@@ -314,7 +322,8 @@ int main(int argc, char* argv[]) {
 									{0,1,4,5},
 									{0,1,4,5,6},
 									{0,4},
-									{0,1,4,5},
+									{0,1,4,5,8},
+									{0,1,4,5,6,8,9}
 	};
 	double modelthrs[ncategories];
 
@@ -375,7 +384,7 @@ int main(int argc, char* argv[]) {
 						else {
 							flag = 1;
 						}
-						if (icat >= 4) strncat(final, stringa, 60);
+						if (icat >= 4 && icat < 8) strncat(final, stringa, 60);
 						strncat(final, modelnames[icat].c_str(), 60);
 						break;
 					}
@@ -392,16 +401,16 @@ int main(int argc, char* argv[]) {
 	fprintf(g, "----\n");
 
 
-	printf("Number of alternative models: %d\n\nchisquare   model\n", ngoodmod);
-	fprintf(g, "Number of alternative models: %d\n\nchisquare   model\n", ngoodmod);
+	printf("Number of alternative models: %d\n\nchisquare   model   anomaly\n", ngoodmod);
+	fprintf(g, "Number of alternative models: %d\n\nchisquare   model   anomaly\n", ngoodmod);
 
 
 	// Writing the names of the files containing alternative models in Nature.txt
 	current_path("..");
 	for (scanbumper = bumperlist; scanbumper; scanbumper = scanbumper->next) {
 		if (scanbumper->modelcode[0] != 'N') {
-			fprintf(g, "%lf %s\n", scanbumper->Amp, scanbumper->modelcode);
-			printf("%lf %s", scanbumper->Amp, scanbumper->modelcode);
+			fprintf(g, "%lf %s %lf\n", scanbumper->Amp, scanbumper->modelcode, scanbumper->maxsum);
+			printf("%lf %s %lf", scanbumper->Amp, scanbumper->modelcode, scanbumper->maxsum);
 			copy_file(path("Models") / path(string(scanbumper->modelcode)), path("FinalModels") / path(string(scanbumper->modelcode)), copy_options::overwrite_existing);
 		}
 	}

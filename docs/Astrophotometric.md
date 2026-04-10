@@ -6,7 +6,7 @@ Space telescopes or adaptive optics facilities may reach astrometric precisions 
 
 ## Astrophotometric datasets
 
-We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with thre columns: magnitude, error, HJD. We recall an example here for convenience:
+We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with thre columns: magnitude (or flux), error, HJD. We recall an example here for convenience:
 
 ```
 # Mag err HJD-2450000
@@ -36,7 +36,7 @@ If we have Declination and Right Ascension of our microlensing event with the re
 
 ```
 
-As usual, the first line is just a header and is ignored by `RTModel`. Dec and RA indicate the angular displacements in milliarcseconds from a fixed reference point (decided by the observer) in the North and East directions respectively.
+As usual, the first line is a header determining the use or magnitudes or fluxes. Dec and RA indicate the angular displacements in milliarcseconds from a fixed reference point (decided by the observer) in the North and East directions respectively.
 
 In the directory [`/events`](/events) we have an example of an astrophotometric event ([`astroevent001.zip`](/events/astroevent001.zip)) with one purely photometric dataset and an astrophotometric dataset that can be useful to understand how to prepare such datasets.
 
@@ -53,15 +53,15 @@ If `RTModel` finds an astrophotometric dataset, it automatically includes four a
 | piS | Geometric parallax of the source in milliarcseconds |
 | thetaE | Einstein angle in milliarcseconds |
 
-Furthermore, the microlensing parallax components piN and piE are always included in the model, which means that no static models are fitted. This is because the lens proper motion is obtained from the source proper motion using the information on the relative proper motion hidden in the standard microlensing parameters. In definitive, the [model categories](ModelCategories.md) used by default in astrophotometric fits are `['PX','BO','LX','LO']`, with a total of 10, 14, 13, 16 parameters respectively. The Keplerian fit 'LK' with 18 parameters can be added by the user, if desired.
+Furthermore, the microlensing parallax components piN and piE are always included in the model, which means that no static models are fitted. This is because the lens proper motion is obtained from the source proper motion using the information on the relative proper motion hidden in the standard microlensing parameters. In definitive, the [model categories](ModelCategories.md) used by default in astrophotometric fits are `['PX','BO','LX','LO']`, with a total of 10, 14, 13, 16 parameters respectively. The Keplerian fit 'LK' with 18 parameters can be added by the user, if desired. Similarly, triple-lens models 'TX','TO' can be added with 16 and 19 parameters.
 
 ## Results
 
 The results of an astrophotometric modeling run are displayed in the end with the chi square including both the photometric and the astrometric contributions. The assessment is contained in `nature.txt` with the list of models which are available as text files in the subdirectory `/FinalModels`, similarly to purely [photometric fits](ModelingRun.md#best-models). However, the model files also contain the information relative to astrometric parameters.
 
-In particular, the list of parameters in the first line contains `nps + 4 * ntel + 1` values, where `nps` is the number of parameters in the model category including the 4 astrometric parameters (e.g. 13 for binary-lenses) and `ntel` is the number of datasets. For each dataset, besides the background and source flux, we also have the centroid position at time t0 in Dec and RA, which is obtained by the fitting. Finally, we have the chi square.
+In particular, the list of parameters in the first line contains `nps + 4 * ntel + 5` values, where `nps` is the number of parameters in the model category including the 4 astrometric parameters (e.g. 13 for binary-lenses) and `ntel` is the number of datasets. For each dataset, besides the background and source flux, we also have the centroid position at time t0 in Dec and RA, which is obtained by the fitting. Finally, we have the anomaly parameters and the chi square.
 
-The second line contains the uncertainty on each of the above listed parameters (except for the chi square). Therefore, this line contains `nps + 4 * ntel` values.
+The second line contains the uncertainty on each of the above listed parameters (except for the chi square and the anomaly parameters). Therefore, this line contains `nps + 4 * ntel` values.
 
 The remaining lines contain the covariance matrix between the model parameters. Therefore, there are `nps` lines containing `nps` values each. 
 

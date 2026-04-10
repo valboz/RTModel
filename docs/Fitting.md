@@ -80,9 +80,9 @@ The user may specify his/her own options to drive the initial conditions to the 
 ```
 import RTModel
 rtm = RTModel.RTModel('/event001')
-rtm.config_LevMar(self, nfits = 6, offsetdegeneracy = 3, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0, 
-                      mass_luminosity_exponent = 4.0, mass_radius_exponent = 0.9, lens_mass_luminosity_exponent =4.0, 
-                     turn_off_secondary_source = False, turn_off_secondary_lens = False)
+rtm.config_LevMar(nfits = 6, offsetdegeneracy = 2, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0, 
+                      mass_luminosity_exponent = None, mass_radius_exponent = None, lens_mass_luminosity_exponent = None, 
+                     turn_off_secondary_source = False, turn_off_secondary_lens = False, block_tertiary_lens = False, stepchainsave=False)
 
 rtm.run()
 ```
@@ -94,7 +94,7 @@ The call to `config_LevMar()` will affect all following executions of the `LevMa
 Here we describe the options for `LevMar` in detail indicating their default values.
 
 - `nfits = 6`: Number of fits executed from the same initial condition.
-- `offsetdegeneracy = 3`: Number of fits to be executed after applying the [offset degeneracy](https://ui.adsabs.harvard.edu/abs/2022NatAs...6..782Z/abstract) reflection.
+- `offsetdegeneracy = 2`: Number of fits to be executed after applying the [offset degeneracy](https://ui.adsabs.harvard.edu/abs/2022NatAs...6..782Z/abstract) reflection.
 - `maxsteps = 50`: Maximum number of steps for each fit.
 - `timelimit = 600.0`: Maximum time in seconds allowed for the execution of `LevMar`. If the limit is reached, the execution of the individual fitting is stopped and only the minima found so far will be saved.
 - `bumperpower = 2.0`: Size of the bumper in the parameter space expressed in sigmas. The bumper is created with the shape determined by the local covariance matrix. and the size given by this parameter.
@@ -103,6 +103,8 @@ Here we describe the options for `LevMar` in detail indicating their default val
 - `mass_luminosity_exponent = 4.0`: in binary source models it is used to relate the flux ratio parameter with the mass ratio.
 - `mass_radius_exponent = 0.9`: in binary source models it is used to relate the mass ratio with the radius ratio.
 - `lens_mass_luminosity_exponent = 4.0`: affects the calculation of the center of light in astrometric trajectories for binary lens models.
+- `block_tertiary_lens = False`: if set, the third lens is kept fixed while the second lens orbits the primary in model 'TO' (triple-lens with orbital motion).
+- `stepchainsave = False`: if True, all steps in fits are saved in separate files (necessary for [animation](Animation.md) and debugging).
 
 All options are also accessible separately as properties of the `RTModel` class. The user may thus modify the value of each option one by one. The names of the properties are the same as the options in `config_LevMar()` with the prefix `LevMar_`, as shown in the example below:
 

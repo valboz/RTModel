@@ -18,7 +18,7 @@ from tabulate import tabulate
 class plotmodel:
     def __init__(self, eventname,model = '', tmin = '', tmax = '', magmin = '', magmax = '', tlabel='t', maglabel='mag', reslabel = 'Res',
                  referencephot = 0, timesteps = 300, 
-                 modelfile = None, parameters = [], line = 0,printpars = True, animate = False,interval = 1000, 
+                 modelfile = None, parameters = [], line = 0,printpars = True, printimage = True, animate = False,interval = 1000, 
                  satellitedir = '.', accuracy = 0.01, colors = None, satellitecolors = None):
         self.satellitedir = satellitedir
         self.parameters = parameters
@@ -94,14 +94,15 @@ class plotmodel:
             self.readoptions()
             self.readparameters()
             self.calculate()
-            self.showall()
+            if(printimage):
+                self.showall()
         
     # Reading data from LCToFit.txt
     def readdata(self):
         if(self.eventname== None):
             self.lightcurves = []
             self.telescopes = []            
-            self.limbdarkenings = []   
+            self.limbdarkenings = [0]   
             self.nfil = 0
             self.npoints = 0
         else:
@@ -145,7 +146,7 @@ class plotmodel:
 
     # Reading options from LevMar.ini
     def readoptions(self):
-        if(os.path.exists(self.eventname + '/ini/LevMar.ini')):
+        if(self.eventname!=None and os.path.exists(self.eventname + '/ini/LevMar.ini')):
             with open(self.eventname + '/ini/LevMar.ini') as f:
                 lines = f.readlines()
                 for line in lines:
@@ -734,7 +735,7 @@ class plotmodel:
         self.animation_fig.save('ani.gif',dpi = 150)        
         plt.close(self.fig)
         
-def plotchain(eventname, model, par1, par2):
+def plotchain(eventname, model, par1, par2,xlim=None,ylim=None):
     chains = []
     filenames = glob.glob(eventname+ '/PreModels/' + model + '-step*')
     for fil in filenames:
@@ -758,7 +759,11 @@ def plotchain(eventname, model, par1, par2):
         y = chain.transpose()[par2]
         ax.plot(x,y,color = colors[i])
         ax.scatter(x[-1], y[-1],s=20,color = colors[i])
-        
+    if(xlim!=None):
+        ax.set_xlim(xlim)
+    if(ylim!=None):
+        ax.set_ylim(ylim)
+
 def orbital_elements(modelfile):
     with open(modelfile) as f:
         line=f.readline().split()
@@ -854,4 +859,42 @@ def orbital_elements(modelfile):
                 om = math.acos((X1*Z0-X0*Z1)/math.sin(inc))*np.sign(X2)
                 phi0 = math.acos(cosnu)*np.sign(sinnu)       
                 orbitalparameters = {'T': 2*math.pi/n, 'a': a, 'e': e, 'inc': inc, 'OM': Om, 'om': om, 'phi0': phi0, 'epoch': tperi}
+        elif(os.path.basename(modelfile)[0]=='T'):
+            if(os.path.basename(modelfile)[1]=='O'):
+                parameters = parsall[0:15]
+                w1 = parameters[12]
+                w2 = parameters[13]
+                w3 = parameters[14]
+                s = parameters[0]
+                t0 = parameters[6]
+                alpha = parameters[3]
+                s_2 = parameters[7]
+                beta = parameters[9]
+                
+                calpha = math.cos(alpha)
+                salpha = math.sin(alpha)
+                w13 = w1 * w1 + w3 * w3
+                w123 = math.sqrt(w13 + w2 * w2)
+                w13 = math.sqrt(w13)
+                if (w13 > 1.e-8):
+                    if(w3 < 1.e-8): 
+                        w3 = 1.e-8
+                    w = w3 * w123 / w13
+                    s3d = s*w13/w3
+                    inc = math.acos(w2 * w3 / w13 / w123)
+                    Om = math.atan2(w1*w2/w13,w13)
+                    phi0 = math.atan2(-w1 * w123, w3 * w13)
+                else:
+                    w = w2
+                    inc = 0.0
+                    Om = math.pi/2
+                    phi0 = -Om
+
+                pphi0_2 = phi0 + beta
+                phi0_2 = math.atan2(math.sin(pphi0_2)/math.cos(inc), math.cos(pphi0_2))
+                s3d_2 = s_2/math.sqrt(math.cos(phi0_2)**2+math.cos(inc)**2 * math.sin(phi0_2)**2)
+                w_2 = w * (s3d_2/s3d)**(-1.5)            
+                orbitalparameters = {'T': 2*math.pi/w, 'a': s3d, 'e': 0, 'inc': inc, 'OM': Om, 'om': 0, 'phi0': phi0,'epoch': t0-phi0*w,
+                                    'T_2': 2*math.pi/w_2, 'a_2': s3d_2, 'phi0_2': phi0_2, 'epoch_2': t0-phi0_2*w_2}
+
     return orbitalparameters

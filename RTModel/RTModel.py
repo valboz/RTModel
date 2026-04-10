@@ -37,7 +37,7 @@ class RTModel:
             else:
                 print("! Invalid path for event: " + self.eventname)
         self.inidir = "ini"
-        self.modelcodes = ['PS', 'PX', 'BS', 'BO', 'LS', 'LX', 'LO', 'LK', 'TS', 'TX']
+        self.modelcodes = ['PS', 'PX', 'BS', 'BO', 'LS', 'LX', 'LO', 'LK', 'TS', 'TX', 'TO']
         self.endphase =  len(self.modelcodes)*2+3
         self.eventinifile = 'event.ini'        
         self.nprocessors = os.cpu_count()
@@ -66,6 +66,9 @@ class RTModel:
                                          [-300,300,5.0],[-4.0,3.0,0.3],[-11.5,11.5,0.5], [-12.56,12.56,0.3]],
                                   'TX': [[-4.0,3.0,.1],[-16.1,16.1,0.5],[-3.0,3.0,0.1], [-12.56,12.56,0.1],[-11.5,-2.5,0.3],[-4.6,7.6,0.6],
                                          [-300,300,5.0],[-4.0,3.0,0.3],[-11.5,11.5,0.5], [-12.56,12.56,0.3],[-3.0,3.0,0.03],[-3.0,3.0,0.03]],
+                                  'TO': [[-4.0,3.0,.1],[-16.1,16.1,0.5],[-3.0,3.0,0.1], [-12.56,12.56,0.1],[-11.5,-2.5,0.3],[-4.6,7.6,0.6],
+                                         [-300,300,5.0],[-4.0,3.0,0.3],[-11.5,11.5,0.5], [-12.56,12.56,0.3],[-3.0,3.0,0.03],[-3.0,3.0,0.03],
+                                         [-1.0,1.0,0.01],[-1.0,1.0,0.01],[1.e-7,1.0,0.01]],
                                   'astrometry': [[-30.0,30.0,1.0],[-30.0,30.0,1.0],[0.05,1.0,0.1],[0.001,30.0,0.2]]
                                  }		                                  
 	
@@ -104,10 +107,10 @@ class RTModel:
                 f.write(str(par[0]) + ' ' + str(par[1]) + ' ' + str(par[2]) + '\n')
         
 
-    def config_Reader(self, tau = 0.1, binning = 4000, otherseasons = 100, renormalize = 1, thresholdoutliers = 10):
+    def config_Reader(self, tau = 1, binning = 4000, otherseasons = 1, renormalize = 1, thresholdoutliers = 10):
         self.Reader_tau= tau # conventional correlation time for consecutive points
         self.Reader_binning = binning # maximum number of points left after re-binning
-        self.Reader_otherseasons = otherseasons # How to use other seasons (0 = Yes, 1 = decrease significance, 2 = remove)
+        self.Reader_otherseasons = otherseasons # How to use other seasons (0: Yes, >=1 decrease significance)
         self.Reader_renormalize = renormalize # Re-normalize error bars if non-zero
         self.Reader_thresholdoutliers = thresholdoutliers # Threshold in sigmas for removing outliers
         
@@ -124,6 +127,20 @@ class RTModel:
         print('  Pre-processing data...')
         try:
             completedprocess=subprocess.run([self.bindir+self.readerexe,self.eventname], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
+            with open(self.eventname + '/FilterToData.txt') as f:
+                lines = f.readlines()
+                lines = [line.split('.dat')[0] for line in lines]
+                sats = [[] for i in range(10)]
+                ground = []
+                for line in lines:
+                    if(line[-1].isdigit()):
+                        sats[int(line[-1])].append(line)
+                    else:
+                        ground.append(line)
+                print("  Found ground telescopes: ",ground)
+                for i in range(10):
+                    if(len(sats[i])>0):
+                        print(f"  Found satellite {i}: ",sats[i])
             with open(self.eventname + '/LCToFit.txt') as f:
                 lines = f.readlines()
                 del(lines[0])
@@ -188,9 +205,10 @@ class RTModel:
                     peaksearch = False
                     with open(initfils[0], 'r') as f:
                         npeaks = int(f.readline().split()[0])
-                        print('Peaks:  ',end ='')
+                        print('Peaks:  ')
                         for i in range(0,npeaks):
-                            print(f'{float(f.readline().split()[0]):.4f}',end = '  ')
+                            chs=f.readline().split()
+                            print(f'{float(chs[0]):.4f} [{float(chs[4]):.4f}]')
                 imod+=1
             print('\n  OK')
         except subprocess.CalledProcessError as e:
@@ -200,9 +218,9 @@ class RTModel:
             print('\033[30;41m! Program stopped here!\033[m')
             self.done = True
 
-    def config_LevMar(self, nfits = 6, offsetdegeneracy = 3, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0, \
+    def config_LevMar(self, nfits = 6, offsetdegeneracy = 2, timelimit = 600.0, maxsteps = 50, bumperpower = 2.0, \
                       mass_luminosity_exponent = None, mass_radius_exponent = None, lens_mass_luminosity_exponent = None, \
-                     turn_off_secondary_source = False, turn_off_secondary_lens = False):
+                     turn_off_secondary_source = False, turn_off_secondary_lens = False, block_tertiary_lens = False, stepchainsave=False):
         self.LevMar_nfits = nfits # Number of models to be calculated from the same initial condition using the bumper method
         self.LevMar_offsetdegeneracy = offsetdegeneracy # Number of models to be fit after applying offset degeneracy to best model found so far
         self.LevMar_maxsteps = maxsteps # Maximum number of steps in each fit
@@ -213,7 +231,8 @@ class RTModel:
         self.LevMar_lens_mass_luminosity_exponent = lens_mass_luminosity_exponent # mass-luminosity exponent for binary lenses
         self.LevMar_turn_off_secondary_lens = turn_off_secondary_lens # Option for dark secondary lenses
         self.LevMar_turn_off_secondary_source = turn_off_secondary_source # Option for dark secondary sources
-        self.LevMar_stepchainsave = False # If True, step chains are saved
+        self.LevMar_block_tertiary_lens = block_tertiary_lens # Option for blocked tertiary lens
+        self.LevMar_stepchainsave = stepchainsave # If True, step chains are saved
     
     def LevMar(self,strmodel, parameters_file = None, parameters = None):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
@@ -242,6 +261,8 @@ class RTModel:
                 f.write('turn_off_secondary_lens = True\n')
             if(self.LevMar_turn_off_secondary_source):
                 f.write('turn_off_secondary_source = True\n')
+            if(self.LevMar_block_tertiary_lens):
+                f.write('block_tertiary_lens = True\n')
             if(parameters_file != None):
                 f.write('parametersfile = ' + parameters_file)
             if(self.LevMar_stepchainsave):
@@ -277,6 +298,8 @@ class RTModel:
                 f.write('turn_off_secondary_lens = True\n')
             if(self.LevMar_turn_off_secondary_source):
                 f.write('turn_off_secondary_source = True\n')
+            if(self.LevMar_block_tertiary_lens):
+                f.write('block_tertiary_lens = True\n')
             if(self.LevMar_stepchainsave):
                 f.write('stepchainsave = True\n')
         stringfits = {'PS' : '- Single-lens-Single-source fits',
@@ -288,7 +311,8 @@ class RTModel:
                       'LO' : '- Binary-lens-Single-source fits with orbital motion',
                       'LK' : '- Binary-lens-Single-source fits with eccentric orbital motion',
                       'TS' : '- Triple-lens-Single-source fits',
-                      'TX' : '- Triple-lens-Single-source fits with parallax'}       
+                      'TX' : '- Triple-lens-Single-source fits with parallax',
+                      'TO' : '- Triple-lens-Single-source fits with orbital motion'}       
         self.set_parameter_ranges()
         print(stringfits[modelcode])
         initcondfile = self.eventname + '/InitCond/' + 'InitCond'+ modelcode + '.txt'
@@ -379,7 +403,8 @@ class RTModel:
                         'LO' : '- Selecting models for Binary-lens-Single-source fits with orbital motion',
                         'LK' : '- Selecting models for Binary-lens-Single-source fits with eccentric orbital motion',
                         'TS' : '- Selecting models for Triple-lens-Single-source fits',
-                        'TX' : '- Selecting models for Triple-lens-Single-source fits with parallax'}   
+                        'TX' : '- Selecting models for Triple-lens-Single-source fits with parallax',
+                        'TO' : '- Selecting models for Triple-lens-Single-source fits with orbital motion'}   
         print(stringmodels[modelcode])
         try:
             completedprocess=subprocess.run([self.bindir+self.modelselectorexe,self.eventname, modelcode], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
@@ -573,6 +598,8 @@ class RTModel:
                         self.LevMar_turn_off_secondary_source = True
                     elif(chunks[0] == 'turn_off_secondary_lens' and chunks[2] == 'True'):
                         self.LevMar_turn_off_secondary_lens = True
+                    elif(chunks[0] == 'block_tertiary_lens' and chunks[2] == 'True'):
+                        self.LevMar_block_tertiary_lens = True
                     elif(chunks[0] == 'mass_luminosity_exponent'):
                         self.LevMar_mass_luminosity_exponent = float(chunks[2])
                     elif(chunks[0] == 'mass_radius_exponent'):

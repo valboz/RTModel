@@ -44,7 +44,8 @@ The user may specify his/her own options to drive the initial conditions to the 
 import RTModel
 rtm = RTModel.RTModel('/event001')
 rtm.config_InitCond(npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None,
-                    nostatic = False, onlyorbital = False, usesatellite = 0, onlyupdate = False)
+                    nostatic = False, onlyorbital = False, usesatellite = 0, onlyupdate = False,
+                    templatelibrary = None, modelcategories = ['PS','PX','BS','BO','LS','LX','LO']))
 rtm.run()
 ```
 
@@ -61,7 +62,7 @@ Here we describe the options for `InitCond` in detail indicating their default v
 - `usesatellite = 0`: Initial conditions are set only considering peaks in the indicated [satellite](Satellite.md). If zero, ground datasets are used for initial conditions.
 - `nostatic = False`: If `True`, static models will not be calculated. This is useful if higher orders are significant and cannot be treated as a simple perturbation of static models. Furthermore, this option is recommended if you have observations from a satellite spaced by a distance of the order of au.
 - `onlyorbital = False`: If `True`, only orbital motion models will be calculated.
-- `modelcategories = ['PS','PX','BS','BO','LS','LX','LO']`: The list of model categories to be fit in this modeling run. For example `rtm.config_InitCond(modelcategories = ['PS','PX','LS','LX','LO'])` will exclude binary source models from fitting. Refer to [Model categories](ModelCategories.md) for the meaning of all labels.
+- `modelcategories = ['PS','PX','BS','BO','LS','LX','LO']`: The list of model categories to be fit in this modeling run. For example `rtm.config_InitCond(modelcategories = ['PS','PX','LS','LX','LO'])` will exclude binary source models from fitting. Refer to [Model categories](ModelCategories.md) for the meaning of all labels. Note that the additional model categories not fit by default (e.g. Keplerian orbital motion and triple lenses) can only be included through this option.
 - `oldmodels = 4`: If previous runs have been [archived](Archive.md), the chosen number of best models from the last previous run are included as initial conditions. This can be useful for refining old models with new data or options.
 - `onlyupdate = False`: If `True`, the modeling run will be limited to a quick update of old models found in the last [archived run](Archive.md) as specified by the `oldmodels` option.
 

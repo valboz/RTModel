@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <regex>
 #include <filesystem>
+#include <list>
 
 using namespace std;
 using namespace std::filesystem;
@@ -20,9 +21,9 @@ char systemslash = '\\';
 char systemslash = '/';
 #endif
 
-double tau = 0.1; // conventional correlation time for consecutive points
+double tau = 1.0; // time-scale to trigger scatter assessment
 int npmax = 4000; // maximum number of points left after re-binning
-int otherseasons = 100; // How to use other seasons
+double otherseasons = 1.0; // How to use other seasons
 int renormalize = 1; // Re-normalize error bars
 double thresholdoutliers = 10; // Threshold for removing outliers
 
@@ -37,6 +38,7 @@ struct dataset {
 	datapoint* first, * last;
 	int length;
 	char label[100];
+	bool input_in_mags;
 
 	dataset();
 	~dataset();
@@ -62,10 +64,10 @@ int main(int argc, char* argv[])
 	char titstring[256] = "", nostr[2], * undersc;
 	char command[256], buffer[256];
 	double value;
-	double t, y, err, Dec, errDec, RA, errRA, yr, errr, w1, w2;
+	double t, y, err, Dec, errDec, RA, errRA, yr, ys, tr, ts, errr, errs, w1, w2;
 	FILE* f;
 	int ifile, flag, nps, normalized = 0, satellite;
-	double pc, residual, residual1, residual2, outlier, crosscheck, weight, minfac, maxlength;
+	double pc, residual, residual1, residual2, residual3, outlier, crosscheck, weight, minfac, maxlength;
 	dataset* datalist = 0, * curdataset, * pmaxdataset;
 	datapoint* p, * pmax, * p1, * p2;
 
@@ -119,7 +121,7 @@ int main(int argc, char* argv[])
 					tau = value;
 				}
 				if (strcmp(command, "otherseasons") == 0) {
-					otherseasons = (int)value;
+					otherseasons = value;
 				}
 				if (strcmp(command, "renormalize") == 0) {
 					renormalize = (int)value;
@@ -173,6 +175,7 @@ int main(int argc, char* argv[])
 			f = fopen(filename, "r");
 			fscanf(f, "%[^\n]", titstring);
 			fscanf(f, "%[\n]", nostr);
+			if (strstr(titstring, "Mag") != 0) curdataset->input_in_mags = true;
 			while (fscanf(f, "%[^\n]", titstring) == 1) {
 				fscanf(f, "%[\n]", nostr);
 				ncolumns = sscanf(titstring, "%lg %lg %lg %lg %lg %lg %lg", &y, &err, &t, &Dec, &errDec, &RA, &errRA);
@@ -236,10 +239,11 @@ int main(int argc, char* argv[])
 	minfac = 1.e100;
 	maxlength = -minfac;
 	for (curdataset = datalist; curdataset; curdataset = curdataset->next) {
-		residual = weight = 0;
+		std::list<double> reslist;
+		residual = weight = tr = ts = 0;
 		if (curdataset->first->err > 0) {
 			for (p = curdataset->first->next; p; p = p->next) {
-				residual1 = residual2 = w1 = w2 = 0;
+				residual1 = residual2 = residual3 = 0;
 				if (p->next) {
 					p1 = p->next;
 					if (p1->next) {
@@ -247,12 +251,13 @@ int main(int argc, char* argv[])
 						ft2 = (p->t - p1->t) / (p2->t - p1->t);
 						ft1 = 1 - ft2;
 						y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) * ft2);
-						pc = (p2->t - p->t) / tau;
-						err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err) * exp(pc);
-						w1 = 1 / exp(pc);
+						pc = (p2->t - p->t);
+						err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err);// *exp(pc);
+						//w1 = 1 / exp(pc);
 						pc = (p->y - y);
 						residual1 = pc / sqrt(err);
 						yr = y;
+						tr = p2->t;
 						errr = err;
 					}
 				}
@@ -263,44 +268,68 @@ int main(int argc, char* argv[])
 						ft2 = (p->t - p1->t) / (p2->t - p1->t);
 						ft1 = 1 - ft2;
 						y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) / (p2->t - p1->t) * (p->t - p1->t));
-						pc = (p2->t - p->t) / tau;
-						err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err) * exp(-pc);
-						w2 = 1 / exp(-pc);
+						pc = (p2->t - p->t);
+						err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err);// *exp(-pc);
+						ys = y;
+						ts = p2->t;
+						errs = err;
+						//w2 = 1 / exp(-pc );
 						pc = (p->y - y);
 						residual2 = pc / sqrt(err);
 					}
 				}
-				if (residual1 > -1.e100 && residual2 > -1.e100) {
-					residual1 = residual1;
-				}
-				else {
-					residual1 = residual1;
-				}
-				outlier = residual1 * residual1 + residual2 * residual2;
-				crosscheck = (y - yr);
-				crosscheck *= crosscheck;
-				crosscheck /= (err + errr);
-				if (residual1 != 0 && residual2 != 0 && crosscheck <9 && sqrt(outlier) >thresholdoutliers) {
-					printf("\nOutlier found: %lf %lf %lf", p->t, p->y, sqrt(outlier));
-					p1 = p->prev;
-					curdataset->deletepoint(p);
-					/*p2 = p->next;
-					p1->next = p2;
-					p2->prev = p1;
-					delete p;
-					curdataset->length--;*/
-					p = p1;
-				}
-				else {
-					residual += outlier;
-					weight += w1 + w2;
+				if (tr - ts < tau) {
+					if (p->prev) {
+						p1 = p->prev;
+						if (p->next) {
+							p2 = p->next;
+							ft2 = (p->t - p1->t) / (p2->t - p1->t);
+							ft1 = 1 - ft2;
+							y = p1->y + ((p2->t == p1->t) ? 0 : (p2->y - p1->y) / (p2->t - p1->t) * (p->t - p1->t));
+							pc = (p2->t - p->t);
+							err = (p1->err * p1->err * ft1 * ft1 + p2->err * p2->err * ft2 * ft2 + p->err * p->err);// *exp(-pc);
+							//w2 = 1 / exp(-pc);
+							pc = (p->y - y);
+							residual3 = pc / sqrt(err);
+						}
+					}
+					outlier = residual1 + residual2 + 2 * residual3;
+					crosscheck = (ys - yr);
+					crosscheck *= crosscheck;
+					crosscheck /= (err + errr);
+					if (/*residual1*residual2>0 && */crosscheck < 9 && fabs(outlier) >4 * thresholdoutliers) {
+						printf("\nOutlier found: %lf %lf %lf", p->t, p->y, outlier);
+						p1 = p->prev;
+						curdataset->deletepoint(p);
+						/*p2 = p->next;
+						p1->next = p2;
+						p2->prev = p1;
+						delete p;
+						curdataset->length--;*/
+						p = p1;
+					}
+					else {
+						//residual += outlier;
+						//weight += w1 + w2;
+						reslist.push_back(outlier * outlier);
+					}
 				}
 			}
 			// 		residual*=0.5*curdataset->length/weight;
-			residual = (residual + 1.) / (weight + 1.);
-			pc = sqrt(residual);
+			if (!reslist.empty()) {
+				reslist.sort();
+				auto it = reslist.begin();
+				int imed = (reslist.size() - 1) / 2;
+				residual = *std::next(it, imed) * 0.186914;
+			}
+			else residual = 1;
+			//residual = pow(residual,sqrt((reslist.size()-1)/curdataset->length));
+			ft1 = sqrt((reslist.size() - 1.0) / (curdataset->length / 2 + 1));
+			if (ft1 > 1) ft1 = 1;
+			pc = pow(residual, 0.5 * ft1);
 			printf("\n%s", curdataset->label);
-			printf("\nResidual: %le      Length: %d      Weight: %le       Normalization factor: %le", residual, curdataset->length, weight, pc);
+			//printf("\nResidual: %le      Length: %d      Weight: %le       Normalization factor: %le", residual, curdataset->length, weight, pc);
+			printf("\nLength: %d      Res.list: %d     Residual: %lf      Normalization factor: %lf", curdataset->length, reslist.size(), residual, pc);
 			curdataset->first->sig = pc;
 			if (curdataset->length > maxlength) {
 				minfac = pc;
@@ -399,8 +428,8 @@ int main(int argc, char* argv[])
 						//						double fac = (devs[ichunk]+1.e-10) /(maxdev + 1.e-10);
 						//						fac *= fac;
 						for (p = chunkfirst[ichunk]; p != chunklast[ichunk]->next; p = p->next) {
-							fac = (p->t > chunklast[imaxdev]->t) ? (p->t > chunklast[imaxdev]->t) : (chunkfirst[imaxdev]->t - p->t);
-							p->basesig = 1.0 / otherseasons / fac;// fac;
+							fac = (p->t > chunklast[imaxdev]->t) ? (p->t - chunklast[imaxdev]->t) : (chunkfirst[imaxdev]->t - p->t);
+							p->basesig = 10.0 / otherseasons / fac;// fac;
 						}
 					}
 				}
@@ -554,8 +583,14 @@ int main(int argc, char* argv[])
 		undersc = curdataset->label - 5 + strlen(curdataset->label);
 		satellite = (*undersc <= '9' && *undersc > '0') ? (*undersc) - '0' : 0; // satellite data should have names like ZOB1501241.dat where 1.dat distinguishes satellites data
 		for (p = curdataset->first; p; p = p->next) {
-			y = pow(10., -0.4 * p->y);
-			err = (p->err > 0) ? p->err * y * 0.9210340371976184 : p->err;
+			if (curdataset->input_in_mags) {
+				y = pow(10., -0.4 * p->y);
+				err = (p->err > 0) ? p->err * y * 0.9210340371976184 : p->err;
+			}
+			else {
+				y = p->y;
+				err = p->err;
+			}
 			fprintf(f, "%d %.10le %.10le %.10le %d %.10le %.10le %.10le %.10le\n", ifile, p->t, y, err, satellite, p->Dec, p->errDec, p->RA, p->errRA);
 		}
 		ifile++;
@@ -583,6 +618,7 @@ dataset::dataset() {
 	length = 0;
 	prev = next = 0;
 	first = last = 0;
+	input_in_mags = false;
 }
 
 dataset::~dataset() {

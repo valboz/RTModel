@@ -38,11 +38,18 @@ class LevMar {
 	double* pr, * prn, * sumy, * sumy2, * sumsigma, * sumfy, * sumf, * sumf2, * limbdarks;
 	double* sumsigmaN, * sumsigmaE, * sumcN, * sumcE, * sumc1, * sumc2;
 	int* sizes, * starts;
+	double* inc;
+	double* GradVec, *Graderr;
+	double normgrad;
 
 	int consnumber, * consindex;
 	double* constraints, * consleft, * consright, * consvars;
 	int modnumber;
 
+	double tmaxmax;
+	double maxmaxsum;
+	double y1maxmax;
+	double y2maxmax;
 	double Tol;
 
 	//	void (LevMar::* PrintOut)(double*);

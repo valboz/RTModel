@@ -20,11 +20,14 @@ By default, `RTModel` fits all the model categories listed above to the data, pr
 
 ## Additional model categories
 
-Some additional model categories are available but not included in the default modeling run. They can be included by adding their label to the list of model categories as detailed in [Initial conditions](InitCond.md). At the moment, we have only one additional category, but more are on their ways.
+Some additional model categories are available but not included in the default modeling run. They can be included by adding their label to the list of model categories as detailed in [Initial conditions](InitCond.md). At the moment, we have four additional categories, but more are on their ways.
 
 | Label | Model | Number of parameters |
 | --- | --- | --- |
 | LK | Binary-lens-single-source with eccentric orbital motion | 14 |
+| TS | Triple-lens-single-source | 10 |
+| TX | Triple-lens-single-source with parallax | 12 |
+| TO | Triple-lens-single-source with circular orbital motions | 15 |
 
 The following sections provide details about parameters and conventions of all categories listed above.
 
@@ -189,5 +192,70 @@ The two additional parameters are sufficient to completely define an eccentric o
 
 The subpackage [plotmodel](PlotModel.md) contains a function for translating from the fitting parameters to conventional orbital elements.
 
+## Triple-lens-single-source (TS)
+
+Static triple-lens model:
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | s | Separation between the first two lenses in Einstein radii | X |
+| 2 | q | Mass ratio of the secondary to the primary lens | X |
+| 3 | u0 | Impact parameter normalized to Einstein angle |  |
+| 4 | alpha | Angle between the source velocity and the vector pointing from the secondary to the primary lens |  |
+| 5 | rho | Source radius normalized to Einstein angle | X |
+| 6 | tE | Einstein time in days | X |
+| 7 | t0 | Closest approach time in HJD to the barycenter of the first two lenses |  |
+| 8 | s2 | Separation between the third lens and the first lens| X |
+| 9 | q2 | Mass ratio of the tertiary to the primary lens | X |
+| 10 | beta | Angle between the third lens and the second lens as seen from the primary |  |
+
+A figure showing the geometry of the triple-lens is in [VBMicrolensing Light Curves](https://github.com/valboz/VBMicrolensing/blob/master/docs/python/LightCurves.md). Note that the origin is in the barycenter of the first two lenses, so this parameterization is particularly suited to situations in which the third lens makes a small perturbation to the primaries.
+
+## Triple-lens-single-source with parallax (TX)
+
+Triple-lens model including parallax:
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | s | Separation between the first two lenses in Einstein radii | X |
+| 2 | q | Mass ratio of the secondary to the primary lens | X |
+| 3 | u0 | Impact parameter normalized to Einstein angle |  |
+| 4 | alpha | Angle between the source velocity and the vector pointing from the secondary to the primary lens |  |
+| 5 | rho | Source radius normalized to Einstein angle | X |
+| 6 | tE | Einstein time in days | X |
+| 7 | t0 | Closest approach time in HJD to the barycenter of the first two lenses |  |
+| 8 | s2 | Separation between the third lens and the first lens| X |
+| 9 | q2 | Mass ratio of the tertiary to the primary lens | X |
+| 10 | beta | Angle between the third lens and the second lens as seen from the primary |  |
+| 11 | piN| Parallax component along North |  |
+| 12 | piE | Parallax component along East |  |
+
+## Triple-lens-single-source with parallax and circular orbital motion (TO)
+
+Triple-lens model including parallax and circular orbital motion:
+
+| Number | Parameter | Meaning | ln |
+| --- | --- | --- | --- |
+| 1 | s | Separation between the first two lenses in Einstein radii | X |
+| 2 | q | Mass ratio of the secondary to the primary lens | X |
+| 3 | u0 | Impact parameter normalized to Einstein angle |  |
+| 4 | alpha | Angle between the source velocity and the vector pointing from the secondary to the primary lens |  |
+| 5 | rho | Source radius normalized to Einstein angle | X |
+| 6 | tE | Einstein time in days | X |
+| 7 | t0 | Closest approach time in HJD to the barycenter of the first two lenses |  |
+| 8 | s2 | Separation between the third lens and the first lens| X |
+| 9 | q2 | Mass ratio of the tertiary to the primary lens | X |
+| 10 | beta | Angle between the third lens and the second lens as seen from the primary |  |
+| 11 | piN| Parallax component along North |  |
+| 12 | piE | Parallax component along East |  |
+| 13 | gamma1 | Angular velocity parallel to the lens axis |  |
+| 14 | gamma2 | Angular velocity perpendicular to the lens axis |  |
+| 15 | gammaz | Angular velocity along the line of sight |  |
+
+The three components of the orbital velocity are specified for the secondary around the primary. Then the third object is assumed to be coplanar with the second and on a circular orbit. These constraints fully fix the orbital velocity of the third object given the components of the second object.
+
+It is also possible to keep the third object fixed while the secondary orbits the primary, as specified in [Fitting](Fitting.md). This is particularly useful to explore particular configurations more easily.
+
 [Go to **Plotting models**](PlotModel.md)
+
 
