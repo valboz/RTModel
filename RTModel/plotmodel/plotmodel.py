@@ -106,8 +106,7 @@ class plotmodel:
             self.nfil = 0
             self.npoints = 0
         else:
-            os.chdir(self.eventname)
-            with open('LCToFit.txt') as f:
+            with open(self.eventname + '/LCToFit.txt') as f:
                 self.npoints=int(f.readline())
                 ofil=0
                 data=[[]]
@@ -130,7 +129,7 @@ class plotmodel:
                     self.npars[i] += 4
                     self.parnames[i] += self.astroparnames
             self.lightcurves = [ [np.array([dl[0] for dl in d]),np.array([dl[1] for dl in d]),np.array([dl[2] for dl in d]) , np.array([dl[4] for dl in d]),np.array([dl[5] for dl in d]),np.array([dl[6] for dl in d]),np.array([dl[7] for dl in d]),d[0][3]] for d in data]
-            with open('FilterToData.txt') as f:
+            with open(self.eventname + '/FilterToData.txt') as f:
                 self.telescopes = f.readlines()
                 for i in range(0,self.nfil):
                     self.telescopes[i] = self.telescopes[i][0:self.telescopes[i].index('.')]
@@ -165,8 +164,6 @@ class plotmodel:
     # Reading model parameters
     def readparameters(self):
         self.modnumber = self.modelcodes.index(self.model[0:2])
-        if(self.eventname != None):
-            os.chdir(self.eventname)
         if(self.parameters == []):
             with open(self.modelfile) as f:
                 lines = f.readlines()
