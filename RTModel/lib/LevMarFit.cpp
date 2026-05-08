@@ -611,8 +611,12 @@ void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presig
 					}
 
 					if (command[0] == 'g' && command[1] == '_') { // Blending
-						sscanf(&command[2], "%d", &consindex[conscurrent]);
-						consindex[conscurrent] += 10000;
+						int bl;
+						sscanf(&command[2], "%d", &bl);
+						if (bl < nfil) {
+							consindex[conscurrent] = bl;
+							consindex[conscurrent] += 10000;
+						}
 					}
 					// special combinations
 					if (strcmp(command, "muangle") == 0) {
@@ -1769,7 +1773,7 @@ inline double LevMar::ComputeConstraint(double* pr, int ic) {
 		return pr[(i - 100) + nps - 4];
 	}
 	if (i < 20000) {
-		return pr[nps + (i - 10000) * 2] / pr[nps + (i - 10000) * 2 + 1];
+		return pr[nps + (i - 10000) * 2] / (pr[nps + (i - 10000) * 2 + 1]+ 1.e-50);
 	}
 	if (i == 30000) {
 		int posN = -1, posE = -1;
