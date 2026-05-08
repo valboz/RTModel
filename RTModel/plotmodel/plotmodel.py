@@ -255,7 +255,7 @@ class plotmodel:
                 
     def lightcurve(self):
         if(self.modnumber == 1 or self.modnumber == 3 or self.modnumber > 4):
-            self.vbm.SetObjectCoordinates(glob.glob('Data/*.coordinates')[0],self.satellitedir)
+            self.vbm.SetObjectCoordinates(glob.glob(self.eventname + '/Data/*.coordinates')[0],self.satellitedir)
             self.vbm.parallaxsystem = 1
         if(self.modnumber == 0):
             self.results = self.vbm.ESPLLightCurve(self.pars,self.t)
