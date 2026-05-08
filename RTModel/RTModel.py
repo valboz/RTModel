@@ -92,7 +92,7 @@ class RTModel:
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
             os.makedirs(self.eventname + '/' + self.inidir)
         with open(self.eventname + '/' + self.inidir + '/Constraints.ini','w') as f:
-            for cons in constraints:
+            for cons in self.constraints:
                 f.write(cons[0] + ' = '+ str(cons[1]) + ' '+ str(cons[2]) + ' '+ str(cons[3]) + ' ' + '\n')
 
     def write_parameter_ranges(self):
