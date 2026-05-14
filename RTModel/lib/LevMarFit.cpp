@@ -5,7 +5,8 @@
 #define _USE_MATH_DEFINES
 #include "LevMarFit.h"
 #include "bumper.h"
-#include <VBMicrolensingLibrary.h>
+#include "C:\\Users\\valboz\\Personali\\source\\Projects\\VBMicrolensing\\VBMicrolensing\\VBMicrolensingLibrary.h"
+//#include <VBMicrolensingLibrary.h>
 #include <cstdio>
 #include <ctime>
 #include <cstdlib>
@@ -756,6 +757,14 @@ int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim
 			rightlim[i] += pr[i];
 			leftlim[i] += pr[i];
 		}
+		else {
+			if (pr[i] > rightlim[i]) {
+				pr[i] = rightlim[i] * 0.99 + leftlim[i] * 0.01;
+			}
+			if (pr[i] < leftlim[i]) {
+				pr[i] = rightlim[i] * 0.01 + leftlim[i] * 0.99;
+			}
+		}
 	}
 	fclose(f);
 	current_path(eventname);
@@ -967,10 +976,10 @@ int LevMar::Run() {
 
 					// Levenberg-Marquardt with parameter lambda
 					ilam = 0;
-					while ((c1 >= c0) && ilam < 20) {
+					while ((c1 >= c0) && ilam<20) {
 
 						/* Calculation of the gradient */
-						if (ilam == 0) { // || lambda > lamthr) {
+						if (ilam == 0){ // || lambda > lamthr) {
 							Grad();
 
 							// Debug
@@ -1307,7 +1316,7 @@ int LevMar::Run() {
 }
 
 void LevMar::EvaluateModel(double* pr, int fl, int ips) {
-	double* tfl, * fbfl, * c1sfl, * c2sfl, * c1lfl, * c2lfl, * y1fl, * y2fl;
+	double* tfl, * fbfl, * c1sfl, * c2sfl, * c1lfl, * c2lfl, *y1fl, *y2fl;
 	tfl = &(t[starts[fl]]);
 	y1fl = &(y1a[starts[fl]]);
 	y2fl = &(y2a[starts[fl]]);
@@ -1405,6 +1414,9 @@ double LevMar::ChiSquared(double* pr) {
 			sumf[fl] += w[i] * w[i] * fb[i];
 			sumf2[fl] += w[i] * w[i] * fb[i] * fb[i];
 			sumfy[fl] += w[i] * w[i] * fb[i] * y[i];
+			if (sumf[fl] > 1.e100) {
+				sumf[fl] = sumf[fl];
+			}
 		}
 	}
 	for (int i = 0; i < nfil; i++) {
@@ -1552,8 +1564,8 @@ double LevMar::ChiSquared(double* pr) {
 				maxsumn += p1;               // Updates sum of negative residuals (note: <0)
 				p1max = 0;
 			}
-
-
+			
+	
 			chi2 += p1 * p1;
 			// This check on very negative blending blocks the fit. 
 			// It should be accompanied by a modification of the gradient to be re-activated
@@ -1685,8 +1697,8 @@ void LevMar::Grad() {
 				Gr[j][i] = w[i] * (prn[nps + filter[i] * nlinpar] + prn[nps + 1 + filter[i] * nlinpar] * fb[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) / inc[j];
 				GradVec[j] += p1 * p1;
 
-				p1 = 2 * grtol * Gr[j][i] * w[i] * pr[nps + 1 + filter[i] * nlinpar] / inc[j];
-				Graderr[j] += p1 * p1;
+				p1 = 2*grtol * Gr[j][i] * w[i] * pr[nps + 1 + filter[i] * nlinpar] / inc[j];
+				Graderr[j] += p1*p1;
 			}
 			if (wcN[i] > 0) {
 				p1 = (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - cN[i]) * wcN[i];
@@ -1696,10 +1708,10 @@ void LevMar::Grad() {
 				Gr[j][i + np] = wcN[i] * (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 2] - c1s[i]) / inc[j];
 				Gr[j][i + np * 2] = wcE[i] * (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 3] - c2s[i]) / inc[j];
 
-				p1 = 0.1 * grtol * Gr[j][i + np] * wcN[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
+				p1 = 0.1 * grtol * Gr[j][i+np] * wcN[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
 				Graderr[j] += p1 * p1;
-				p1 = 0.1 * grtol * Gr[j][i + np * 2] * wcE[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
-				Graderr[j] += 2 * p1 * p1;
+				p1 = 0.1 * grtol * Gr[j][i + np*2] * wcE[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
+				Graderr[j] += 2*p1 * p1;
 			}
 		}
 		//printf("%d ", j);
@@ -1730,7 +1742,7 @@ void LevMar::Grad() {
 		// Debug
 		printf("%.1le -> ", inc[i]);
 		Graderr[i] = sqrt(Graderr[i]);
-		if (Graderr[i] > 0.01 * Curv[i * nps + i] && inc[i] < 0.5) {
+		if (Graderr[i] > 0.01 * Curv[i * nps + i] && inc[i]<0.5) {
 			inc[i] *= 10;
 		}
 		if (Graderr[i] < 0.0001 * Curv[i * nps + i]) {
@@ -1739,10 +1751,10 @@ void LevMar::Grad() {
 		// Debug
 		printf("%.2le %.2le %.1le\n", Graderr[i], Curv[i * nps + i], inc[i]);
 	}
-	//	getchar();
+//	getchar();
 
 
-		// Offset
+	// Offset
 	for (int i = 0; i < nps; i++) {
 		p1 = 0;
 		for (int k = 0; k < np; k++) {
