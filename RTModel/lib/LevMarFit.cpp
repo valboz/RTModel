@@ -243,8 +243,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 2;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[1] = log(pr[1]);
-				pr[3] = log(pr[3]);
 				current_path(exedir);
 				current_path("..");
 				current_path("data");
@@ -260,9 +258,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 2;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[3] = log(pr[3]);
 			}
 			current_path(exedir);
 			current_path("..");
@@ -281,9 +276,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				it0 = 4;
 				it02 = 5;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[6] = log(pr[6]);
 				current_path(exedir);
 				current_path("..");
 				current_path("data");
@@ -300,9 +292,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				it0 = 4;
 				it02 = 5;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[6] = log(pr[6]);
 			}
 			current_path(exedir);
 			current_path("..");
@@ -320,10 +309,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[4] = log(pr[4]);
-				pr[5] = log(pr[5]);
 				current_path(exedir);
 				current_path("..");
 				current_path("data");
@@ -340,10 +325,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					ReadOptions(preleftlim, prerightlim, presigmapr);
 					it0 = 6;
 					error = InitCond(presigmapr, preleftlim, prerightlim);
-					pr[0] = log(pr[0]);
-					pr[1] = log(pr[1]);
-					pr[4] = log(pr[4]);
-					pr[5] = log(pr[5]);
 					current_path(exedir);
 					current_path("..");
 					current_path("data");
@@ -360,10 +341,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						ReadOptions(preleftlim, prerightlim, presigmapr);
 						it0 = 6;
 						error = InitCond(presigmapr, preleftlim, prerightlim);
-						pr[0] = log(pr[0]);
-						pr[1] = log(pr[1]);
-						pr[4] = log(pr[4]);
-						pr[5] = log(pr[5]);
 						current_path(exedir);
 						current_path("..");
 						current_path("data");
@@ -379,10 +356,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						ReadOptions(preleftlim, prerightlim, presigmapr);
 						it0 = 6;
 						error = InitCond(presigmapr, preleftlim, prerightlim);
-						pr[0] = log(pr[0]);
-						pr[1] = log(pr[1]);
-						pr[4] = log(pr[4]);
-						pr[5] = log(pr[5]);
 					}
 				}
 			}
@@ -397,12 +370,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[4] = log(pr[4]);
-				pr[5] = log(pr[5]);
-				pr[7] = log(pr[7]);
-				pr[8] = log(pr[8]);
 				current_path(exedir);
 				current_path("..");
 				current_path("data");
@@ -419,12 +386,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					ReadOptions(preleftlim, prerightlim, presigmapr);
 					it0 = 6;
 					error = InitCond(presigmapr, preleftlim, prerightlim);
-					pr[0] = log(pr[0]);
-					pr[1] = log(pr[1]);
-					pr[4] = log(pr[4]);
-					pr[5] = log(pr[5]);
-					pr[7] = log(pr[7]);
-					pr[8] = log(pr[8]);
 					current_path(exedir);
 					current_path("..");
 					current_path("data");
@@ -440,12 +401,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					ReadOptions(preleftlim, prerightlim, presigmapr);
 					it0 = 6;
 					error = InitCond(presigmapr, preleftlim, prerightlim);
-					pr[0] = log(pr[0]);
-					pr[1] = log(pr[1]);
-					pr[4] = log(pr[4]);
-					pr[5] = log(pr[5]);
-					pr[7] = log(pr[7]);
-					pr[8] = log(pr[8]);
 				}
 			}
 			break;
@@ -726,7 +681,7 @@ void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presig
 
 int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim) {
 	char buffer[3200], initcondfile[256];
-	int npeaks, ninit, incond;
+	int npeaks, ninit, incond, flaglog;
 	FILE* f;
 	sigmapr = (double*)malloc(sizeof(double) * nps);
 	leftlim = (double*)malloc(sizeof(double) * nps);
@@ -752,6 +707,11 @@ int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim
 		leftlim[i] = preleftlim[i];
 		rightlim[i] = prerightlim[i];
 		fscanf(f, "%lg", &(pr[i]));
+		flaglog = 0;
+		for (int j = 0; j < (int)logposs[modnumber].size(); j++) {
+			if (logposs[modnumber][j] == i) flaglog = 1;
+		}
+		if (flaglog) pr[i] = log(pr[i]);
 		if (i == it0 || i == it02) {
 			rightlim[i] += pr[i];
 			leftlim[i] += pr[i];
