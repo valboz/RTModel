@@ -17,7 +17,7 @@ from tabulate import tabulate
 
 class plotmodel:
     def __init__(self, eventname,model = '', tmin = '', tmax = '', magmin = '', magmax = '', tlabel='t', maglabel='mag', reslabel = 'Res',
-                 referencephot = 0, timesteps = 300, 
+                 referencephot = 0, timesteps = 300, magoffset = 0,
                  modelfile = None, parameters = [], line = 0,printpars = True, printimage = True, animate = False,interval = 1000, 
                  satellitedir = '.', accuracy = 0.01, colors = None, satellitecolors = None):
         self.satellitedir = satellitedir
@@ -31,6 +31,7 @@ class plotmodel:
         self.inputmagmax = magmax
         self.tlabel = tlabel
         self.maglabel = maglabel
+        self.magoffset = magoffset
         self.reslabel = reslabel
         self.timesteps = timesteps
         self.referencephot = referencephot
@@ -307,6 +308,9 @@ class plotmodel:
         if(self.tmax == ''):
             self.tmax = self.pars[t0i]+2*self.parsprint[tEi]
             
+        refblend = self.blends[self.referencephot]
+        if(self.sources[self.referencephot] +self.blends[self.referencephot]<0):
+            refblend = -self.sources[self.referencephot] + 10**(-0.4*self.magoffset)
         self.lctimes=[]
         self.lcmags=[]
         self.lcerrs=[]
@@ -316,13 +320,13 @@ class plotmodel:
             lc0 = self.lightcurves[i]
             lcarr = np.array(lc0[:7])
             lctran=np.transpose(lcarr)
-            lcsel = [x for x in lctran if(x[0]<self.tmax and x[0]>self.tmin and ((x[1]-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot] +self.blends[self.referencephot]>0 or x[2] < 0))]
+            lcsel = [x for x in lctran if(x[0]<self.tmax and x[0]>self.tmin and ((x[1]-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot] +refblend>0 or x[2] < 0))]
             lc = np.transpose(lcsel)
             if(len(lc)>0):
                 self.lctimes.append(lc[0])
                 if(lc[2][0]>0):
-                    self.lcmags.append(np.array([-2.5*math.log10((y-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot]+self.blends[self.referencephot]) for y in lc[1]]))
-                    self.lcerrs.append(lc[2]/lc[1]*2.5/math.log(10.0))
+                    self.lcmags.append(np.array([-2.5*math.log10((y-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot]+refblend) for y in lc[1]]))
+                    self.lcerrs.append(lc[2]/np.abs(lc[1])*2.5/math.log(10.0))
                 else:
                     self.lcmags.append([])
                     self.lcerrs.append([])
@@ -366,7 +370,7 @@ class plotmodel:
             self.vbm.satellite = satellite
             self.vbm.a1 = self.limbdarkenings[self.referencephot]
             self.lightcurve()        
-            self.mags = [-2.5*math.log10(max(self.sources[self.referencephot]*yi+self.blends[self.referencephot], 1.e-100)) for yi in self.results[0]]
+            self.mags = [-2.5*math.log10(self.sources[self.referencephot]*yi+refblend) for yi in self.results[0]]
             if(self.astrometric):
                 self.magnifications.append(self.results[0])
                 self.c1s.append(self.results[1])
@@ -407,7 +411,7 @@ class plotmodel:
             self.vbm.a1 = self.limbdarkenings[i]
             if(len(self.lcmags[i]))>0:
                 self.lightcurve()
-                self.mags = [-2.5*math.log10(max(self.sources[self.referencephot]*yi+self.blends[self.referencephot],1.e-100)) for yi in self.results[0]]
+                self.mags = [-2.5*math.log10(self.sources[self.referencephot]*yi+refblend) for yi in self.results[0]]
                 ress = self.mags-self.lcmags[i]
                 self.lcress.append(ress)
             else:
@@ -443,7 +447,7 @@ class plotmodel:
             table = [[t,base, bl] for t,base,bl in zip(self.telescopes,self.baselines,self.blendings)]
             table.insert(0,['telescope','baseline', 'blending'])
         for i in range(self.nfil,0,-1):
-            if(len(self.lcmags[i-1])==0):
+            if(len(self.lcmags[i-1])==0 or self.blendings > 1.e9):
                 del(table[i])
         self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
         print(self.parstring)
