@@ -447,7 +447,7 @@ class plotmodel:
             table = [[t,base, bl] for t,base,bl in zip(self.telescopes,self.baselines,self.blendings)]
             table.insert(0,['telescope','baseline', 'blending'])
         for i in range(self.nfil,0,-1):
-            if(len(self.lcmags[i-1])==0 or self.blendings > 1.e9):
+            if(len(self.lcmags[i-1])==0 or self.blendings[i-1] > 1.e9):
                 del(table[i])
         self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
         print(self.parstring)
