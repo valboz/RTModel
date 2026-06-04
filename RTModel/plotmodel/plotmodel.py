@@ -51,8 +51,8 @@ class plotmodel:
         self.vbm.Tol = accuracy
         self.vbm.SetMethod(VBMicrolensing.VBMicrolensing.Multipoly)
         # General information on models
-        self.modelcodes= ['PS','PX','BS','BO','LS','LX','LO','LK','TS','TX']
-        self.npars=[4,6,7,12,7,9,12,14,10,12]
+        self.modelcodes= ['PS','PX','BS','BO','LS','LX','LO','LK','TS','TX','TO']
+        self.npars=[4,6,7,12,7,9,12,14,10,12,15]
         self.logposs=[[0,1,3],
                  [1,3],
                  [0,1,6],
@@ -61,6 +61,7 @@ class plotmodel:
                  [0,1,4,5],
                  [0,1,4,5],
                  [0,1,4,5],
+                 [0,1,4,5,7,8],
                  [0,1,4,5,7,8],
                  [0,1,4,5,7,8]]
         self.parnames = [['u0','tE','t0','rho'],
@@ -72,7 +73,8 @@ class plotmodel:
                     ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz'],
                     ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz','sz_s','a_s3d'],
                     ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta'],
-                    ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta','piN','piE']]
+                    ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta','piN','piE'],
+                    ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta','piN','piE','gamma1','gamma2','gammaz']]
         self.astroparnames = ['muS_Dec','muS_RA','piS','thetaE']
         if(colors != None):
             self.colors = colors
@@ -296,6 +298,11 @@ class plotmodel:
                 self.results = self.vbm.TripleAstroLightCurve(self.pars,self.t)
             else:
                 self.results = self.vbm.TripleLightCurveParallax(self.pars,self.t)
+        elif(self.modnumber == 10):
+            if(self.astrometric):
+                self.results = self.vbm.TripleAstroLightCurveOrbital(self.pars,self.t)
+            else:
+                self.results = self.vbm.TripleLightCurveOrbital(self.pars,self.t)
     
     def calculate(self):
         # Light curve calculation
