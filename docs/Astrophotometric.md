@@ -6,7 +6,7 @@ Space telescopes or adaptive optics facilities may reach astrometric precisions 
 
 ## Astrophotometric datasets
 
-We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with thre columns: magnitude (or flux), error, HJD. We recall an example here for convenience:
+We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with three columns: magnitude (or flux), error, HJD. We recall an example here for convenience:
 
 ```
 # Mag err HJD-2450000
