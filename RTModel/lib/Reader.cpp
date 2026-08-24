@@ -48,7 +48,7 @@ struct dataset {
 };
 
 #define _computesig\
-	if(p->err>0){\
+	if(p->err>0 && !(p->errDec > 0 && p->errRA < 0)){\
 		p->sig=(p->y-p->prev->y);\
 		pc=(p->t-p->prev->t)/tau;\
 		p->sig*=p->sig/(p->err*p->err + p->prev->err*p->prev->err);\
@@ -191,6 +191,18 @@ int main(int argc, char* argv[])
 			}
 			fclose(f);
 			printf("\npoints: %d", curdataset->length);
+			if (curdataset->length < 2) {
+				printf("-- discarded");
+				if (curdataset->prev) {
+					curdataset = curdataset->prev;
+					delete curdataset->next;
+					curdataset->next = 0;
+				}
+				else {
+					delete curdataset;
+					datalist = 0;
+				}
+			}
 		}
 	}
 
@@ -608,7 +620,7 @@ int main(int argc, char* argv[])
 	delete datalist;
 
 	//printf("\nHello!");
-//	getchar();
+	getchar();
 
 	return 0;
 }
