@@ -238,16 +238,37 @@ class plotmodel:
                     ccarr = np.array(cc0[3:7])
                     cctran=np.transpose(ccarr)
                     cc = np.transpose(cctran)
-                    sumcN = (cc[0]/(cc[1]*cc[1])).sum()
-                    sumc1 = (c1/(cc[1]*cc[1])).sum()
-                    sumsigmaN = (1/(cc[1]*cc[1])).sum()
-                    sumcE = (cc[2]/(cc[3]*cc[3])).sum()
-                    sumc2 = (c2/(cc[3]*cc[3])).sum()
-                    sumsigmaE = (1/(cc[3]*cc[3])).sum()
-                    L0N = (sumcN-sumc1)/sumsigmaN
-                    L0E = (sumcE-sumc2)/sumsigmaE
-                    chia = ((cc[0] - c1 - L0N)**2/(cc[1]*cc[1])).sum() + ((cc[2] - c2 - L0E)**2/(cc[3]*cc[3])).sum()      
-                    self.chi2 += chia
+                    if(self.lightcurves[i][6][0]>0):
+                        sumcN = (cc[0]/(cc[1]*cc[1])).sum()
+                        sumc1 = (c1/(cc[1]*cc[1])).sum()
+                        sumsigmaN = (1/(cc[1]*cc[1])).sum()
+                        sumcE = (cc[2]/(cc[3]*cc[3])).sum()
+                        sumc2 = (c2/(cc[3]*cc[3])).sum()
+                        sumsigmaE = (1/(cc[3]*cc[3])).sum()
+                        L0N = (sumcN-sumc1)/sumsigmaN
+                        L0E = (sumcE-sumc2)/sumsigmaE
+                        chia = ((cc[0] - c1 - L0N)**2/(cc[1]*cc[1])).sum() + ((cc[2] - c2 - L0E)**2/(cc[3]*cc[3])).sum()      
+                        self.chi2 += chia
+                    else: #Gaia case
+                        Clist = np.cos(cc[2])
+                        Slist = np.sin(cc[2])
+                        CClist = Clist**2
+                        SSlist = Slist**2
+                        SClist = Clist*Slist
+                        SS2 = (SSlist/(cc[1]*cc[1])).sum()
+                        SC2 = (CClist/(cc[1]*cc[1])).sum()
+                        SSC = (SClist/(cc[1]*cc[1])).sum()
+                        Sc1C2=(c1*CClist/(cc[1]*cc[1])).sum()
+                        Sc1SC=(c1*SClist/(cc[1]*cc[1])).sum()
+                        Sc2SC=(c2*SClist/(cc[1]*cc[1])).sum()
+                        Sc2S2=(c2*SSlist/(cc[1]*cc[1])).sum()
+                        SALC = (cc[0]*Clist/(cc[1]*cc[1])).sum()
+                        SALS = (cc[0]*Slist/(cc[1]*cc[1])).sum()
+                        p1 = SC2*SS2 - SSC**2
+                        L0N = (SALC*SS2 - (Sc1C2 + Sc2SC)*SS2 + (-SALS + Sc1SC + Sc2S2)*SSC)/p1
+                        L0E = (SALS*SC2 - SC2*(Sc1SC + Sc2S2) + (-SALC + Sc1C2 + Sc2SC)*SSC)/p1
+                        chia = (((cc[0] - (c1+L0N)*Clist-(c2+L0E)*Slist)/cc[1])**2).sum()
+                        self.chi2 += chia
                 self.L0Dec.append(L0N)
                 self.L0RA.append(L0E)
                     
@@ -586,7 +607,7 @@ class plotmodel:
 
     def calculate_astrometry(self, i):
         isat = self.satellites[i]
-        mags = np.array(self.magnifications[isat][1])
+        mags = np.array(self.magnifications[isat])
         c1s = np.array(self.c1s[isat])
         c2s = np.array(self.c2s[isat])
         c1l = np.array(self.c1l[isat])
@@ -691,6 +712,42 @@ class plotmodel:
         else:
             print('No astrometry for this dataset')
     
+    def showastrometryGaia(self, i = None):
+        plt.figure()
+        fig, ax =plt.subplots(figsize=[7,5])
+        self.axesastrometryGaia(ax, i)
+        self.figure = fig
+    
+    def axesastrometryGaia(self,ax, i):
+        if(i==None):
+            for j in range(self.nfil):
+                if(len(self.centroids[j])>0 and self.centroids[j][1][0]>0):
+                    i=j
+                    break
+            if(i==None):
+                print('No astrometric data!')
+                return
+        if(self.centroids[i][1][0]>0):      
+            self.calculate_astrometry(i)
+            ax.set_ylabel('Along-scan offset')
+            ax.set_xlabel('measure number')
+            ax.xaxis.set_minor_locator(AutoMinorLocator())
+            ax.yaxis.set_minor_locator(AutoMinorLocator())
+            timesarray = self.magnitudes[self.satellites[i]][0]
+            centroidinew0 = np.array([self.centroidi[0][np.argmin(np.abs(timesarray - lct))] for lct in self.lctimes[i]])
+            centroidinew1 = np.array([self.centroidi[1][np.argmin(np.abs(timesarray - lct))] for lct in self.lctimes[i]])
+            y = self.centroids[i][0]-(centroidinew0*np.cos(np.array(self.centroids[i][2])) 
+                    +centroidinew1*np.sin(np.array(self.centroids[i][2])))
+            self.ran = np.max(np.abs(y))*1.1
+            ax.errorbar(np.arange(len(self.centroids[i][0])),y,yerr=self.centroids[i][1],
+                       color=self.colors[i],fmt='.',label=self.telescopes[i])
+            ax.plot(np.arange(len(self.centroids[i][0])),0*np.arange(len(self.centroids[i][0])),self.satellitecolors[self.satellites[i]],linewidth=1,zorder = 1.e10)
+            ax.set_ylim([-self.ran,+self.ran])
+            if(self.eventname != None):
+                ax.legend(loc=self.legendlocation)
+        else:
+            print('No astrometry for this dataset')
+            
     def update(self, frame):
         self.im.set_array(self.images_array[frame])
         return self.im,
