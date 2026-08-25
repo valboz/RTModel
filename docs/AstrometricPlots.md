@@ -54,4 +54,14 @@ myplot.showastrometryDec()
 
 They both accept the telescope number as optional argument.
 
+## Gaia astrometry
+
+For one-component astrometry provided by Gaia, we may displace the residuals of the measurement from the model by
+```
+myplot.showastrometryGaia()
+```
+
+<img src="figs/fig_astro_Gaia.png" width = 500>
+
+
 [Go to **High-Resolution Imaging**](HighResolutionImaging.md)
