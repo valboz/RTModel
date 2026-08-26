@@ -76,7 +76,7 @@ LevMar::LevMar(int argc, char* argv[]) {
 	VBM->Tol = Tol;
 	VBM->RelTol = 0.001;
 	VBM->parallaxsystem = 1;
-	VBM->SetMethod(VBMicrolensing::Method::Multipoly);
+	VBM->SetMethod(VBMicrolensing::Method::Nopoly);
 
 	ReadFiles(argc, argv);
 
@@ -129,6 +129,7 @@ LevMar::~LevMar() {
 
 			free(sumsigmaN);
 			free(sumsigmaE);
+			free(sumsigmaNE);
 			free(sumcN);
 			free(sumcE);
 			free(sumc1);
@@ -243,8 +244,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 2;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[1] = log(pr[1]);
-				pr[3] = log(pr[3]);
 				current_path(exedir);
 				current_path("..");
 				current_path("data");
@@ -260,9 +259,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 2;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[3] = log(pr[3]);
 			}
 			current_path(exedir);
 			current_path("..");
@@ -281,9 +277,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				it0 = 4;
 				it02 = 5;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[6] = log(pr[6]);
 				current_path(exedir);
 				current_path("..");
 				current_path("data");
@@ -300,9 +293,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				it0 = 4;
 				it02 = 5;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[6] = log(pr[6]);
 			}
 			current_path(exedir);
 			current_path("..");
@@ -320,10 +310,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[4] = log(pr[4]);
-				pr[5] = log(pr[5]);
 				current_path(exedir);
 				current_path("..");
 				current_path("data");
@@ -340,10 +326,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					ReadOptions(preleftlim, prerightlim, presigmapr);
 					it0 = 6;
 					error = InitCond(presigmapr, preleftlim, prerightlim);
-					pr[0] = log(pr[0]);
-					pr[1] = log(pr[1]);
-					pr[4] = log(pr[4]);
-					pr[5] = log(pr[5]);
 					current_path(exedir);
 					current_path("..");
 					current_path("data");
@@ -360,10 +342,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						ReadOptions(preleftlim, prerightlim, presigmapr);
 						it0 = 6;
 						error = InitCond(presigmapr, preleftlim, prerightlim);
-						pr[0] = log(pr[0]);
-						pr[1] = log(pr[1]);
-						pr[4] = log(pr[4]);
-						pr[5] = log(pr[5]);
 						current_path(exedir);
 						current_path("..");
 						current_path("data");
@@ -379,10 +357,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 						ReadOptions(preleftlim, prerightlim, presigmapr);
 						it0 = 6;
 						error = InitCond(presigmapr, preleftlim, prerightlim);
-						pr[0] = log(pr[0]);
-						pr[1] = log(pr[1]);
-						pr[4] = log(pr[4]);
-						pr[5] = log(pr[5]);
 					}
 				}
 			}
@@ -397,12 +371,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 				ReadOptions(preleftlim, prerightlim, presigmapr);
 				it0 = 6;
 				error = InitCond(presigmapr, preleftlim, prerightlim);
-				pr[0] = log(pr[0]);
-				pr[1] = log(pr[1]);
-				pr[4] = log(pr[4]);
-				pr[5] = log(pr[5]);
-				pr[7] = log(pr[7]);
-				pr[8] = log(pr[8]);
 				current_path(exedir);
 				current_path("..");
 				current_path("data");
@@ -419,12 +387,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					ReadOptions(preleftlim, prerightlim, presigmapr);
 					it0 = 6;
 					error = InitCond(presigmapr, preleftlim, prerightlim);
-					pr[0] = log(pr[0]);
-					pr[1] = log(pr[1]);
-					pr[4] = log(pr[4]);
-					pr[5] = log(pr[5]);
-					pr[7] = log(pr[7]);
-					pr[8] = log(pr[8]);
 					current_path(exedir);
 					current_path("..");
 					current_path("data");
@@ -440,12 +402,6 @@ void LevMar::ReadFiles(int argc, char* argv[]) {
 					ReadOptions(preleftlim, prerightlim, presigmapr);
 					it0 = 6;
 					error = InitCond(presigmapr, preleftlim, prerightlim);
-					pr[0] = log(pr[0]);
-					pr[1] = log(pr[1]);
-					pr[4] = log(pr[4]);
-					pr[5] = log(pr[5]);
-					pr[7] = log(pr[7]);
-					pr[8] = log(pr[8]);
 				}
 			}
 			break;
@@ -611,8 +567,12 @@ void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presig
 					}
 
 					if (command[0] == 'g' && command[1] == '_') { // Blending
-						sscanf(&command[2], "%d", &consindex[conscurrent]);
-						consindex[conscurrent] += 10000;
+						int bl;
+						sscanf(&command[2], "%d", &bl);
+						if (bl < nfil) {
+							consindex[conscurrent] = bl;
+							consindex[conscurrent] += 10000;
+						}
 					}
 					// special combinations
 					if (strcmp(command, "muangle") == 0) {
@@ -722,7 +682,7 @@ void LevMar::ReadOptions(double* preleftlim, double* prerightlim, double* presig
 
 int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim) {
 	char buffer[3200], initcondfile[256];
-	int npeaks, ninit, incond;
+	int npeaks, ninit, incond, flaglog;
 	FILE* f;
 	sigmapr = (double*)malloc(sizeof(double) * nps);
 	leftlim = (double*)malloc(sizeof(double) * nps);
@@ -748,9 +708,22 @@ int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim
 		leftlim[i] = preleftlim[i];
 		rightlim[i] = prerightlim[i];
 		fscanf(f, "%lg", &(pr[i]));
+		flaglog = 0;
+		for (int j = 0; j < (int)logposs[modnumber].size(); j++) {
+			if (logposs[modnumber][j] == i) flaglog = 1;
+		}
+		if (flaglog) pr[i] = log(pr[i]);
 		if (i == it0 || i == it02) {
 			rightlim[i] += pr[i];
 			leftlim[i] += pr[i];
+		}
+		else {
+			if (pr[i] > rightlim[i]) {
+				pr[i] = rightlim[i] * 0.99 + leftlim[i] * 0.01;
+			}
+			if (pr[i] < leftlim[i]) {
+				pr[i] = rightlim[i] * 0.01 + leftlim[i] * 0.99;
+			}
 		}
 	}
 	fclose(f);
@@ -775,6 +748,7 @@ void LevMar::ReadAncillary() {
 		if (astrometric) {
 			sumsigmaN = (double*)malloc(sizeof(double) * nfil);
 			sumsigmaE = (double*)malloc(sizeof(double) * nfil);
+			sumsigmaNE = (double*)malloc(sizeof(double) * nfil);
 			sumcN = (double*)malloc(sizeof(double) * nfil);
 			sumcE = (double*)malloc(sizeof(double) * nfil);
 			sumc1 = (double*)malloc(sizeof(double) * nfil);
@@ -828,7 +802,7 @@ void LevMar::ReadAncillary() {
 
 		k = 0;
 		sumsigma[k] = sumy[k] = sumy2[k] = 0;
-		if (astrometric) sumcN[k] = sumcE[k] = sumsigmaN[k] = sumsigmaE[k] = 0;
+		if (astrometric) sumcN[k] = sumcE[k] = sumsigmaN[k] = sumsigmaE[k] = sumsigmaNE[k] = 0;
 		starts[k] = 0;
 		for (int i = 0; i < np; i++) {
 			w[i] /= normfacs[filter[i]];
@@ -836,7 +810,7 @@ void LevMar::ReadAncillary() {
 				sizes[k] = i - starts[k];
 				k++;
 				sumsigma[k] = sumy[k] = sumy2[k] = 0;
-				if (astrometric) sumcN[k] = sumcE[k] = sumsigmaN[k] = sumsigmaE[k] = 0;
+				if (astrometric) sumcN[k] = sumcE[k] = sumsigmaN[k] = sumsigmaE[k] = sumsigmaNE[k] = 0;
 				starts[k] = i;
 			}
 			sumsigma[k] += w[i] * w[i];
@@ -846,10 +820,23 @@ void LevMar::ReadAncillary() {
 			if (astrometric) {
 				wcN[i] /= normfacs[filter[i]];
 				wcE[i] /= normfacs[filter[i]];
-				sumsigmaN[k] += wcN[i] * wcN[i];
-				sumsigmaE[k] += wcE[i] * wcE[i];
-				sumcN[k] += wcN[i] * wcN[i] * cN[i];
-				sumcE[k] += wcE[i] * wcE[i] * cE[i];
+				if (wcE[i] > 0) {
+					sumsigmaN[k] += wcN[i] * wcN[i];
+					sumsigmaE[k] += wcE[i] * wcE[i];
+					sumcN[k] += wcN[i] * wcN[i] * cN[i];
+					sumcE[k] += wcE[i] * wcE[i] * cE[i];
+				}
+				else { // Gaia astrometry case
+					double C2 = cos(cE[i]), S2 = sin(cE[i]);
+					double SC = S2 * C2;
+					sumcN[k] += wcN[i] * wcN[i] * cN[i] * C2;
+					sumcE[k] += wcN[i] * wcN[i] * cN[i] * S2;
+					C2 *= C2;
+					S2 *= S2;
+					sumsigmaN[k] += wcN[i] * wcN[i] * C2;
+					sumsigmaE[k] += wcN[i] * wcN[i] * S2;
+					sumsigmaNE[k] += wcN[i] * wcN[i] * SC;
+				}
 			}
 		}
 		sizes[k] = np - starts[k];
@@ -1388,6 +1375,7 @@ double LevMar::ChiSquared(double* pr) {
 	double p1max = 0, maxsump = 0, maxsumn = 0;
 	double t1 = 0, t2 = 0, tmax = 0;
 	double y1max = 0, y2max = 0, y1t1 = 0, y2t1 = 0, y1t2 = 0, y2t2 = 0;
+	double sumc1C2, sumc1SC, sumc2SC, sumc2S2;
 	maxmaxsum = 0;
 	bool in_pos_sequence;
 
@@ -1401,6 +1389,9 @@ double LevMar::ChiSquared(double* pr) {
 			sumf[fl] += w[i] * w[i] * fb[i];
 			sumf2[fl] += w[i] * w[i] * fb[i] * fb[i];
 			sumfy[fl] += w[i] * w[i] * fb[i] * y[i];
+			if (sumf[fl] > 1.e100) {
+				sumf[fl] = sumf[fl];
+			}
 		}
 	}
 	for (int i = 0; i < nfil; i++) {
@@ -1434,20 +1425,46 @@ double LevMar::ChiSquared(double* pr) {
 			if (wcN[starts[fl]] > 1.e-90) { // Only calculate for datasets with astrometric data
 				g = pr[nps + fl * nlinpar] / (pr[nps + fl * nlinpar + 1] + pr[nps + fl * nlinpar] * 1.e-8); // Blending for this dataset
 				sumc1[fl] = sumc2[fl] = 0;
-				for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
-					c1s[i] = (c1s[i] * fb[i] + c1l[i] * g) / (fb[i] + g); // Weighted centroid
-					c2s[i] = (c2s[i] * fb[i] + c2l[i] * g) / (fb[i] + g);
-					sumc1[fl] += wcN[i] * wcN[i] * c1s[i];
-					sumc2[fl] += wcE[i] * wcE[i] * c2s[i];
+				if (sumsigmaNE[fl] == 0) {
+					for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+						c1s[i] = (c1s[i] * fb[i] + c1l[i] * g) / (fb[i] + g); // Weighted centroid
+						c2s[i] = (c2s[i] * fb[i] + c2l[i] * g) / (fb[i] + g);
+						sumc1[fl] += wcN[i] * wcN[i] * c1s[i];
+						sumc2[fl] += wcE[i] * wcE[i] * c2s[i];
+					}
+					pr[nps + fl * nlinpar + 2] = (sumcN[fl] - sumc1[fl]) / sumsigmaN[fl]; // Origin shift
+					pr[nps + fl * nlinpar + 3] = (sumcE[fl] - sumc2[fl]) / sumsigmaE[fl];
+					for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+						p1 = (cN[i] - pr[nps + fl * nlinpar + 2] - c1s[i]) * wcN[i];
+						chia += p1 * p1;
+						p1 = (cE[i] - pr[nps + fl * nlinpar + 3] - c2s[i]) * wcE[i];
+						chia += p1 * p1;
+					}
 				}
-				pr[nps + fl * nlinpar + 2] = (sumcN[fl] - sumc1[fl]) / sumsigmaN[fl]; // Origin shift
-				pr[nps + fl * nlinpar + 3] = (sumcE[fl] - sumc2[fl]) / sumsigmaE[fl];
-				for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
-					p1 = (cN[i] - pr[nps + fl * nlinpar + 2] - c1s[i]) * wcN[i];
-					chia += p1 * p1;
-					p1 = (cE[i] - pr[nps + fl * nlinpar + 3] - c2s[i]) * wcE[i];
-					chia += p1 * p1;
-
+				else { // Gaia astrometry case
+					double sumc1C2 = 0, sumc1SC = 0, sumc2SC = 0, sumc2S2 = 0, C2, S2, SC, C, S;
+					for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+						C = cos(cE[i]), S = sin(cE[i]);
+						SC = C * S;
+						C2 = C * C;
+						S2 = S * S;
+						c1s[i] = (c1s[i] * fb[i] + c1l[i] * g) / (fb[i] + g); // Weighted centroid
+						c2s[i] = (c2s[i] * fb[i] + c2l[i] * g) / (fb[i] + g);
+						sumc1C2 += wcN[i] * wcN[i] * c1s[i] * C2;
+						sumc1SC += wcN[i] * wcN[i] * c1s[i] * SC;
+						sumc2S2 += wcN[i] * wcN[i] * c2s[i] * S2;
+						sumc2SC += wcN[i] * wcN[i] * c2s[i] * SC;
+					}
+					p1 = sumsigmaN[fl] * sumsigmaE[fl] - sumsigmaNE[fl] * sumsigmaNE[fl];
+					pr[nps + fl * nlinpar + 2] = (sumsigmaE[fl] * (sumcN[fl] - sumc1C2 - sumc2SC) -
+						sumsigmaNE[fl] * (sumcE[fl] - sumc1SC - sumc2S2)) / p1; // Origin shift
+					pr[nps + fl * nlinpar + 3] = (sumsigmaN[fl] * (sumcE[fl] - sumc1SC - sumc2S2) -
+						sumsigmaNE[fl] * (sumcN[fl] - sumc1C2 - sumc2SC)) / p1;
+					for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+						C = cos(cE[i]), S = sin(cE[i]);
+						p1 = (cN[i] - ((pr[nps + fl * nlinpar + 2] + c1s[i]) * C + (pr[nps + fl * nlinpar + 3] + c2s[i]) * S)) * wcN[i];
+						chia += p1 * p1;
+					}
 				}
 			}
 			else {
@@ -1646,16 +1663,40 @@ void LevMar::Grad() {
 				if (wcN[starts[fl]] > 1.e-90) { // Only calculate for datasets with astrometric data
 					g = prn[nps + fl * nlinpar] / (prn[nps + fl * nlinpar + 1] + 1.e-12 * prn[nps + fl * nlinpar]); // Blending for this dataset
 					sumc1[fl] = sumc2[fl] = 0;
-					for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
-						c1s[i + np * (j + 1)] = (c1s[i + np * (j + 1)] * fb[i + np * (j + 1)] + c1l[i + np * (j + 1)] * g) / (fb[i + np * (j + 1)] + g); // Weighted centroid
-						c2s[i + np * (j + 1)] = (c2s[i + np * (j + 1)] * fb[i + np * (j + 1)] + c2l[i + np * (j + 1)] * g) / (fb[i + np * (j + 1)] + g);
-						sumc1[fl] += wcN[i] * wcN[i] * c1s[i + np * (j + 1)];
-						sumc2[fl] += wcE[i] * wcE[i] * c2s[i + np * (j + 1)];
+					if (sumsigmaNE[fl] == 0) {
+						for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+							c1s[i + np * (j + 1)] = (c1s[i + np * (j + 1)] * fb[i + np * (j + 1)] + c1l[i + np * (j + 1)] * g) / (fb[i + np * (j + 1)] + g); // Weighted centroid
+							c2s[i + np * (j + 1)] = (c2s[i + np * (j + 1)] * fb[i + np * (j + 1)] + c2l[i + np * (j + 1)] * g) / (fb[i + np * (j + 1)] + g);
+							sumc1[fl] += wcN[i] * wcN[i] * c1s[i + np * (j + 1)];
+							sumc2[fl] += wcE[i] * wcE[i] * c2s[i + np * (j + 1)];
+						}
+						prn[nps + fl * nlinpar + 2] = (sumcN[fl] - sumc1[fl]) / sumsigmaN[fl]; // Origin shift
+						prn[nps + fl * nlinpar + 3] = (sumcE[fl] - sumc2[fl]) / sumsigmaE[fl];
+						dFdp[(2 + nlinpar * fl) * nps + j] = (prn[nps + fl * nlinpar + 2] - pr[nps + fl * nlinpar + 2]) / inc[j];
+						dFdp[(3 + nlinpar * fl) * nps + j] = (prn[nps + fl * nlinpar + 3] - pr[nps + fl * nlinpar + 3]) / inc[j];
 					}
-					prn[nps + fl * nlinpar + 2] = (sumcN[fl] - sumc1[fl]) / sumsigmaN[fl]; // Origin shift
-					prn[nps + fl * nlinpar + 3] = (sumcE[fl] - sumc2[fl]) / sumsigmaE[fl];
-					dFdp[(2 + nlinpar * fl) * nps + j] = (prn[nps + fl * nlinpar + 2] - pr[nps + fl * nlinpar + 2]) / inc[j];
-					dFdp[(3 + nlinpar * fl) * nps + j] = (prn[nps + fl * nlinpar + 3] - pr[nps + fl * nlinpar + 3]) / inc[j];
+					else { // Gaia astrometry case
+						double sumc1C2 = 0, sumc1SC = 0, sumc2SC = 0, sumc2S2 = 0, C2, S2, SC, C, S;
+						for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
+							C = cos(cE[i]), S = sin(cE[i]);
+							SC = C * S;
+							C2 = C * C;
+							S2 = S * S;
+							c1s[i + np * (j + 1)] = (c1s[i + np * (j + 1)] * fb[i + np * (j + 1)] + c1l[i + np * (j + 1)] * g) / (fb[i + np * (j + 1)] + g); // Weighted centroid
+							c2s[i + np * (j + 1)] = (c2s[i + np * (j + 1)] * fb[i + np * (j + 1)] + c2l[i + np * (j + 1)] * g) / (fb[i + np * (j + 1)] + g);
+							sumc1C2 += wcN[i] * wcN[i] * c1s[i + np * (j + 1)] * C2;
+							sumc1SC += wcN[i] * wcN[i] * c1s[i + np * (j + 1)] * SC;
+							sumc2S2 += wcN[i] * wcN[i] * c2s[i + np * (j + 1)] * S2;
+							sumc2SC += wcN[i] * wcN[i] * c2s[i + np * (j + 1)] * SC;
+						}
+						p1 = sumsigmaN[fl] * sumsigmaE[fl] - sumsigmaNE[fl] * sumsigmaNE[fl];
+						prn[nps + fl * nlinpar + 2] = (sumsigmaE[fl] * (sumcN[fl] - sumc1C2 - sumc2SC) -
+							sumsigmaNE[fl] * (sumcE[fl] - sumc1SC - sumc2S2)) / p1; // Origin shift
+						prn[nps + fl * nlinpar + 3] = (sumsigmaN[fl] * (sumcE[fl] - sumc1SC - sumc2S2) -
+							sumsigmaNE[fl] * (sumcN[fl] - sumc1C2 - sumc2SC)) / p1;
+						dFdp[(2 + nlinpar * fl) * nps + j] = (prn[nps + fl * nlinpar + 2] - pr[nps + fl * nlinpar + 2]) / inc[j];
+						dFdp[(3 + nlinpar * fl) * nps + j] = (prn[nps + fl * nlinpar + 3] - pr[nps + fl * nlinpar + 3]) / inc[j];
+					}
 				}
 				else {
 					prn[nps + fl * nlinpar + 2] = prn[nps + fl * nlinpar + 3] = 0;
@@ -1685,17 +1726,29 @@ void LevMar::Grad() {
 				Graderr[j] += p1 * p1;
 			}
 			if (wcN[i] > 0) {
-				p1 = (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - cN[i]) * wcN[i];
-				GradVec[j] += p1 * p1;
-				p1 = (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - cE[i]) * wcE[i];
-				GradVec[j] += p1 * p1;
-				Gr[j][i + np] = wcN[i] * (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 2] - c1s[i]) / inc[j];
-				Gr[j][i + np * 2] = wcE[i] * (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 3] - c2s[i]) / inc[j];
+				if (wcE[i] > 0) {
+					p1 = (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - cN[i]) * wcN[i];
+					GradVec[j] += p1 * p1;
+					p1 = (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - cE[i]) * wcE[i];
+					GradVec[j] += p1 * p1;
+					Gr[j][i + np] = wcN[i] * (prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 2] - c1s[i]) / inc[j];
+					Gr[j][i + np * 2] = wcE[i] * (prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 3] - c2s[i]) / inc[j];
 
-				p1 = 0.1 * grtol * Gr[j][i + np] * wcN[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
-				Graderr[j] += p1 * p1;
-				p1 = 0.1 * grtol * Gr[j][i + np * 2] * wcE[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
-				Graderr[j] += 2 * p1 * p1;
+					p1 = 0.1 * grtol * Gr[j][i + np] * wcN[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
+					Graderr[j] += p1 * p1;
+					p1 = 0.1 * grtol * Gr[j][i + np * 2] * wcE[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
+					Graderr[j] += 2 * p1 * p1;
+				}
+				else { // Gaia astrometry
+					double C = cos(cE[i]), S = sin(cE[i]);
+					p1 = (((prn[nps + filter[i] * nlinpar + 2] + c1s[i]) * C + (prn[nps + filter[i] * nlinpar + 3] + c2s[i]) * S) - cN[i]) * wcN[i];
+					GradVec[j] += p1 * p1;
+					Gr[j][i + np] = wcN[i] * ((prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 2] - c1s[i]) * C +
+						(prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 3] - c2s[i]) * S) / inc[j];
+
+					p1 = 0.1 * grtol * Gr[j][i + np] * wcN[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
+					Graderr[j] += p1 * p1;
+				}
 			}
 		}
 		//printf("%d ", j);
@@ -1711,7 +1764,9 @@ void LevMar::Grad() {
 				}
 				if (wcN[k] > 0) {
 					Curv[i * nps + j] += Gr[i][k + np] * Gr[j][k + np];
-					Curv[i * nps + j] += Gr[i][k + np * 2] * Gr[j][k + np * 2];
+					if (wcE[k] > 0) {
+						Curv[i * nps + j] += Gr[i][k + np * 2] * Gr[j][k + np * 2];
+					}
 				}
 			}
 			// Constraints in curvature
@@ -1735,10 +1790,10 @@ void LevMar::Grad() {
 		// Debug
 		printf("%.2le %.2le %.1le\n", Graderr[i], Curv[i * nps + i], inc[i]);
 	}
-	//	getchar();
+	//getchar();
 
 
-		// Offset
+	// Offset
 	for (int i = 0; i < nps; i++) {
 		p1 = 0;
 		for (int k = 0; k < np; k++) {
@@ -1746,8 +1801,14 @@ void LevMar::Grad() {
 				p1 += w[k] * Gr[i][k] * (y[k] - pr[nps + filter[k] * nlinpar] - pr[nps + 1 + filter[k] * nlinpar] * fb[k]);
 			}
 			if (wcN[k] > 0) {
-				p1 += wcN[k] * Gr[i][k + np] * (cN[k] - pr[nps + filter[k] * nlinpar + 2] - c1s[k]);
-				p1 += wcE[k] * Gr[i][k + np * 2] * (cE[k] - pr[nps + filter[k] * nlinpar + 3] - c2s[k]);
+				if (wcE[k] > 0) {
+					p1 += wcN[k] * Gr[i][k + np] * (cN[k] - pr[nps + filter[k] * nlinpar + 2] - c1s[k]);
+					p1 += wcE[k] * Gr[i][k + np * 2] * (cE[k] - pr[nps + filter[k] * nlinpar + 3] - c2s[k]);
+				}
+				else { // Gaia astrometry
+					double C = cos(cE[k]), S = sin(cE[k]);
+					p1 += wcN[k] * Gr[i][k + np] * (cN[k] - ((pr[nps + filter[k] * nlinpar + 2] + c1s[k]) * C + (pr[nps + filter[k] * nlinpar + 3] + c2s[k]) * S));
+				}
 			}
 		}
 		//B0[i] = p1 - Curv[i * nps + i]*0.5*inc; /// Experimental
@@ -1769,7 +1830,7 @@ inline double LevMar::ComputeConstraint(double* pr, int ic) {
 		return pr[(i - 100) + nps - 4];
 	}
 	if (i < 20000) {
-		return pr[nps + (i - 10000) * 2] / pr[nps + (i - 10000) * 2 + 1];
+		return pr[nps + (i - 10000) * 2] / (pr[nps + (i - 10000) * 2 + 1] + 1.e-50);
 	}
 	if (i == 30000) {
 		int posN = -1, posE = -1;

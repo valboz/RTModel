@@ -37,6 +37,7 @@ class LevMar {
 	double* cN, * cE, * wcN, * wcE, * c1s, * c2s, * c1l, * c2l;
 	double* pr, * prn, * sumy, * sumy2, * sumsigma, * sumfy, * sumf, * sumf2, * limbdarks;
 	double* sumsigmaN, * sumsigmaE, * sumcN, * sumcE, * sumc1, * sumc2;
+	double* sumsigmaNE; // for Gaia astrometry
 	int* sizes, * starts;
 	double* inc;
 	double* GradVec, *Graderr;

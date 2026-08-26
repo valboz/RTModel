@@ -17,7 +17,7 @@ from tabulate import tabulate
 
 class plotmodel:
     def __init__(self, eventname,model = '', tmin = '', tmax = '', magmin = '', magmax = '', tlabel='t', maglabel='mag', reslabel = 'Res',
-                 referencephot = 0, timesteps = 300, 
+                 referencephot = 0, timesteps = 300, magoffset = 0,
                  modelfile = None, parameters = [], line = 0,printpars = True, printimage = True, animate = False,interval = 1000, 
                  satellitedir = '.', accuracy = 0.01, colors = None, satellitecolors = None):
         self.satellitedir = satellitedir
@@ -31,6 +31,7 @@ class plotmodel:
         self.inputmagmax = magmax
         self.tlabel = tlabel
         self.maglabel = maglabel
+        self.magoffset = magoffset
         self.reslabel = reslabel
         self.timesteps = timesteps
         self.referencephot = referencephot
@@ -50,8 +51,8 @@ class plotmodel:
         self.vbm.Tol = accuracy
         self.vbm.SetMethod(VBMicrolensing.VBMicrolensing.Multipoly)
         # General information on models
-        self.modelcodes= ['PS','PX','BS','BO','LS','LX','LO','LK','TS','TX']
-        self.npars=[4,6,7,12,7,9,12,14,10,12]
+        self.modelcodes= ['PS','PX','BS','BO','LS','LX','LO','LK','TS','TX','TO']
+        self.npars=[4,6,7,12,7,9,12,14,10,12,15]
         self.logposs=[[0,1,3],
                  [1,3],
                  [0,1,6],
@@ -60,6 +61,7 @@ class plotmodel:
                  [0,1,4,5],
                  [0,1,4,5],
                  [0,1,4,5],
+                 [0,1,4,5,7,8],
                  [0,1,4,5,7,8],
                  [0,1,4,5,7,8]]
         self.parnames = [['u0','tE','t0','rho'],
@@ -71,7 +73,8 @@ class plotmodel:
                     ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz'],
                     ['s','q','u0','alpha','rho','tE','t0','piN','piE','gamma1','gamma2','gammaz','sz_s','a_s3d'],
                     ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta'],
-                    ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta','piN','piE']]
+                    ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta','piN','piE'],
+                    ['s','q','u0','alpha','rho','tE','t0','s2','q2','beta','piN','piE','gamma1','gamma2','gammaz']]
         self.astroparnames = ['muS_Dec','muS_RA','piS','thetaE']
         if(colors != None):
             self.colors = colors
@@ -106,8 +109,7 @@ class plotmodel:
             self.nfil = 0
             self.npoints = 0
         else:
-            os.chdir(self.eventname)
-            with open('LCToFit.txt') as f:
+            with open(self.eventname + '/LCToFit.txt') as f:
                 self.npoints=int(f.readline())
                 ofil=0
                 data=[[]]
@@ -130,7 +132,7 @@ class plotmodel:
                     self.npars[i] += 4
                     self.parnames[i] += self.astroparnames
             self.lightcurves = [ [np.array([dl[0] for dl in d]),np.array([dl[1] for dl in d]),np.array([dl[2] for dl in d]) , np.array([dl[4] for dl in d]),np.array([dl[5] for dl in d]),np.array([dl[6] for dl in d]),np.array([dl[7] for dl in d]),d[0][3]] for d in data]
-            with open('FilterToData.txt') as f:
+            with open(self.eventname + '/FilterToData.txt') as f:
                 self.telescopes = f.readlines()
                 for i in range(0,self.nfil):
                     self.telescopes[i] = self.telescopes[i][0:self.telescopes[i].index('.')]
@@ -165,8 +167,6 @@ class plotmodel:
     # Reading model parameters
     def readparameters(self):
         self.modnumber = self.modelcodes.index(self.model[0:2])
-        if(self.eventname != None):
-            os.chdir(self.eventname)
         if(self.parameters == []):
             with open(self.modelfile) as f:
                 lines = f.readlines()
@@ -238,16 +238,37 @@ class plotmodel:
                     ccarr = np.array(cc0[3:7])
                     cctran=np.transpose(ccarr)
                     cc = np.transpose(cctran)
-                    sumcN = (cc[0]/(cc[1]*cc[1])).sum()
-                    sumc1 = (c1/(cc[1]*cc[1])).sum()
-                    sumsigmaN = (1/(cc[1]*cc[1])).sum()
-                    sumcE = (cc[2]/(cc[3]*cc[3])).sum()
-                    sumc2 = (c2/(cc[3]*cc[3])).sum()
-                    sumsigmaE = (1/(cc[3]*cc[3])).sum()
-                    L0N = (sumcN-sumc1)/sumsigmaN
-                    L0E = (sumcE-sumc2)/sumsigmaE
-                    chia = ((cc[0] - c1 - L0N)**2/(cc[1]*cc[1])).sum() + ((cc[2] - c2 - L0E)**2/(cc[3]*cc[3])).sum()      
-                    self.chi2 += chia
+                    if(self.lightcurves[i][6][0]>0):
+                        sumcN = (cc[0]/(cc[1]*cc[1])).sum()
+                        sumc1 = (c1/(cc[1]*cc[1])).sum()
+                        sumsigmaN = (1/(cc[1]*cc[1])).sum()
+                        sumcE = (cc[2]/(cc[3]*cc[3])).sum()
+                        sumc2 = (c2/(cc[3]*cc[3])).sum()
+                        sumsigmaE = (1/(cc[3]*cc[3])).sum()
+                        L0N = (sumcN-sumc1)/sumsigmaN
+                        L0E = (sumcE-sumc2)/sumsigmaE
+                        chia = ((cc[0] - c1 - L0N)**2/(cc[1]*cc[1])).sum() + ((cc[2] - c2 - L0E)**2/(cc[3]*cc[3])).sum()      
+                        self.chi2 += chia
+                    else: #Gaia case
+                        Clist = np.cos(cc[2])
+                        Slist = np.sin(cc[2])
+                        CClist = Clist**2
+                        SSlist = Slist**2
+                        SClist = Clist*Slist
+                        SS2 = (SSlist/(cc[1]*cc[1])).sum()
+                        SC2 = (CClist/(cc[1]*cc[1])).sum()
+                        SSC = (SClist/(cc[1]*cc[1])).sum()
+                        Sc1C2=(c1*CClist/(cc[1]*cc[1])).sum()
+                        Sc1SC=(c1*SClist/(cc[1]*cc[1])).sum()
+                        Sc2SC=(c2*SClist/(cc[1]*cc[1])).sum()
+                        Sc2S2=(c2*SSlist/(cc[1]*cc[1])).sum()
+                        SALC = (cc[0]*Clist/(cc[1]*cc[1])).sum()
+                        SALS = (cc[0]*Slist/(cc[1]*cc[1])).sum()
+                        p1 = SC2*SS2 - SSC**2
+                        L0N = (SALC*SS2 - (Sc1C2 + Sc2SC)*SS2 + (-SALS + Sc1SC + Sc2S2)*SSC)/p1
+                        L0E = (SALS*SC2 - SC2*(Sc1SC + Sc2S2) + (-SALC + Sc1C2 + Sc2SC)*SSC)/p1
+                        chia = (((cc[0] - (c1+L0N)*Clist-(c2+L0E)*Slist)/cc[1])**2).sum()
+                        self.chi2 += chia
                 self.L0Dec.append(L0N)
                 self.L0RA.append(L0E)
                     
@@ -258,7 +279,7 @@ class plotmodel:
                 
     def lightcurve(self):
         if(self.modnumber == 1 or self.modnumber == 3 or self.modnumber > 4):
-            self.vbm.SetObjectCoordinates(glob.glob('Data/*.coordinates')[0],self.satellitedir)
+            self.vbm.SetObjectCoordinates(glob.glob(self.eventname + '/Data/*.coordinates')[0],self.satellitedir)
             self.vbm.parallaxsystem = 1
         if(self.modnumber == 0):
             self.results = self.vbm.ESPLLightCurve(self.pars,self.t)
@@ -298,6 +319,11 @@ class plotmodel:
                 self.results = self.vbm.TripleAstroLightCurve(self.pars,self.t)
             else:
                 self.results = self.vbm.TripleLightCurveParallax(self.pars,self.t)
+        elif(self.modnumber == 10):
+            if(self.astrometric):
+                self.results = self.vbm.TripleAstroLightCurveOrbital(self.pars,self.t)
+            else:
+                self.results = self.vbm.TripleLightCurveOrbital(self.pars,self.t)
     
     def calculate(self):
         # Light curve calculation
@@ -310,6 +336,9 @@ class plotmodel:
         if(self.tmax == ''):
             self.tmax = self.pars[t0i]+2*self.parsprint[tEi]
             
+        refblend = self.blends[self.referencephot]
+        if(self.sources[self.referencephot] +self.blends[self.referencephot]<0):
+            refblend = -self.sources[self.referencephot] + 10**(-0.4*self.magoffset)
         self.lctimes=[]
         self.lcmags=[]
         self.lcerrs=[]
@@ -319,13 +348,13 @@ class plotmodel:
             lc0 = self.lightcurves[i]
             lcarr = np.array(lc0[:7])
             lctran=np.transpose(lcarr)
-            lcsel = [x for x in lctran if(x[0]<self.tmax and x[0]>self.tmin and ((x[1]-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot] +self.blends[self.referencephot]>0 or x[2] < 0))]
+            lcsel = [x for x in lctran if(x[0]<self.tmax and x[0]>self.tmin and ((x[1]-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot] +refblend>0 or x[2] < 0))]
             lc = np.transpose(lcsel)
             if(len(lc)>0):
                 self.lctimes.append(lc[0])
                 if(lc[2][0]>0):
-                    self.lcmags.append(np.array([-2.5*math.log10((y-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot]+self.blends[self.referencephot]) for y in lc[1]]))
-                    self.lcerrs.append(lc[2]/lc[1]*2.5/math.log(10.0))
+                    self.lcmags.append(np.array([-2.5*math.log10((y-self.blends[i])/(self.sources[i]+1.e-12*self.blends[i])*self.sources[self.referencephot]+refblend) for y in lc[1]]))
+                    self.lcerrs.append(lc[2]/np.abs(lc[1])*2.5/math.log(10.0))
                 else:
                     self.lcmags.append([])
                     self.lcerrs.append([])
@@ -369,7 +398,7 @@ class plotmodel:
             self.vbm.satellite = satellite
             self.vbm.a1 = self.limbdarkenings[self.referencephot]
             self.lightcurve()        
-            self.mags = [-2.5*math.log10(max(self.sources[self.referencephot]*yi+self.blends[self.referencephot], 1.e-100)) for yi in self.results[0]]
+            self.mags = [-2.5*math.log10(self.sources[self.referencephot]*yi+refblend) for yi in self.results[0]]
             if(self.astrometric):
                 self.magnifications.append(self.results[0])
                 self.c1s.append(self.results[1])
@@ -410,7 +439,7 @@ class plotmodel:
             self.vbm.a1 = self.limbdarkenings[i]
             if(len(self.lcmags[i]))>0:
                 self.lightcurve()
-                self.mags = [-2.5*math.log10(max(self.sources[self.referencephot]*yi+self.blends[self.referencephot],1.e-100)) for yi in self.results[0]]
+                self.mags = [-2.5*math.log10(self.sources[self.referencephot]*yi+refblend) for yi in self.results[0]]
                 ress = self.mags-self.lcmags[i]
                 self.lcress.append(ress)
             else:
@@ -446,7 +475,7 @@ class plotmodel:
             table = [[t,base, bl] for t,base,bl in zip(self.telescopes,self.baselines,self.blendings)]
             table.insert(0,['telescope','baseline', 'blending'])
         for i in range(self.nfil,0,-1):
-            if(len(self.lcmags[i-1])==0):
+            if(len(self.lcmags[i-1])==0 or self.blendings[i-1] > 1.e9):
                 del(table[i])
         self.parstring = self.parstring + tabulate(table, headers='firstrow', tablefmt='fancy_grid')
         print(self.parstring)
@@ -578,7 +607,7 @@ class plotmodel:
 
     def calculate_astrometry(self, i):
         isat = self.satellites[i]
-        mags = np.array(self.magnifications[isat][1])
+        mags = np.array(self.magnifications[isat])
         c1s = np.array(self.c1s[isat])
         c2s = np.array(self.c2s[isat])
         c1l = np.array(self.c1l[isat])
@@ -683,6 +712,42 @@ class plotmodel:
         else:
             print('No astrometry for this dataset')
     
+    def showastrometryGaia(self, i = None):
+        plt.figure()
+        fig, ax =plt.subplots(figsize=[7,5])
+        self.axesastrometryGaia(ax, i)
+        self.figure = fig
+    
+    def axesastrometryGaia(self,ax, i):
+        if(i==None):
+            for j in range(self.nfil):
+                if(len(self.centroids[j])>0 and self.centroids[j][1][0]>0):
+                    i=j
+                    break
+            if(i==None):
+                print('No astrometric data!')
+                return
+        if(self.centroids[i][1][0]>0):      
+            self.calculate_astrometry(i)
+            ax.set_ylabel('Along-scan offset')
+            ax.set_xlabel('measure number')
+            ax.xaxis.set_minor_locator(AutoMinorLocator())
+            ax.yaxis.set_minor_locator(AutoMinorLocator())
+            timesarray = self.magnitudes[self.satellites[i]][0]
+            centroidinew0 = np.array([self.centroidi[0][np.argmin(np.abs(timesarray - lct))] for lct in self.lctimes[i]])
+            centroidinew1 = np.array([self.centroidi[1][np.argmin(np.abs(timesarray - lct))] for lct in self.lctimes[i]])
+            y = self.centroids[i][0]-(centroidinew0*np.cos(np.array(self.centroids[i][2])) 
+                    +centroidinew1*np.sin(np.array(self.centroids[i][2])))
+            self.ran = np.max(np.abs(y))*1.1
+            ax.errorbar(np.arange(len(self.centroids[i][0])),y,yerr=self.centroids[i][1],
+                       color=self.colors[i],fmt='.',label=self.telescopes[i])
+            ax.plot(np.arange(len(self.centroids[i][0])),0*np.arange(len(self.centroids[i][0])),self.satellitecolors[self.satellites[i]],linewidth=1,zorder = 1.e10)
+            ax.set_ylim([-self.ran,+self.ran])
+            if(self.eventname != None):
+                ax.legend(loc=self.legendlocation)
+        else:
+            print('No astrometry for this dataset')
+            
     def update(self, frame):
         self.im.set_array(self.images_array[frame])
         return self.im,

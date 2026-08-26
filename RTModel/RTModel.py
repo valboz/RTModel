@@ -48,6 +48,7 @@ class RTModel:
         self.config_ModelSelector()
         self.satellitedir = '.'
         self.astrometric = False
+        self.constraints = []
         self.parameters_ranges = {'PS': [[-11.,1.0, 1.0],[-4.6, 7.6, 1.0],[-300,300,5.0],[-11.5,2.3,2.3]],
                                   'PX': [[-3.0,3.0, 0.5],[-4.6, 7.6, 1.0],[-300,300,5.0],[-11.5,2.3,2.3],[-3.0,3.0,0.1],[-3.0,3.0,0.1]],
                                   'BS': [[-4.6,7.6,1.0],[-11.5,0.0,0.5],[0,3.0,0.5],[0,3.0,0.5],[-300,300,1.0],[-300,300,1.0],[-11.5,2.3,2.3]],
@@ -87,13 +88,15 @@ class RTModel:
 
     def set_constraints(self, constraints = None):
         self.constraints = constraints
+
+    def write_constraints(self):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
             os.makedirs(self.eventname + '/' + self.inidir)
         with open(self.eventname + '/' + self.inidir + '/Constraints.ini','w') as f:
-            for cons in constraints:
+            for cons in self.constraints:
                 f.write(cons[0] + ' = '+ str(cons[1]) + ' '+ str(cons[2]) + ' '+ str(cons[3]) + ' ' + '\n')
 
-    def set_parameter_ranges(self):
+    def write_parameter_ranges(self):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
             os.makedirs(self.eventname + '/' + self.inidir)
         with open(self.eventname + '/' + self.inidir + '/Parameters_Ranges.ini','w') as f:
@@ -158,8 +161,9 @@ class RTModel:
             print('\033[30;41m! Program stopped here!\033[m')
             self.done = True
  
-    def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, nostatic = False, onlyorbital = False, usesatellite = 0
-                       , templatelibrary = None, modelcategories = ['PS','PX','BS','BO','LS','LX','LO'], onlyupdate =False):
+    def config_InitCond(self, npeaks = 2, peakthreshold = 10.0, oldmodels = 4, override = None, 
+                        nostatic = False, onlyorbital = False, usesatellite = 0, onlyupdate =False,
+                        templatelibrary = None, modelcategories = ['PS','PX','BS','BO','LS','LX','LO']):
         self.InitCond_npeaks = npeaks # Number of peaks in the observed light curve to be considered for setting initial conditions.
         self.InitCond_peakthreshold = peakthreshold # Number of sigmas necessary for a deviation to be identified as a maximum or a minimum.
         self.InitCond_oldmodels = oldmodels # Maximum number of old models to include in new run as initial conditions
@@ -244,7 +248,8 @@ class RTModel:
                 for fl in parameters:
                     line = line + str(fl) + ' '
                 f.write(line)
-        self.set_parameter_ranges()
+        self.write_parameter_ranges()
+        self.write_constraints()
         with open(self.eventname + '/' + self.inidir + '/LevMar.ini','w') as f:
             f.write('nfits = ' + str(self.LevMar_nfits) + '\n')
             f.write('offsetdegeneracy = ' + str(self.LevMar_offsetdegeneracy) + '\n')
@@ -313,7 +318,8 @@ class RTModel:
                       'TS' : '- Triple-lens-Single-source fits',
                       'TX' : '- Triple-lens-Single-source fits with parallax',
                       'TO' : '- Triple-lens-Single-source fits with orbital motion'}       
-        self.set_parameter_ranges()
+        self.write_parameter_ranges()
+        self.write_constraints()
         print(stringfits[modelcode])
         initcondfile = self.eventname + '/InitCond/' + 'InitCond'+ modelcode + '.txt'
         if(os.path.exists(initcondfile)):
@@ -486,9 +492,8 @@ class RTModel:
                 phase += 1
 
     def cleanup_preliminary_models(self):
-        os.chdir(self.eventname)
-        if(os.path.exists('PreModels')):
-            shutil.rmtree('PreModels')
+        if(os.path.exists('self.eventname/PreModels')):
+            shutil.rmtree('self.eventname/PreModels')
             
     def archive_run(self, destination = None):
         olddir = os.getcwd()

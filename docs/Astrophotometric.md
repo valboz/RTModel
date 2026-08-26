@@ -6,7 +6,7 @@ Space telescopes or adaptive optics facilities may reach astrometric precisions 
 
 ## Astrophotometric datasets
 
-We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with thre columns: magnitude (or flux), error, HJD. We recall an example here for convenience:
+We have already discussed purely [photometric datasets](DataPreparation.md), which should be prepared with three columns: magnitude (or flux), error, HJD. We recall an example here for convenience:
 
 ```
 # Mag err HJD-2450000
@@ -20,6 +20,8 @@ We have already discussed purely [photometric datasets](DataPreparation.md), whi
 ...
 
 ```
+
+### Two-component astrometry
 
 If we have Declination and Right Ascension of our microlensing event with the respective uncertainties, we will have four additional columns: Declination, error on declination, Right Ascension, error on right ascension. Therefore, an astrophotometric dataset will look as follows:
 
@@ -41,6 +43,24 @@ As usual, the first line is a header determining the use or magnitudes or fluxes
 In the directory [`/events`](/events) we have an example of an astrophotometric event ([`astroevent001.zip`](/events/astroevent001.zip)) with one purely photometric dataset and an astrophotometric dataset that can be useful to understand how to prepare such datasets.
 
 We caution that for the purpose of [binning](DataPreprocessing.md#pre-processing-operations) the astrometric uncertainties are not taken into account. Re-binning affects photometry and astrometry at the same time.
+
+### One-component astrometry
+
+The [Gaia](https://www.esa.int/Science_Exploration/Space_Science/Gaia) mission provides one-component astrometry along the scan direction, which is different for each observation. Therefore, a Gaia astrophotometric series should prepared as in the following example
+
+```
+# Mag err HJD dAL errdAL PA flag
+17.84 0.020 6900.69951 11.086 0.3 5.9568 -1.0
+17.92 0.021 7030.01907 53.912 0.3 1.33573 -1.0
+17.95 0.022 7030.19523 -55.188 0.3 4.28617 -1.0
+17.91 0.021 7047.19771 54.785 0.3 0.981134 -1.0
+17.91 0.021 7047.27172 -52.684 0.3 3.92290 -1.0
+17.93 0.022 7137.91352 -46.874 0.3 3.74780 -1.0
+17.9 0.0216 7137.98752 16.660 0.3 6.12280 -1.0
+...
+```
+
+`dAL` represents the displacement from the reference model along the scan direction. `errdAL` is the uncertainty. `PA` is the position angle in radians of the scan direction from North to East in the counterclockwise direction. The final flag should be set to -1 to inform  `RTModel` that this is a one-component astrometry data series. Then everything procedes as for two-component astrometry.
 
 ## Astrophotometric models
 

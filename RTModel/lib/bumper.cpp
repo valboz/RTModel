@@ -94,7 +94,7 @@ void bumper::SetBuffer(FILE *f, int start, int end) {
 	buffer = (char*)malloc(sizeof(char) * (end-start+1));
 	fseek(f, start, SEEK_SET);
 	il = 0;
-	while(ftell(f)!=end){
+	while(ftell(f)<end){
 		buffer[il++] = fgetc(f);
 	}
 	buffer[il] = 0;
