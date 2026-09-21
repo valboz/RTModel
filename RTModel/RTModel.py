@@ -92,9 +92,10 @@ class RTModel:
     def write_constraints(self):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
             os.makedirs(self.eventname + '/' + self.inidir)
-        with open(self.eventname + '/' + self.inidir + '/Constraints.ini','w') as f:
-            for cons in self.constraints:
-                f.write(cons[0] + ' = '+ str(cons[1]) + ' '+ str(cons[2]) + ' '+ str(cons[3]) + ' ' + '\n')
+        if(len(self.constraints)>0):
+            with open(self.eventname + '/' + self.inidir + '/Constraints.ini','w') as f:
+                for cons in self.constraints:
+                    f.write(cons[0] + ' = '+ str(cons[1]) + ' '+ str(cons[2]) + ' '+ str(cons[3]) + ' ' + '\n')
 
     def write_parameter_ranges(self):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
@@ -275,7 +276,7 @@ class RTModel:
         print('- Launching: LevMar')
         print('  Fitting ' + strmodel + ' ...')
         try:
-            completedprocess = subprocess.run([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
+            completedprocess=subprocess.run([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True, errors='ignore')
             print('  OK')
         except subprocess.CalledProcessError as e:
             print('\033[30;41m! Error in fit!\033[m')
@@ -284,7 +285,7 @@ class RTModel:
             print('\033[30;41m! Program stopped here!\033[m')
             self.done = True
   
-    def launch_fits(self,modelcode):
+    def launch_fits(self,modelcode, generate_stdout = False):
         if(not os.path.exists(self.eventname + '/' + self.inidir)):
             os.makedirs(self.eventname + '/' + self.inidir)
         with open(self.eventname + '/' + self.inidir + '/LevMar.ini','w') as f:
@@ -336,57 +337,73 @@ class RTModel:
             timeouts = 0
             crashes = 0
             pbar = tqdm(total = ninitconds,desc = 'Fits completed',file=sys.stdout, colour='GREEN', smoothing = 0)
+            logfiles = []
             while(finitcond < ninitconds):
-                i=0
-                while i < len(processes):
-                    if(time.time() - procepochs[i] > self.LevMar_timelimit):
-                        processes[i].kill()
-                        timeouts += 1
-                        crashes -= 1
-                        #premodfiles = glob.glob(self.eventname +'/PreModels/*.txt')
-                        #strmodel =  modelcode + '{:0>4}'.format(str(procnumbers[i]))
-                        #with open(self.eventname +'/PreModels/' + strmodel + '/t' + strmodel + '.dat','w') as f:
-                        #    f.write(f'{len(premodfiles)} {self.LevMar_nfits}')
-                    if(processes[i].poll() != None):
-                        if(processes[i].returncode!=0):
-                            crashes +=1
-                        # Here we have to append results to main model file
-                        if(not self.LevMar_stepchainsave):
-                            strmodel = modelcode + '{:0>4}'.format(str(procnumbers[i])) + ".txt"
-                            if(os.path.exists(self.eventname +'/PreModels/' + strmodel)):
-                                with open(self.eventname +'/PreModels/' + strmodel) as f:
-                                    content = f.read()
-                                with open(self.eventname +'/PreModels/'+ modelcode + ".txt","a") as f:
-                                    f.write(content)
-                                os.remove(self.eventname +'/PreModels/' + strmodel)
-                        processes.pop(i)
-                        procnumbers.pop(i)
-                        procepochs.pop(i)
-                        finitcond += 1
-                    else:
-                        i += 1
-                while(iinitcond < ninitconds and len(processes) < self.nprocessors):
-                    strmodel =  modelcode + '{:0>4}'.format(str(iinitcond))
-                    #if(glob.glob(self.eventname +'/PreModels/' + strmodel + '/t' + strmodel + '.dat')==[]):
-                    processes.append(subprocess.Popen([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL))
-                    procnumbers.append(iinitcond)
-                    procepochs.append(time.time())
-                    #else:
-                    #    finitcond += 1
-                    iinitcond += 1
-                if(finitcond != finitcondold):
-                    #print('  Fits launched: {}; completed: {}/{}'.format(iinitcond, finitcond, ninitconds))
-                    pbar.update(finitcond - max(finitcondold,0))
-                    finitcondold =finitcond
-                time.sleep(0.1)
+                try:
+                    i=0
+                    while i < len(processes):
+                        if(time.time() - procepochs[i] > self.LevMar_timelimit):
+                            processes[i].kill()
+                            timeouts += 1
+                            crashes -= 1
+                            #premodfiles = glob.glob(self.eventname +'/PreModels/*.txt')
+                            #strmodel =  modelcode + '{:0>4}'.format(str(procnumbers[i]))
+                            #with open(self.eventname +'/PreModels/' + strmodel + '/t' + strmodel + '.dat','w') as f:
+                            #    f.write(f'{len(premodfiles)} {self.LevMar_nfits}')
+                        if(processes[i].poll() != None):
+                            if(processes[i].returncode!=0):
+                                crashes +=1
+                            # Here we have to append results to main model file
+                            if(not self.LevMar_stepchainsave):
+                                strmodel = modelcode + '{:0>4}'.format(str(procnumbers[i])) + ".txt"
+                                if(os.path.exists(self.eventname +'/PreModels/' + strmodel)):
+                                    with open(self.eventname +'/PreModels/' + strmodel) as f:
+                                        content = f.read()
+                                    with open(self.eventname +'/PreModels/'+ modelcode + ".txt","a") as f:
+                                        f.write(content)
+                                    os.remove(self.eventname +'/PreModels/' + strmodel)
+                            processes.pop(i)
+                            procnumbers.pop(i)
+                            procepochs.pop(i)
+                            finitcond += 1
+                        else:
+                            i += 1
+                    while(iinitcond < ninitconds and len(processes) < self.nprocessors):
+                        strmodel =  modelcode + '{:0>4}'.format(str(iinitcond))
+                        if(generate_stdout):
+                            stdout_file = open(self.eventname + '/PreModels/stdout-' + strmodel + '.stdout','w')
+                            logfiles.append(stdout_file)
+                            processes.append(subprocess.Popen([self.bindir + self.levmarexe,self.eventname,strmodel,self.satellitedir],
+                                        cwd=self.bindir,shell=False,stdout=stdout_file,stderr=subprocess.STDOUT,text=True))
+                        else:
+                            processes.append(subprocess.Popen([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, shell = False,
+                                                            stdout=subprocess.DEVNULL))   
+                        procnumbers.append(iinitcond)
+                        procepochs.append(time.time())
+                        #else:
+                        #    finitcond += 1
+                        iinitcond += 1
+                    if(finitcond != finitcondold):
+                        #print('  Fits launched: {}; completed: {}/{}'.format(iinitcond, finitcond, ninitconds))
+                        pbar.update(finitcond - max(finitcondold,0))
+                        finitcondold =finitcond
+                    time.sleep(0.1)
+                except subprocess.CalledProcessError as e:
+                    print('\033[30;41m! Error in fit!\033[m')
+                    print('\033[30;43m'+e.stdout+'\033[m')
+                    print('\033[30;43m'+e.stderr+'\033[m')
+                    print('\033[30;41m! Program stopped here!\033[m')
             pbar.close()
             if(crashes>0):
                 print('crashed fits: ' + str(crashes))
             if(timeouts>0):
                 print('timed out fits: ' + str(timeouts))
             print('  OK')
+            for f in logfiles:
+                f.close()
         else:
             print('- No initial conditions for this category')
+            
  
     def config_ModelSelector(self, sigmasoverlap = 3.0, sigmachisquare = 1.0, maxmodels = 10):
         self.ModelSelector_sigmasoverlap = sigmasoverlap # factor multiplying the inverse covariance in search for superpositions (models are incompatible if farther than sigmasoverlap*sigma)
