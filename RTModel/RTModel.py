@@ -275,7 +275,7 @@ class RTModel:
         print('- Launching: LevMar')
         print('  Fitting ' + strmodel + ' ...')
         try:
-            completedprocess=subprocess.run([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text = True)
+            completedprocess = subprocess.run([self.bindir+self.levmarexe,self.eventname, strmodel,self.satellitedir], cwd = self.bindir, shell = False, stdout=subprocess.DEVNULL)
             print('  OK')
         except subprocess.CalledProcessError as e:
             print('\033[30;41m! Error in fit!\033[m')
