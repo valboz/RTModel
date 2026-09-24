@@ -76,7 +76,7 @@ LevMar::LevMar(int argc, char* argv[]) {
 	VBM->Tol = Tol;
 	VBM->RelTol = 0.001;
 	VBM->parallaxsystem = 1;
-	VBM->SetMethod(VBMicrolensing::Method::Nopoly);
+	VBM->SetMethod(VBMicrolensing::Method::Multipoly);
 
 	ReadFiles(argc, argv);
 
