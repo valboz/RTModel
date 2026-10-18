@@ -620,7 +620,7 @@ int main(int argc, char* argv[])
 	delete datalist;
 
 	//printf("\nHello!");
-	getchar();
+	//getchar();
 
 	return 0;
 }
