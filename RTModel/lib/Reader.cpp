@@ -37,6 +37,7 @@ struct dataset {
 	dataset* prev, * next;
 	datapoint* first, * last;
 	int length;
+	double normfac;
 	char label[100];
 	bool input_in_mags;
 
@@ -205,6 +206,19 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
+	if (exists("Normalizations.txt")) {
+		printf("\nNormalizations.txt found");
+		f = fopen("Normalizations.txt", "r");
+		for (curdataset = datalist; curdataset;  curdataset = curdataset->next) {
+			fscanf(f, "%lf", &curdataset->normfac);
+			printf("\nNormalization: %lf", curdataset->normfac);
+			for (datapoint *p = curdataset->first; p; p = p->next) {
+				p->err *= curdataset->normfac;
+			}
+		}
+		fclose(f);
+	}
+
 
 	current_path(eventname);
 
@@ -631,6 +645,7 @@ dataset::dataset() {
 	prev = next = 0;
 	first = last = 0;
 	input_in_mags = false;
+	normfac = 1;
 }
 
 dataset::~dataset() {
