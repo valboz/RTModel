@@ -735,7 +735,6 @@ int LevMar::InitCond(double* presigmapr, double* preleftlim, double* prerightlim
 void LevMar::ReadAncillary() {
 	FILE* f;
 	int k;
-	double* normfacs;
 
 	try {
 		sumf = (double*)malloc(sizeof(double) * nfil);
@@ -785,27 +784,12 @@ void LevMar::ReadAncillary() {
 
 		current_path("Data");
 
-		// If Normalization.txt is present, use numbers therein to normalize datasets.
-
-		normfacs = (double*)malloc(sizeof(double) * nfil);
-		for (int i = 0; i < nfil; i++) {
-			normfacs[i] = 1.;
-		}
-		if (exists("Normalizations.txt")) {
-			f = fopen("Normalizations.txt", "r");
-			for (int i = 0; i < nfil; i++) {
-				fscanf(f, "%lf", &normfacs[i]);
-				printf("\nNormalization %d: %lf", i, normfacs[i]);
-			}
-			fclose(f);
-		}
 
 		k = 0;
 		sumsigma[k] = sumy[k] = sumy2[k] = 0;
 		if (astrometric) sumcN[k] = sumcE[k] = sumsigmaN[k] = sumsigmaE[k] = sumsigmaNE[k] = 0;
 		starts[k] = 0;
 		for (int i = 0; i < np; i++) {
-			w[i] /= normfacs[filter[i]];
 			if ((i != 0) && (filter[i] > filter[i - 1])) {
 				sizes[k] = i - starts[k];
 				k++;
@@ -818,8 +802,6 @@ void LevMar::ReadAncillary() {
 			sumy2[k] += w[i] * w[i] * y[i] * y[i];
 
 			if (astrometric) {
-				wcN[i] /= normfacs[filter[i]];
-				wcE[i] /= normfacs[filter[i]];
 				if (wcE[i] > 0) {
 					sumsigmaN[k] += wcN[i] * wcN[i];
 					sumsigmaE[k] += wcE[i] * wcE[i];
@@ -864,7 +846,6 @@ void LevMar::ReadAncillary() {
 	catch (...) {
 		error = 9;
 	}
-	free(normfacs);
 }
 
 
@@ -950,10 +931,10 @@ int LevMar::Run() {
 
 					// Levenberg-Marquardt with parameter lambda
 					ilam = 0;
-					while ((c1 >= c0) && ilam<20) {
+					while ((c1 >= c0) && ilam < 20) {
 
 						/* Calculation of the gradient */
-						if (ilam == 0){ // || lambda > lamthr) {
+						if (ilam == 0) { // || lambda > lamthr) {
 							Grad();
 
 							// Debug
@@ -1290,7 +1271,7 @@ int LevMar::Run() {
 }
 
 void LevMar::EvaluateModel(double* pr, int fl, int ips) {
-	double* tfl, * fbfl, * c1sfl, * c2sfl, * c1lfl, * c2lfl, *y1fl, *y2fl;
+	double* tfl, * fbfl, * c1sfl, * c2sfl, * c1lfl, * c2lfl, * y1fl, * y2fl;
 	tfl = &(t[starts[fl]]);
 	y1fl = &(y1a[starts[fl]]);
 	y2fl = &(y2a[starts[fl]]);
@@ -1456,14 +1437,14 @@ double LevMar::ChiSquared(double* pr) {
 						sumc2SC += wcN[i] * wcN[i] * c2s[i] * SC;
 					}
 					p1 = sumsigmaN[fl] * sumsigmaE[fl] - sumsigmaNE[fl] * sumsigmaNE[fl];
-					pr[nps + fl * nlinpar + 2] = (sumsigmaE[fl]*(sumcN[fl] - sumc1C2-sumc2SC)-
-												  sumsigmaNE[fl]* (sumcE[fl] - sumc1SC - sumc2S2)) / p1; // Origin shift
+					pr[nps + fl * nlinpar + 2] = (sumsigmaE[fl] * (sumcN[fl] - sumc1C2 - sumc2SC) -
+						sumsigmaNE[fl] * (sumcE[fl] - sumc1SC - sumc2S2)) / p1; // Origin shift
 					pr[nps + fl * nlinpar + 3] = (sumsigmaN[fl] * (sumcE[fl] - sumc1SC - sumc2S2) -
 						sumsigmaNE[fl] * (sumcN[fl] - sumc1C2 - sumc2SC)) / p1;
 					for (int i = starts[fl]; i < starts[fl] + sizes[fl]; i++) {
 						C = cos(cE[i]), S = sin(cE[i]);
-						p1 = (cN[i] - ((pr[nps + fl * nlinpar + 2] + c1s[i])*C+ (pr[nps + fl * nlinpar + 3] + c2s[i]) * S)) * wcN[i];
-						chia += p1 * p1;					
+						p1 = (cN[i] - ((pr[nps + fl * nlinpar + 2] + c1s[i]) * C + (pr[nps + fl * nlinpar + 3] + c2s[i]) * S)) * wcN[i];
+						chia += p1 * p1;
 					}
 				}
 			}
@@ -1566,8 +1547,8 @@ double LevMar::ChiSquared(double* pr) {
 				maxsumn += p1;               // Updates sum of negative residuals (note: <0)
 				p1max = 0;
 			}
-			
-	
+
+
 			chi2 += p1 * p1;
 			// This check on very negative blending blocks the fit. 
 			// It should be accompanied by a modification of the gradient to be re-activated
@@ -1723,8 +1704,8 @@ void LevMar::Grad() {
 				Gr[j][i] = w[i] * (prn[nps + filter[i] * nlinpar] + prn[nps + 1 + filter[i] * nlinpar] * fb[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar] - pr[nps + 1 + filter[i] * nlinpar] * fb[i]) / inc[j];
 				GradVec[j] += p1 * p1;
 
-				p1 = 2*grtol * Gr[j][i] * w[i] * pr[nps + 1 + filter[i] * nlinpar] / inc[j];
-				Graderr[j] += p1*p1;
+				p1 = 2 * grtol * Gr[j][i] * w[i] * pr[nps + 1 + filter[i] * nlinpar] / inc[j];
+				Graderr[j] += p1 * p1;
 			}
 			if (wcN[i] > 0) {
 				if (wcE[i] > 0) {
@@ -1744,8 +1725,8 @@ void LevMar::Grad() {
 					double C = cos(cE[i]), S = sin(cE[i]);
 					p1 = (((prn[nps + filter[i] * nlinpar + 2] + c1s[i]) * C + (prn[nps + filter[i] * nlinpar + 3] + c2s[i]) * S) - cN[i]) * wcN[i];
 					GradVec[j] += p1 * p1;
-					Gr[j][i + np] = wcN[i] * ((prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 2] - c1s[i])*C+
-						(prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 3] - c2s[i])*S) / inc[j];
+					Gr[j][i + np] = wcN[i] * ((prn[nps + filter[i] * nlinpar + 2] + c1s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 2] - c1s[i]) * C +
+						(prn[nps + filter[i] * nlinpar + 3] + c2s[i + np * (j + 1)] - pr[nps + filter[i] * nlinpar + 3] - c2s[i]) * S) / inc[j];
 
 					p1 = 0.1 * grtol * Gr[j][i + np] * wcN[i] / inc[j]; // Provisional coefficient: 0.1 = 50 * 2 * rho (if rho=0.001)
 					Graderr[j] += p1 * p1;
@@ -1782,7 +1763,7 @@ void LevMar::Grad() {
 		// Debug
 		printf("%.1le -> ", inc[i]);
 		Graderr[i] = sqrt(Graderr[i]);
-		if (Graderr[i] > 0.01 * Curv[i * nps + i] && inc[i]<0.5) {
+		if (Graderr[i] > 0.01 * Curv[i * nps + i] && inc[i] < 0.5) {
 			inc[i] *= 10;
 		}
 		if (Graderr[i] < 0.0001 * Curv[i * nps + i]) {
@@ -1831,7 +1812,7 @@ inline double LevMar::ComputeConstraint(double* pr, int ic) {
 		return pr[(i - 100) + nps - 4];
 	}
 	if (i < 20000) {
-		return pr[nps + (i - 10000) * 2] / (pr[nps + (i - 10000) * 2 + 1]+ 1.e-50);
+		return pr[nps + (i - 10000) * 2] / (pr[nps + (i - 10000) * 2 + 1] + 1.e-50);
 	}
 	if (i == 30000) {
 		int posN = -1, posE = -1;
