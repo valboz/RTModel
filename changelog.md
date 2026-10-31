@@ -1,3 +1,4 @@
+- **v3.4.3** - 2026/11/?? - Use Normalizations.txt directly in Reader rather than in LevMar.
 - **v3.4.2** - 2026/10/07 - Corrected a bug in LevMar causing no fits in the output on some platforms.
 - **v3.4.1** - 2026/09/24 - Avoid generating Constraints.ini if not necessary. Added generate_stdout option to launch_fits to generate output of all LevMar processes for debug. Switching back to Multipoly for triple-lens after new version of VBMicrolensing 5.6.
 - **v3.4** - 2026/08/26 - Astrophotometric fit including Gaia format: one-component astrometry along scan direction. Computation of constraints made more robust. Initial conditions outside parameter ranges are corrected. Included magoffset option in plotmodel useful for events with negative fluxes. Included model TO in plotmodel.
