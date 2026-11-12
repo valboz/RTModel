@@ -336,9 +336,13 @@ class plotmodel:
         if(self.tmax == ''):
             self.tmax = self.pars[t0i]+2*self.parsprint[tEi]
             
-        refblend = self.blends[self.referencephot]
-        if(self.sources[self.referencephot] +self.blends[self.referencephot]<0):
-            refblend = -self.sources[self.referencephot] + 10**(-0.4*self.magoffset)
+        if(len(self.blends)>0):
+            refblend = self.blends[self.referencephot]
+            if(self.sources[self.referencephot] +self.blends[self.referencephot]<0):
+                refblend = -self.sources[self.referencephot] + 10**(-0.4*self.magoffset)
+        else:
+            refblend = 0
+                
         self.lctimes=[]
         self.lcmags=[]
         self.lcerrs=[]
