@@ -9,13 +9,14 @@ template_library_path = None
 site_packages_directories = site.getsitepackages()
 site_packages_directories.append(site.getusersitepackages())
 for site_packages_directory in site_packages_directories:
-    template_library_path = Path(site_packages_directory).joinpath('RTModel/data/TemplateLibrary.txt')
+    template_library_path = Path(site_packages_directory).joinpath('RTModel/data')
 if template_library_path is None:
     raise FileNotFoundError(f'RTModel binary directory not found. Searched {site_packages_directories} '
                             f'site-packages directories.')
 
-def clone_default_library(destination):
-    shutil.copy(template_library_path, destination)
+def clone_default_library(destination,i):
+    template_source = template_library_path.joinpath(f'templates-{i}.txt')
+    shutil.copy(template_source, destination)
     return
 
 def load_library(source = None):
@@ -39,7 +40,7 @@ def save_library(destination, templates):
             f.write('\n')
     return
 
-def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.01):
+def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.01, verbose = True):
     logs = math.log(parameters[0])
     logq = math.log(parameters[1])
     u0 = parameters[2]
@@ -47,9 +48,10 @@ def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.
     logrho = math.log(parameters[4])
     logtE = 0
     t0 = 0
-    print('s: ' + str(parameters[0]) + '  q: ' + str(parameters[1]) + '  u0: ' + str(parameters[2]) + '  alpha: ' + str(parameters[3]) + '  rho: '+ str(parameters[4]))
+    if(verbose):
+        print('s: ' + str(parameters[0]) + '  q: ' + str(parameters[1]) + '  u0: ' + str(parameters[2]) + '  alpha: ' + str(parameters[3]) + '  rho: '+ str(parameters[4]))
     parnew = parameters[0:5] + [1,0]
-    pl = plm.plotmodel(None, model = 'LS', parameters = parnew, tmin = tmin, tmax = tmax, timesteps = math.floor((tmax-tmin)/tstep+1) ,accuracy = accuracy, printpars = False)
+    pl = plm.plotmodel(None, model = 'LS', parameters = parnew, tmin = tmin, tmax = tmax, timesteps = math.floor((tmax-tmin)/tstep+1) ,accuracy = accuracy, printpars = False, printimage = verbose)
     times = pl.t
     mags = pl.results[0]
 
@@ -66,6 +68,7 @@ def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.
             elif(mags[i]>lastmin + 5*accuracy):
                 derivative = +1
                 lastmax = mags[i]
+                timmax = times[i]
         else:
             if(mags[i]>mags[i-1]):
                 lastmax = mags[i]
@@ -74,9 +77,10 @@ def show_template(parameters, tmin = -3, tmax = +3, tstep = 0.001, accuracy = 0.
                 derivative = -1
                 lastmin = mags[i]
                 peaks.append(timmax)
-    print('peaks:  ' + str(peaks))
+    if(verbose):
+        print('peaks:  ' + str(peaks))
     rettemps = []
     for i in range(len(peaks)):
         for j in range(i+1,len(peaks)):
             rettemps.append(parameters[0:5] + [int(peaks[i]/tstep+0.5)*tstep, int(peaks[j]/tstep+0.5)*tstep])
-    return rettemps
+    return [rettemps, peaks]
